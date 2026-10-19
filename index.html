@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Internship Tracker</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #171d2b;
+    --panel-2: #1e2639;
+    --border: #2a3450;
+    --text: #e6eaf2;
+    --muted: #9aa6bf;
+    --accent: #5b8cff;
+    --accent-2: #3a67d4;
+    --ok: #37c978;
+    --warn: #f5b950;
+    --bad: #f05c6b;
+    --chip: #263150;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, #1b2439 0%, var(--bg) 55%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  header {
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: rgba(15,20,32,.6);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  h1 { font-size: 20px; margin: 0; letter-spacing: .3px; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 3px; }
+  .wrap { padding: 20px 28px 60px; }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 18px;
+  }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .stat b { color: var(--text); font-size: 16px; margin-right: 6px; }
+
+  input, select, textarea, button {
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 11px;
+    outline: none;
+  }
+  .field textarea { resize: vertical; min-height: 60px; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+
+  button {
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 9px 14px;
+    transition: .15s;
+  }
+  button:hover { border-color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .btn-primary:hover { background: var(--accent-2); }
+  .btn-ghost { background: transparent; }
+  .btn-danger:hover { border-color: var(--bad); color: var(--bad); }
+
+  .search { flex: 1; min-width: 180px; }
+  .search input {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    outline: none;
+  }
+  .filter select {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    outline: none;
+  }
+
+  /* Cards grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+  }
+  .card.urgent { border-color: var(--warn); }
+  .card .top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .company { font-size: 17px; font-weight: 700; }
+  .role { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    background: var(--chip);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .status .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .divider { height: 1px; background: var(--border); margin: 2px 0; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 12.5px; }
+  .kv .k { color: var(--muted); }
+  .kv a { color: var(--accent); text-decoration: none; }
+  .kv a:hover { text-decoration: underline; }
+  .notes { font-size: 12.5px; color: var(--muted); white-space: pre-wrap; }
+  .card-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .card-actions button { padding: 6px 12px; font-size: 13px; }
+  .deadline-flag {
+    font-size: 11px;
+    color: var(--warn);
+    font-weight: 600;
+  }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 60px 20px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+  }
+
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(5,8,15,.65);
+    backdrop-filter: blur(3px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    overflow-y: auto;
+    z-index: 50;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 760px;
+    box-shadow: var(--shadow);
+  }
+  .modal-head {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-head h2 { margin: 0; font-size: 17px; }
+  .modal-body { padding: 22px; }
+  .section-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin: 18px 0 10px;
+    font-weight: 700;
+  }
+  .section-title:first-child { margin-top: 0; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+  .field.full { grid-column: 1 / -1; }
+  .modal-foot {
+    padding: 16px 22px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  @media (max-width: 560px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .wrap, header { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🎯 Internship Tracker</h1>
+    <div class="sub">Track every application, deadline, and interview stage in one place.</div>
+  </div>
+  <div class="toolbar" style="margin:0;">
+    <button class="btn-ghost" id="exportBtn">⬇ Export</button>
+    <button class="btn-ghost" id="importBtn">⬆ Import</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" />
+    <button class="btn-primary" id="addBtn">＋ Add Application</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar" style="margin-top:16px;">
+    <div class="search"><input id="search" placeholder="🔍 Search company, role, location, notes…" /></div>
+    <div class="filter">
+      <select id="statusFilter">
+        <option value="">All statuses</option>
+      </select>
+    </div>
+    <div class="filter">
+      <select id="sortBy">
+        <option value="updated">Sort: Last updated</option>
+        <option value="deadline">Sort: Deadline (soonest)</option>
+        <option value="applied">Sort: Date applied</option>
+        <option value="company">Sort: Company (A–Z)</option>
+      </select>
+    </div>
+    <label style="display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;">
+      <input type="checkbox" id="pendingOnly" /> Awaiting reply only
+    </label>
+  </div>
+
+  <div id="grid" class="grid"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle">Add Application</h2>
+      <button class="btn-ghost" id="closeModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form">
+        <input type="hidden" id="f_id" />
+
+        <div class="section-title">1 · Essential Core Information</div>
+        <div class="form-grid">
+          <div class="field"><label>Company Name *</label><input id="f_company" required placeholder="e.g. Stripe" /></div>
+          <div class="field"><label>Role / Job Title *</label><input id="f_role" required placeholder="e.g. Software Engineering Intern" /></div>
+          <div class="field"><label>Target Period / Term</label><input id="f_term" placeholder="e.g. Summer 2027 (May–Aug)" /></div>
+          <div class="field"><label>Location & Work Type</label><input id="f_location" placeholder="e.g. Singapore / Hybrid" /></div>
+          <div class="field full"><label>Application Status</label>
+            <select id="f_status"></select>
+          </div>
+        </div>
+
+        <div class="section-title">2 · Logistics & Key Dates</div>
+        <div class="form-grid">
+          <div class="field"><label>Application Date</label><input id="f_appliedDate" type="date" /></div>
+          <div class="field"><label>Application Deadline</label><input id="f_deadline" type="date" /></div>
+          <div class="field full"><label>Job Description / Portal URL</label><input id="f_url" type="url" placeholder="https://…" /></div>
+          <div class="field"><label>Last Updated / Follow-up Date</label><input id="f_followup" type="date" /></div>
+        </div>
+
+        <div class="section-title">3 · Process & Interview Tracking</div>
+        <div class="form-grid">
+          <div class="field"><label>Online Assessment (OA) / Test Date</label><input id="f_oaDate" type="date" /></div>
+          <div class="field"><label>Interview Date(s)</label><input id="f_interviewDates" placeholder="e.g. Oct 22, Nov 3" /></div>
+          <div class="field full"><label>Interviewer Name / Title</label><input id="f_interviewer" placeholder="e.g. Jane Tan, Eng Manager" /></div>
+          <div class="field full"><label>Current Stage Notes</label><textarea id="f_stageNotes" placeholder="e.g. Completed HackerRank test on Oct 15; waiting for results"></textarea></div>
+        </div>
+
+        <div class="section-title">4 · Offer & Decision Comparison</div>
+        <div class="form-grid">
+          <div class="field"><label>Compensation / Allowance</label><input id="f_comp" placeholder="e.g. $1,500/month" /></div>
+          <div class="field"><label>Work Hours & Duration</label><input id="f_hours" placeholder="e.g. Full-time, 12 weeks" /></div>
+          <div class="field"><label>Offer Deadline / Decision Date</label><input id="f_offerDeadline" type="date" /></div>
+          <div class="field"><label>Priority Rating</label>
+            <select id="f_priority">
+              <option value="">—</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+          </div>
+          <div class="field full"><label>Pros & Cons</label><textarea id="f_prosCons" placeholder="Pros: …  Cons: …"></textarea></div>
+        </div>
+
+        <div class="section-title">5 · Useful Extras / Action Items</div>
+        <div class="form-grid">
+          <div class="field full"><label>Referral / Contact Person</label><input id="f_referral" placeholder="Name + email / LinkedIn" /></div>
+          <div class="field full"><label>Resume / Cover Letter Version Used</label><input id="f_docs" placeholder="e.g. Software_Engineer_v2.pdf" /></div>
+          <div class="field full"><label>Next Action Item</label><input id="f_nextAction" placeholder="e.g. Send follow-up email to recruiter" /></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" id="cancelBtn" type="button">Cancel</button>
+      <button class="btn-primary" id="saveBtn" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "internship-tracker.v1";
+
+  // Status definitions with color + whether it counts as "awaiting reply"
+  var STATUSES = [
+    { name: "Not Started / To Apply", color: "#9aa6bf", pending: false },
+    { name: "Applied / Pending",      color: "#5b8cff", pending: true },
+    { name: "OA / Technical Assessment", color: "#8b6cf5", pending: true },
+    { name: "HR / Screening Interview",  color: "#4ab3d1", pending: true },
+    { name: "Technical / Round 1 Interview", color: "#4ab3d1", pending: true },
+    { name: "Final Round Interview",   color: "#37c978", pending: true },
+    { name: "Offer Received",          color: "#37c978", pending: false },
+    { name: "Rejected",                color: "#f05c6b", pending: false },
+    { name: "Withdrawn",               color: "#747d94", pending: false }
+  ];
+
+  // Field map: id suffix -> data key
+  var FIELDS = [
+    "company","role","term","location","status",
+    "appliedDate","deadline","url","followup",
+    "oaDate","interviewDates","interviewer","stageNotes",
+    "comp","hours","offerDeadline","priority","prosCons",
+    "referral","docs","nextAction"
+  ];
+
+  var data = load();
+  var editingId = null;
+
+  // ---------- Persistence ----------
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  // ---------- Helpers ----------
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+  function statusDef(name) {
+    for (var i = 0; i < STATUSES.length; i++) if (STATUSES[i].name === name) return STATUSES[i];
+    return STATUSES[0];
+  }
+  function fmtDate(d) {
+    if (!d) return "";
+    var parts = d.split("-");
+    if (parts.length !== 3) return d;
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return months[parseInt(parts[1],10)-1] + " " + parseInt(parts[2],10) + ", " + parts[0];
+  }
+  function daysUntil(d) {
+    if (!d) return null;
+    var today = new Date(); today.setHours(0,0,0,0);
+    var target = new Date(d + "T00:00:00");
+    return Math.round((target - today) / 86400000);
+  }
+
+  // ---------- Status dropdowns ----------
+  function fillStatusSelects() {
+    var opts = STATUSES.map(function (s) {
+      return '<option value="' + esc(s.name) + '">' + esc(s.name) + '</option>';
+    }).join("");
+    $("f_status").innerHTML = opts;
+    $("statusFilter").innerHTML = '<option value="">All statuses</option>' + opts;
+  }
+
+  // ---------- Stats ----------
+  function renderStats() {
+    var total = data.length;
+    var pending = data.filter(function (x) { return statusDef(x.status).pending; }).length;
+    var offers = data.filter(function (x) { return x.status === "Offer Received"; }).length;
+    var rejected = data.filter(function (x) { return x.status === "Rejected"; }).length;
+    var urgent = data.filter(function (x) {
+      var du = daysUntil(x.deadline);
+      return du !== null && du >= 0 && du <= 7 && x.status.indexOf("Applied") !== 0 && statusDef(x.status).name === "Not Started / To Apply";
+    }).length;
+    $("stats").innerHTML =
+      '<div class="stat"><b>' + total + '</b>Total</div>' +
+      '<div class="stat"><b style="color:var(--accent)">' + pending + '</b>Awaiting reply</div>' +
+      '<div class="stat"><b style="color:var(--ok)">' + offers + '</b>Offers</div>' +
+      '<div class="stat"><b style="color:var(--bad)">' + rejected + '</b>Rejected</div>';
+  }
+
+  // ---------- Render cards ----------
+  function render() {
+    renderStats();
+    var q = $("search").value.trim().toLowerCase();
+    var sf = $("statusFilter").value;
+    var pendingOnly = $("pendingOnly").checked;
+    var sort = $("sortBy").value;
+
+    var rows = data.filter(function (x) {
+      if (sf && x.status !== sf) return false;
+      if (pendingOnly && !statusDef(x.status).pending) return false;
+      if (q) {
+        var hay = [x.company, x.role, x.location, x.term, x.stageNotes, x.notes, x.referral, x.nextAction, x.status]
+          .join(" ").toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
+      return true;
+    });
+
+    rows.sort(function (a, b) {
+      if (sort === "company") return (a.company||"").localeCompare(b.company||"");
+      if (sort === "applied") return (b.appliedDate||"").localeCompare(a.appliedDate||"");
+      if (sort === "deadline") {
+        var da = a.deadline || "9999", db = b.deadline || "9999";
+        return da.localeCompare(db);
+      }
+      // updated (default)
+      return (b._updated||0) - (a._updated||0);
+    });
+
+    var grid = $("grid");
+    if (!rows.length) {
+      grid.innerHTML = '<div class="empty">' +
+        (data.length ? "No applications match your filters." :
+         "No applications yet. Click <b>＋ Add Application</b> to get started.") +
+        '</div>';
+      return;
+    }
+
+    grid.innerHTML = rows.map(cardHTML).join("");
+
+    // wire buttons
+    Array.prototype.forEach.call(grid.querySelectorAll("[data-edit]"), function (b) {
+      b.onclick = function () { openModal(b.getAttribute("data-edit")); };
+    });
+    Array.prototype.forEach.call(grid.querySelectorAll("[data-del]"), function (b) {
+      b.onclick = function () {
+        var id = b.getAttribute("data-del");
+        var item = data.find(function (x) { return x.id === id; });
+        if (confirm("Delete \"" + (item ? item.company + " — " + item.role : "this") + "\"?")) {
+          data = data.filter(function (x) { return x.id !== id; });
+          save(); render();
+        }
+      };
+    });
+  }
+
+  function row(k, v) {
+    if (!v) return "";
+    return '<span class="k">' + esc(k) + '</span><span>' + v + '</span>';
+  }
+
+  function cardHTML(x) {
+    var sd = statusDef(x.status);
+    var du = daysUntil(x.deadline);
+    var urgent = du !== null && du >= 0 && du <= 7 &&
+                 (x.status === "Not Started / To Apply" || x.status === "Applied / Pending");
+    var deadlineFlag = "";
+    if (du !== null) {
+      if (du < 0) deadlineFlag = '<span class="deadline-flag" style="color:var(--muted)">deadline passed</span>';
+      else if (du === 0) deadlineFlag = '<span class="deadline-flag">deadline today!</span>';
+      else if (du <= 7) deadlineFlag = '<span class="deadline-flag">' + du + ' day' + (du===1?'':'s') + ' to deadline</span>';
+    }
+
+    var kv = [
+      row("Term", esc(x.term)),
+      row("Applied", fmtDate(x.appliedDate)),
+      row("Deadline", x.deadline ? fmtDate(x.deadline) + " " + deadlineFlag : ""),
+      row("Follow-up", fmtDate(x.followup)),
+      row("OA / Test", fmtDate(x.oaDate)),
+      row("Interviews", esc(x.interviewDates)),
+      row("Interviewer", esc(x.interviewer)),
+      row("Comp", esc(x.comp)),
+      row("Hours", esc(x.hours)),
+      row("Offer by", fmtDate(x.offerDeadline)),
+      row("Priority", x.priority ? '<span class="chip">' + esc(x.priority) + '</span>' : ""),
+      row("Referral", esc(x.referral)),
+      row("Docs", esc(x.docs)),
+      row("Link", x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">Open posting ↗</a>' : "")
+    ].join("");
+
+    var notesBlock = "";
+    if (x.stageNotes) notesBlock += '<div class="notes"><b style="color:var(--muted)">Stage:</b> ' + esc(x.stageNotes) + '</div>';
+    if (x.prosCons)   notesBlock += '<div class="notes"><b style="color:var(--muted)">Pros/Cons:</b> ' + esc(x.prosCons) + '</div>';
+    if (x.nextAction) notesBlock += '<div class="notes"><b style="color:var(--accent)">▶ Next:</b> ' + esc(x.nextAction) + '</div>';
+
+    return '' +
+      '<div class="card' + (urgent ? ' urgent' : '') + '">' +
+        '<div class="top">' +
+          '<div>' +
+            '<div class="company">' + esc(x.company) + '</div>' +
+            '<div class="role">' + esc(x.role) + (x.location ? ' · ' + esc(x.location) : '') + '</div>' +
+          '</div>' +
+          '<span class="status" style="color:' + sd.color + ';background:' + sd.color + '22;">' +
+            '<span class="dot"></span>' + esc(x.status) + '</span>' +
+        '</div>' +
+        '<div class="divider"></div>' +
+        '<div class="kv">' + kv + '</div>' +
+        (notesBlock ? '<div class="divider"></div>' + notesBlock : '') +
+        '<div class="card-actions">' +
+          '<button data-edit="' + x.id + '">Edit</button>' +
+          '<button class="btn-danger" data-del="' + x.id + '">Delete</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  // ---------- Modal ----------
+  function openModal(id) {
+    editingId = id || null;
+    $("modalTitle").textContent = id ? "Edit Application" : "Add Application";
+    var item = id ? data.find(function (x) { return x.id === id; }) : {};
+    item = item || {};
+    FIELDS.forEach(function (f) {
+      var el = $("f_" + f);
+      if (el) el.value = item[f] != null ? item[f] : "";
+    });
+    if (!id) $("f_status").value = "Not Started / To Apply";
+    $("f_id").value = id || "";
+    $("modalBg").classList.add("show");
+    setTimeout(function () { $("f_company").focus(); }, 50);
+  }
+  function closeModal() {
+    $("modalBg").classList.remove("show");
+    editingId = null;
+  }
+  function saveForm() {
+    var company = $("f_company").value.trim();
+    var role = $("f_role").value.trim();
+    if (!company || !role) {
+      alert("Company Name and Role / Job Title are required.");
+      return;
+    }
+    var obj = editingId ? data.find(function (x) { return x.id === editingId; }) : null;
+    if (!obj) { obj = { id: uid() }; data.push(obj); }
+    FIELDS.forEach(function (f) {
+      var el = $("f_" + f);
+      if (el) obj[f] = el.value.trim();
+    });
+    obj._updated = Date.now();
+    save();
+    closeModal();
+    render();
+  }
+
+  // ---------- Export / Import ----------
+  function exportData() {
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "internship-tracker-" + new Date().toISOString().slice(0,10) + ".json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  function importData(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var parsed = JSON.parse(reader.result);
+        if (!Array.isArray(parsed)) throw new Error("Invalid file");
+        if (!confirm("Import " + parsed.length + " application(s)? This replaces current data.")) return;
+        data = parsed.map(function (x) {
+          if (!x.id) x.id = uid();
+          if (!x._updated) x._updated = Date.now();
+          return x;
+        });
+        save(); render();
+      } catch (e) {
+        alert("Could not import: " + e.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ---------- Wire up ----------
+  fillStatusSelects();
+  $("addBtn").onclick = function () { openModal(null); };
+  $("closeModal").onclick = closeModal;
+  $("cancelBtn").onclick = closeModal;
+  $("saveBtn").onclick = saveForm;
+  $("modalBg").onclick = function (e) { if (e.target === $("modalBg")) closeModal(); };
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeModal();
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && $("modalBg").classList.contains("show")) saveForm();
+  });
+  $("search").oninput = render;
+  $("statusFilter").onchange = render;
+  $("sortBy").onchange = render;
+  $("pendingOnly").onchange = render;
+  $("exportBtn").onclick = exportData;
+  $("importBtn").onclick = function () { $("importFile").click(); };
+  $("importFile").onchange = function (e) { if (e.target.files[0]) importData(e.target.files[0]); e.target.value = ""; };
+
+  render();
+})();
+</script>
+</body>
+</html>
