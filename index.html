@@ -6,193 +6,191 @@
 <title>Internship Tracker</title>
 <style>
   :root {
-    --bg: #ffffff;
-    --bg-subtle: #f7f7f5;
-    --panel: #ffffff;
-    --hover: #f1f1ef;
-    --border: #e9e9e7;
-    --border-strong: #dcdcda;
-    --text: #37352f;
-    --text-2: #5f5e5a;
-    --muted: #9b9a97;
-    --faint: #cfcfcd;
-    --accent: #2383e2;
-    --accent-soft: #e7f1fb;
-    --radius: 6px;
-    --radius-lg: 10px;
-    --shadow: 0 1px 2px rgba(15,15,15,.06), 0 3px 8px rgba(15,15,15,.05);
-    --shadow-pop: 0 8px 28px rgba(15,15,15,.14);
-    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
+    /* Slate dark surface palette */
+    --bg: #0b1120;
+    --surface: #0f172a;      /* slate-900 */
+    --surface-2: #1e293b;    /* slate-800 */
+    --surface-3: #334155;    /* slate-700 */
+    --border: #1e293b;
+    --border-2: #334155;
+    --text: #e2e8f0;         /* slate-200 */
+    --text-2: #cbd5e1;       /* slate-300 */
+    --muted: #94a3b8;        /* slate-400 */
+    --faint: #64748b;        /* slate-500 */
+    --accent: #38bdf8;       /* sky-400 */
+    --accent-strong: #0ea5e9;
 
-    /* status palette (Notion-ish muted tints) */
-    --s-gray-bg: #efefed;   --s-gray-fg: #605f5b;
-    --s-blue-bg: #e3eefb;   --s-blue-fg: #1f5fa6;
-    --s-purple-bg: #eee7fb; --s-purple-fg: #6940a5;
-    --s-teal-bg: #ddf1ef;   --s-teal-fg: #157a6e;
-    --s-green-bg: #dcf0e2;  --s-green-fg: #27825b;
-    --s-red-bg: #fbe4e2;    --s-red-fg: #b6392f;
-    --s-amber-bg: #fbeecf;  --s-amber-fg: #9a6a17;
+    /* KPI accents */
+    --c-total: #e2e8f0;
+    --c-amber: #f59e0b;
+    --c-green: #10b981;
+    --c-red: #ef4444;
+    --c-sky: #38bdf8;
+    --c-violet: #a78bfa;
+
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.25);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, Helvetica, Arial, sans-serif;
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    margin: 0;
-    font-family: var(--font);
-    background: var(--bg);
+    margin: 0; font-family: var(--font); font-size: 14px; line-height: 1.5;
     color: var(--text);
-    font-size: 14px;
-    line-height: 1.5;
+    background:
+      radial-gradient(900px 500px at 85% -5%, rgba(56,189,248,.08), transparent 60%),
+      radial-gradient(700px 500px at 0% 0%, rgba(167,139,250,.06), transparent 55%),
+      var(--bg);
     -webkit-font-smoothing: antialiased;
   }
 
-  /* ---------- Layout ---------- */
-  .page { max-width: 1080px; margin: 0 auto; padding: 40px 48px 80px; }
-  @media (max-width: 720px) { .page { padding: 28px 18px 60px; } }
+  .page { max-width: 1140px; margin: 0 auto; padding: 40px 44px 90px; min-height: 100vh; display: flex; flex-direction: column; }
+  @media (max-width: 720px) { .page { padding: 26px 16px 60px; } }
 
   .title-row { display: flex; align-items: center; gap: 12px; }
-  .emoji { font-size: 34px; line-height: 1; }
-  h1 { font-size: 30px; font-weight: 700; letter-spacing: -.01em; margin: 0; }
-  .subtitle { color: var(--muted); font-size: 14px; margin: 6px 0 0 46px; }
-  @media (max-width: 720px) { .subtitle { margin-left: 0; } }
+  .emoji { font-size: 32px; line-height: 1; }
+  h1 { font-size: 28px; font-weight: 700; letter-spacing: -.02em; margin: 0; }
+  .subtitle { color: var(--muted); font-size: 14px; margin: 6px 0 0 44px; }
+  @media (max-width: 720px){ .subtitle{ margin-left: 0; } }
 
-  /* ---------- Stat strip ---------- */
-  .stats { display: flex; gap: 28px; margin: 26px 0 22px; flex-wrap: wrap; }
-  .stat .num { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
-  .stat .lbl { font-size: 12px; color: var(--muted); margin-top: 1px; }
-  .stat .num.blue { color: var(--s-blue-fg); }
-  .stat .num.green { color: var(--s-green-fg); }
-  .stat .num.red { color: var(--s-red-fg); }
+  /* ---------- KPI cards ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 26px 0 22px; }
+  @media (max-width: 860px){ .kpis{ grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 440px){ .kpis{ grid-template-columns: 1fr; } }
+  .kpi {
+    background: linear-gradient(180deg, rgba(30,41,59,.55), rgba(15,23,42,.55));
+    border: 1px solid var(--border-2); border-radius: var(--radius-lg);
+    padding: 16px 18px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+  }
+  .kpi::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent-col, var(--muted)); opacity:.9; }
+  .kpi .label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .kpi .num { font-size: 32px; font-weight: 800; letter-spacing: -.02em; color: var(--accent-col, var(--text)); margin-top: 6px; line-height: 1; }
+  .kpi .sub { font-size: 12px; color: var(--faint); margin-top: 8px; }
+  .kpi .sub b { color: var(--text-2); font-weight: 600; }
 
   /* ---------- Toolbar ---------- */
-  .toolbar {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    padding-bottom: 10px; margin-bottom: 2px;
-    border-bottom: 1px solid var(--border);
-  }
-  .search { flex: 1; min-width: 180px; position: relative; }
-  .search input {
-    width: 100%; border: none; background: transparent; outline: none;
-    font-family: inherit; font-size: 14px; color: var(--text);
-    padding: 6px 6px 6px 24px;
-  }
-  .search::before {
-    content: "🔍"; position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
-    font-size: 12px; opacity: .5;
-  }
-  .search input::placeholder { color: var(--muted); }
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .search { flex: 1; min-width: 200px; position: relative; display: flex; align-items: center;
+    background: var(--surface-2); border: 1px solid var(--border-2); border-radius: var(--radius);
+    padding: 0 10px; transition: border-color .15s, box-shadow .15s; }
+  .search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56,189,248,.15); }
+  .search .ico { opacity: .55; font-size: 13px; margin-right: 6px; }
+  .search input { flex: 1; background: transparent; border: none; outline: none; color: var(--text);
+    font-family: inherit; font-size: 14px; padding: 9px 0; }
+  .search input::placeholder { color: var(--faint); }
+  .kbd { font-family: inherit; font-size: 11px; color: var(--muted); background: var(--surface-3);
+    border: 1px solid var(--border-2); border-radius: 5px; padding: 2px 6px; white-space: nowrap; }
 
-  select, .btn {
-    font-family: inherit; font-size: 13.5px; color: var(--text-2);
-    background: transparent; border: 1px solid transparent; border-radius: var(--radius);
-    padding: 5px 9px; cursor: pointer; transition: background .12s, border-color .12s;
-    outline: none;
-  }
-  select:hover, .btn:hover { background: var(--hover); }
-  select { border-color: transparent; -webkit-appearance: none; appearance: none;
-    padding-right: 22px;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='%239b9a97' stroke-width='1.3'/></svg>");
-    background-repeat: no-repeat; background-position: right 7px center;
-  }
-  .chk { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 13.5px; cursor: pointer; padding: 5px 4px; user-select: none; }
-  .chk input { accent-color: var(--accent); }
+  .ctl { font-family: inherit; font-size: 13.5px; color: var(--text-2);
+    background: var(--surface-2); border: 1px solid var(--border-2); border-radius: var(--radius);
+    padding: 8px 10px; cursor: pointer; outline: none; transition: border-color .15s, background .15s; }
+  .ctl:hover { border-color: var(--surface-3); }
+  select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='%2394a3b8' stroke-width='1.3'/></svg>");
+    background-repeat: no-repeat; background-position: right 9px center; }
+  .ctl:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56,189,248,.15); }
 
-  .btn-primary {
-    background: var(--accent); color: #fff; border-color: var(--accent);
-    font-weight: 500; padding: 6px 13px;
-  }
-  .btn-primary:hover { background: #1a73c7; }
-  .seg { display: inline-flex; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .seg button { border: none; background: transparent; padding: 5px 11px; font-size: 13px; color: var(--muted); cursor: pointer; }
-  .seg button.active { background: var(--panel); color: var(--text); box-shadow: var(--shadow); }
+  .btn { font-family: inherit; font-size: 13.5px; color: var(--text-2);
+    background: var(--surface-2); border: 1px solid var(--border-2); border-radius: var(--radius);
+    padding: 8px 12px; cursor: pointer; transition: border-color .15s, background .15s; }
+  .btn:hover { border-color: var(--surface-3); background: var(--surface-3); }
+  .btn-primary { background: var(--accent-strong); border-color: var(--accent-strong); color: #04121f; font-weight: 600; }
+  .btn-primary:hover { background: #38bdf8; }
 
-  /* ---------- Table view ---------- */
+  .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border-2); border-radius: var(--radius); overflow: hidden; }
+  .seg button { border: none; background: transparent; padding: 8px 13px; font-size: 13px; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .seg button.active { background: var(--surface-3); color: var(--text); }
+
+  .exportbar { display: flex; align-items: center; gap: 10px; margin: -8px 0 14px; min-height: 18px; }
+  .exportbar .badge { font-size: 11.5px; color: var(--faint); }
+  .exportbar .badge b { color: var(--muted); font-weight: 500; }
+
+  /* ---------- Status pills (soft dark fills) ---------- */
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ---------- Table ---------- */
+  .card-surface { background: linear-gradient(180deg, rgba(30,41,59,.35), rgba(15,23,42,.35));
+    border: 1px solid var(--border-2); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  thead th {
-    text-align: left; font-weight: 500; color: var(--muted); font-size: 12px;
-    padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap;
-  }
-  tbody td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  tbody tr { cursor: pointer; }
-  tbody tr:hover { background: var(--bg-subtle); }
+  thead th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+    padding: 12px 14px; border-bottom: 1px solid var(--border-2); white-space: nowrap; background: rgba(15,23,42,.5); }
+  tbody td { padding: 13px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { cursor: pointer; transition: background .12s; }
+  tbody tr:hover { background: rgba(51,65,85,.35); }
   td .co { font-weight: 600; color: var(--text); }
-  td .rl { color: var(--text-2); }
-  td .sub { color: var(--muted); font-size: 12px; }
+  td .rl { color: var(--muted); font-size: 12.5px; }
+  td.sub, .sub { color: var(--muted); }
+  .sub2 { color: var(--faint); font-size: 12px; }
   .nowrap { white-space: nowrap; }
-
-  .pill {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 2px 9px; border-radius: 20px; font-size: 12px; font-weight: 500; white-space: nowrap;
-  }
-  .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .9; }
-
-  .tag { display: inline-block; padding: 1px 7px; border-radius: 4px; background: var(--s-gray-bg); color: var(--s-gray-fg); font-size: 11.5px; }
-  .flag { color: var(--s-amber-fg); font-size: 11.5px; font-weight: 500; }
-  .flag.past { color: var(--muted); font-weight: 400; }
+  .flag { color: var(--c-amber); font-size: 11.5px; font-weight: 600; }
+  .flag.past { color: var(--faint); font-weight: 400; }
   a.link { color: var(--accent); text-decoration: none; }
   a.link:hover { text-decoration: underline; }
   .row-actions { opacity: 0; transition: opacity .12s; white-space: nowrap; text-align: right; }
   tbody tr:hover .row-actions { opacity: 1; }
-  .icon-btn { border: none; background: transparent; cursor: pointer; color: var(--muted); padding: 3px 6px; border-radius: 4px; font-size: 13px; }
-  .icon-btn:hover { background: var(--hover); color: var(--text); }
-  .icon-btn.del:hover { color: var(--s-red-fg); }
+  .icon-btn { border: none; background: transparent; cursor: pointer; color: var(--muted); padding: 4px 7px; border-radius: 5px; font-size: 13px; }
+  .icon-btn:hover { background: var(--surface-3); color: var(--text); }
+  .icon-btn.del:hover { color: var(--c-red); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 5px; background: var(--surface-3); color: var(--text-2); font-size: 11.5px; }
 
-  /* ---------- Board view ---------- */
-  .board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
-  .col { flex: 0 0 260px; }
-  .col-head { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-2); font-weight: 500; padding: 4px 4px 10px; }
-  .col-head .count { color: var(--muted); font-weight: 400; }
+  /* ---------- Board (drag & drop) ---------- */
+  .board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; }
+  .col { flex: 0 0 268px; background: rgba(15,23,42,.5); border: 1px solid var(--border-2); border-radius: var(--radius-lg); padding: 10px; display: flex; flex-direction: column; min-height: 120px; }
+  .col.drag-over { border-color: var(--accent); background: rgba(56,189,248,.07); }
+  .col-head { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-2); font-weight: 600; padding: 2px 4px 10px; }
+  .col-head .count { color: var(--muted); font-weight: 500; margin-left: auto; background: var(--surface-3); border-radius: 10px; padding: 0 7px; font-size: 11px; }
   .col-head .sw { width: 9px; height: 9px; border-radius: 3px; }
-  .bcard {
-    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 10px 11px; margin-bottom: 8px; box-shadow: var(--shadow); cursor: pointer;
-  }
-  .bcard:hover { border-color: var(--border-strong); }
+  .bcard { background: var(--surface-2); border: 1px solid var(--border-2); border-radius: var(--radius); padding: 11px 12px; margin-bottom: 8px; cursor: grab; transition: border-color .12s, transform .08s, box-shadow .12s; }
+  .bcard:hover { border-color: var(--surface-3); }
+  .bcard:active { cursor: grabbing; }
+  .bcard.dragging { opacity: .5; }
   .bcard .bco { font-weight: 600; font-size: 13.5px; }
-  .bcard .brl { color: var(--text-2); font-size: 12.5px; margin-top: 1px; }
-  .bcard .bmeta { margin-top: 7px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .bcard .brl { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .bcard .bmeta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .col-empty { color: var(--faint); font-size: 12px; text-align: center; padding: 14px 6px; border: 1px dashed var(--border-2); border-radius: var(--radius); }
 
-  .empty { text-align: center; color: var(--muted); padding: 70px 20px; }
-  .empty b { color: var(--text-2); }
+  /* ---------- Empty state ---------- */
+  .empty-fill { flex: 1; display: flex; align-items: center; justify-content: center; padding: 30px 10px; }
+  .empty-card { text-align: center; max-width: 440px; background: linear-gradient(180deg, rgba(30,41,59,.4), rgba(15,23,42,.3));
+    border: 1px solid var(--border-2); border-radius: var(--radius-lg); padding: 44px 36px; box-shadow: var(--shadow); }
+  .empty-card svg { margin-bottom: 18px; }
+  .empty-card h3 { margin: 0 0 8px; font-size: 18px; font-weight: 700; }
+  .empty-card p { margin: 0 0 22px; color: var(--muted); font-size: 13.5px; }
+  .empty-card .btn-primary { padding: 10px 18px; font-size: 14px; }
+  .empty-card .sample { display: block; margin-top: 16px; background: none; border: none; color: var(--accent); font-size: 13px; cursor: pointer; }
+  .empty-card .sample:hover { text-decoration: underline; }
+  .empty-note { text-align: center; color: var(--muted); padding: 50px 20px; }
 
-  /* ---------- Modal (Notion peek panel) ---------- */
-  .modal-bg { position: fixed; inset: 0; background: rgba(15,15,15,.32); display: none; z-index: 60; }
+  /* ---------- Modal ---------- */
+  .modal-bg { position: fixed; inset: 0; background: rgba(2,6,16,.6); backdrop-filter: blur(2px); display: none; z-index: 60; }
   .modal-bg.show { display: block; }
-  .modal {
-    position: fixed; top: 0; right: 0; height: 100%; width: 100%; max-width: 620px;
-    background: var(--panel); box-shadow: var(--shadow-pop);
-    display: flex; flex-direction: column; transform: translateX(100%);
-    transition: transform .22s ease;
-  }
+  .modal { position: fixed; top: 0; right: 0; height: 100%; width: 100%; max-width: 620px;
+    background: var(--surface); border-left: 1px solid var(--border-2); box-shadow: -20px 0 60px rgba(0,0,0,.5);
+    display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s ease; }
   .modal-bg.show .modal { transform: translateX(0); }
-  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid var(--border); }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 15px 22px; border-bottom: 1px solid var(--border-2); }
   .modal-head h2 { font-size: 15px; font-weight: 600; margin: 0; color: var(--text-2); }
   .modal-body { padding: 24px 26px; overflow-y: auto; flex: 1; }
-  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 22px; border-top: 1px solid var(--border); }
-
-  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; margin: 26px 0 12px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 22px; border-top: 1px solid var(--border-2); }
+  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); font-weight: 700; margin: 26px 0 12px; }
   .section-title:first-child { margin-top: 0; }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
   .field.full { grid-column: 1 / -1; }
   .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
-  .field input, .field select, .field textarea {
-    width: 100%; font-family: inherit; font-size: 14px; color: var(--text);
-    background: var(--bg-subtle); border: 1px solid transparent; border-radius: var(--radius);
-    padding: 8px 10px; outline: none; transition: background .12s, border-color .12s, box-shadow .12s;
-  }
+  .field input, .field select, .field textarea { width: 100%; font-family: inherit; font-size: 14px; color: var(--text);
+    background: var(--surface-2); border: 1px solid var(--border-2); border-radius: var(--radius); padding: 9px 11px; outline: none;
+    transition: border-color .15s, box-shadow .15s; }
   .field input::placeholder, .field textarea::placeholder { color: var(--faint); }
-  .field input:hover, .field select:hover, .field textarea:hover { background: var(--hover); }
-  .field input:focus, .field select:focus, .field textarea:focus {
-    background: var(--panel); border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft);
-  }
-  .field textarea { resize: vertical; min-height: 56px; }
-  .field select {
-    -webkit-appearance: none; appearance: none; padding-right: 26px;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='%239b9a97' stroke-width='1.3'/></svg>");
-    background-repeat: no-repeat; background-position: right 9px center;
-  }
-
-  @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56,189,248,.15); }
+  .field textarea { resize: vertical; min-height: 58px; }
+  .field select { -webkit-appearance: none; appearance: none; padding-right: 28px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='%2394a3b8' stroke-width='1.3'/></svg>");
+    background-repeat: no-repeat; background-position: right 10px center; }
+  @media (max-width: 560px){ .form-grid{ grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -204,30 +202,42 @@
   </div>
   <p class="subtitle">Every application, deadline, and interview stage — in one calm place.</p>
 
-  <div class="stats" id="stats"></div>
+  <div class="kpis" id="kpis"></div>
 
   <div class="toolbar">
-    <div class="search"><input id="search" placeholder="Search company, role, location, notes…" /></div>
-    <div class="seg" id="viewSeg">
-      <button data-view="table" class="active">Table</button>
-      <button data-view="board">Board</button>
+    <div class="search">
+      <span class="ico">🔍</span>
+      <input id="search" placeholder="Search company, role, location…" />
+      <span class="kbd" id="kbdHint">⌘K</span>
     </div>
-    <select id="statusFilter"><option value="">All statuses</option></select>
-    <select id="sortBy">
+    <div class="seg" id="viewSeg">
+      <button data-view="table" class="active">▤ Table</button>
+      <button data-view="board">▦ Board</button>
+    </div>
+    <select class="ctl" id="statusFilter">
+      <option value="__all">All statuses</option>
+      <option value="__pending">Awaiting reply</option>
+      <option value="__interviewing">Interviewing</option>
+      <option value="__offers">Offers</option>
+      <option value="Rejected">Rejected</option>
+      <option value="__sep" disabled>──────────</option>
+    </select>
+    <select class="ctl" id="sortBy">
       <option value="updated">Last updated</option>
       <option value="deadline">Deadline (soonest)</option>
       <option value="applied">Date applied</option>
       <option value="company">Company (A–Z)</option>
     </select>
-    <label class="chk"><input type="checkbox" id="pendingOnly" /> Awaiting reply</label>
     <span style="flex:1"></span>
-    <button class="btn" id="exportBtn">Export</button>
-    <button class="btn" id="importBtn">Import</button>
+    <button class="btn" id="exportBtn">⬇ Export</button>
+    <button class="btn" id="importBtn">⬆ Import</button>
     <input type="file" id="importFile" accept="application/json" style="display:none" />
     <button class="btn btn-primary" id="addBtn">＋ New</button>
   </div>
 
-  <div id="view"></div>
+  <div class="exportbar"><span class="badge" id="syncBadge"></span></div>
+
+  <div id="view" style="flex:1; display:flex; flex-direction:column;"></div>
 </div>
 
 <!-- Side-panel modal -->
@@ -240,7 +250,6 @@
     <div class="modal-body">
       <form id="form">
         <input type="hidden" id="f_id" />
-
         <div class="section-title">Core information</div>
         <div class="form-grid">
           <div class="field"><label>Company name *</label><input id="f_company" required placeholder="e.g. Stripe" /></div>
@@ -249,7 +258,6 @@
           <div class="field"><label>Location & work type</label><input id="f_location" placeholder="e.g. Singapore / Hybrid" /></div>
           <div class="field full"><label>Application status</label><select id="f_status"></select></div>
         </div>
-
         <div class="section-title">Logistics & key dates</div>
         <div class="form-grid">
           <div class="field"><label>Application date</label><input id="f_appliedDate" type="date" /></div>
@@ -257,7 +265,6 @@
           <div class="field full"><label>Job description / portal URL</label><input id="f_url" type="url" placeholder="https://…" /></div>
           <div class="field"><label>Last updated / follow-up date</label><input id="f_followup" type="date" /></div>
         </div>
-
         <div class="section-title">Process & interview tracking</div>
         <div class="form-grid">
           <div class="field"><label>Online assessment / test date</label><input id="f_oaDate" type="date" /></div>
@@ -265,7 +272,6 @@
           <div class="field full"><label>Interviewer name / title</label><input id="f_interviewer" placeholder="e.g. Jane Tan, Eng Manager" /></div>
           <div class="field full"><label>Current stage notes</label><textarea id="f_stageNotes" placeholder="e.g. Completed HackerRank test on Oct 15; waiting for results"></textarea></div>
         </div>
-
         <div class="section-title">Offer & decision</div>
         <div class="form-grid">
           <div class="field"><label>Compensation / allowance</label><input id="f_comp" placeholder="e.g. $1,500/month" /></div>
@@ -274,7 +280,6 @@
           <div class="field"><label>Priority rating</label><select id="f_priority"><option value="">—</option><option>High</option><option>Medium</option><option>Low</option></select></div>
           <div class="field full"><label>Pros & cons</label><textarea id="f_prosCons" placeholder="Pros: …   Cons: …"></textarea></div>
         </div>
-
         <div class="section-title">Extras & action items</div>
         <div class="form-grid">
           <div class="field full"><label>Referral / contact person</label><input id="f_referral" placeholder="Name + email / LinkedIn" /></div>
@@ -294,27 +299,33 @@
 (function () {
   "use strict";
   var STORAGE_KEY = "internship-tracker.v1";
+  var SYNC_KEY = "internship-tracker.sync";
 
-  // status -> palette key + whether awaiting reply
   var STATUSES = [
-    { name: "Not Started / To Apply",        key: "gray",   pending: false },
-    { name: "Applied / Pending",             key: "blue",   pending: true  },
-    { name: "OA / Technical Assessment",     key: "purple", pending: true  },
-    { name: "HR / Screening Interview",      key: "teal",   pending: true  },
-    { name: "Technical / Round 1 Interview", key: "teal",   pending: true  },
+    { name: "Not Started / To Apply",        key: "slate",  pending: false },
+    { name: "Applied / Pending",             key: "sky",    pending: true  },
+    { name: "OA / Technical Assessment",     key: "violet", pending: true  },
+    { name: "HR / Screening Interview",      key: "amber",  pending: true  },
+    { name: "Technical / Round 1 Interview", key: "amber",  pending: true  },
     { name: "Final Round Interview",         key: "green",  pending: true  },
     { name: "Offer Received",                key: "green",  pending: false },
     { name: "Rejected",                      key: "red",    pending: false },
-    { name: "Withdrawn",                     key: "gray",   pending: false }
+    { name: "Withdrawn",                     key: "slate",  pending: false }
   ];
+  // soft-fill pill colors (rgba bg + solid fg) for dark surfaces
+  var PILL = {
+    slate:  { bg:"rgba(148,163,184,.15)", fg:"#cbd5e1" },
+    sky:    { bg:"rgba(56,189,248,.15)",  fg:"#38bdf8" },
+    violet: { bg:"rgba(167,139,250,.16)", fg:"#a78bfa" },
+    amber:  { bg:"rgba(245,158,11,.16)",  fg:"#fbbf24" },
+    green:  { bg:"rgba(16,185,129,.15)",  fg:"#34d399" },
+    red:    { bg:"rgba(239,68,68,.15)",   fg:"#f87171" }
+  };
+  var INTERVIEWING = ["HR / Screening Interview","Technical / Round 1 Interview","Final Round Interview"];
 
-  var FIELDS = [
-    "company","role","term","location","status",
-    "appliedDate","deadline","url","followup",
-    "oaDate","interviewDates","interviewer","stageNotes",
-    "comp","hours","offerDeadline","priority","prosCons",
-    "referral","docs","nextAction"
-  ];
+  var FIELDS = ["company","role","term","location","status","appliedDate","deadline","url","followup",
+    "oaDate","interviewDates","interviewer","stageNotes","comp","hours","offerDeadline","priority","prosCons",
+    "referral","docs","nextAction"];
 
   var data = load();
   var editingId = null;
@@ -326,58 +337,66 @@
   function $(id) { return document.getElementById(id); }
   function esc(s) { return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   function statusDef(name) { for (var i=0;i<STATUSES.length;i++) if (STATUSES[i].name===name) return STATUSES[i]; return STATUSES[0]; }
-  function pillStyle(key) { return "background:var(--s-"+key+"-bg);color:var(--s-"+key+"-fg);"; }
+  function pillHTML(name) { var p = PILL[statusDef(name).key]; return '<span class="pill" style="background:'+p.bg+';color:'+p.fg+'"><span class="dot"></span>'+esc(name)+'</span>'; }
+  function swatch(name) { var p = PILL[statusDef(name).key]; return '<span class="sw" style="background:'+p.fg+'"></span>'; }
 
-  function fmtDate(d) {
-    if (!d) return "";
-    var p = d.split("-"); if (p.length!==3) return d;
-    var m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    return m[parseInt(p[1],10)-1] + " " + parseInt(p[2],10) + ", " + p[0];
-  }
-  function daysUntil(d) {
-    if (!d) return null;
-    var t = new Date(); t.setHours(0,0,0,0);
-    return Math.round((new Date(d+"T00:00:00") - t) / 86400000);
-  }
-  function deadlineFlag(d, status) {
-    var du = daysUntil(d);
-    if (du === null) return "";
-    if (du < 0) return '<span class="flag past">passed</span>';
-    var live = (status === "Not Started / To Apply" || status === "Applied / Pending");
-    if (du === 0) return '<span class="flag">today!</span>';
-    if (du <= 7 && live) return '<span class="flag">'+du+'d left</span>';
-    return "";
-  }
+  function fmtDate(d) { if (!d) return ""; var p=d.split("-"); if (p.length!==3) return d;
+    var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]; return m[parseInt(p[1],10)-1]+" "+parseInt(p[2],10)+", "+p[0]; }
+  function daysUntil(d) { if (!d) return null; var t=new Date(); t.setHours(0,0,0,0); return Math.round((new Date(d+"T00:00:00")-t)/86400000); }
+  function deadlineFlag(d, status) { var du=daysUntil(d); if (du===null) return "";
+    if (du<0) return '<span class="flag past">passed</span>';
+    var live=(status==="Not Started / To Apply"||status==="Applied / Pending");
+    if (du===0) return '<span class="flag">today!</span>';
+    if (du<=7 && live) return '<span class="flag">'+du+'d left</span>'; return ""; }
 
   function fillStatusSelects() {
-    var opts = STATUSES.map(function (s){ return '<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>'; }).join("");
-    $("f_status").innerHTML = opts;
-    $("statusFilter").innerHTML = '<option value="">All statuses</option>' + opts;
+    $("f_status").innerHTML = STATUSES.map(function (s){ return '<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>'; }).join("");
+    // append individual statuses to the consolidated filter
+    var extra = STATUSES.map(function (s){ return '<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>'; }).join("");
+    $("statusFilter").insertAdjacentHTML("beforeend", extra);
   }
 
-  function renderStats() {
+  // ---------- KPI cards with conversion metrics ----------
+  function renderKPIs() {
     var total = data.length;
     var pending = data.filter(function (x){ return statusDef(x.status).pending; }).length;
+    var interviewing = data.filter(function (x){ return INTERVIEWING.indexOf(x.status)>=0; }).length;
     var offers = data.filter(function (x){ return x.status==="Offer Received"; }).length;
     var rejected = data.filter(function (x){ return x.status==="Rejected"; }).length;
-    $("stats").innerHTML =
-      stat(total,"Total","") + stat(pending,"Awaiting reply","blue") +
-      stat(offers,"Offers","green") + stat(rejected,"Rejected","red");
+    var responded = data.filter(function (x){ return x.status!=="Not Started / To Apply" && x.status!=="Applied / Pending"; }).length;
+    var applied = data.filter(function (x){ return x.status!=="Not Started / To Apply"; }).length;
+    var respRate = applied ? Math.round(responded/applied*1000)/10 : 0;
+    var offerRate = applied ? Math.round(offers/applied*1000)/10 : 0;
+
+    $("kpis").innerHTML =
+      kpi("Total applied", total, "var(--c-total)", (interviewing? interviewing+" active interview"+(interviewing===1?"":"s") : "across all stages")) +
+      kpi("Awaiting reply", pending, "var(--c-amber)", (respRate+"% response rate")) +
+      kpi("Offers", offers, "var(--c-green)", (offerRate+"% offer rate")) +
+      kpi("Rejected", rejected, "var(--c-red)", (applied? Math.round(rejected/applied*100)+"% of applications" : "—"));
   }
-  function stat(n,l,c){ return '<div class="stat"><div class="num '+c+'">'+n+'</div><div class="lbl">'+l+'</div></div>'; }
+  function kpi(label, num, color, sub) {
+    return '<div class="kpi" style="--accent-col:'+color+'">' +
+      '<div class="label">'+esc(label)+'</div>' +
+      '<div class="num">'+num+'</div>' +
+      '<div class="sub">'+esc(sub)+'</div></div>';
+  }
+
+  function matchesFilter(x, f) {
+    if (f==="__all") return true;
+    if (f==="__pending") return statusDef(x.status).pending;
+    if (f==="__interviewing") return INTERVIEWING.indexOf(x.status)>=0;
+    if (f==="__offers") return x.status==="Offer Received";
+    return x.status===f;
+  }
 
   function filtered() {
     var q = $("search").value.trim().toLowerCase();
-    var sf = $("statusFilter").value;
-    var po = $("pendingOnly").checked;
+    var f = $("statusFilter").value;
     var sort = $("sortBy").value;
     var rows = data.filter(function (x) {
-      if (sf && x.status!==sf) return false;
-      if (po && !statusDef(x.status).pending) return false;
-      if (q) {
-        var hay = [x.company,x.role,x.location,x.term,x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
-        if (hay.indexOf(q)===-1) return false;
-      }
+      if (!matchesFilter(x, f)) return false;
+      if (q) { var hay=[x.company,x.role,x.location,x.term,x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
+        if (hay.indexOf(q)===-1) return false; }
       return true;
     });
     rows.sort(function (a,b) {
@@ -390,38 +409,47 @@
   }
 
   function render() {
-    renderStats();
+    renderKPIs();
+    renderSyncBadge();
+    if (!data.length) { renderEmpty(); return; }
     var rows = filtered();
-    if (!rows.length) {
-      $("view").innerHTML = '<div class="empty">' +
-        (data.length ? "No applications match your filters." :
-         "Nothing here yet. Click <b>＋ New</b> to add your first application.") + '</div>';
-      return;
-    }
+    if (!rows.length) { $("view").innerHTML = '<div class="empty-note">No applications match your filters.</div>'; return; }
     if (view === "board") renderBoard(rows); else renderTable(rows);
     wireRows();
   }
 
+  function renderEmpty() {
+    $("view").innerHTML =
+      '<div class="empty-fill"><div class="empty-card">' +
+        '<svg width="76" height="76" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">' +
+          '<rect x="2" y="7" width="20" height="13" rx="2"></rect>' +
+          '<path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>' +
+          '<path d="M2 12h20"></path><circle cx="12" cy="12" r="1.3" fill="#38bdf8"></circle>' +
+        '</svg>' +
+        '<h3>Start tracking your internships</h3>' +
+        '<p>Add the roles you\u2019ve applied for, what you\u2019re waiting to hear back on, and every interview stage \u2014 all in one place.</p>' +
+        '<button class="btn btn-primary" id="emptyAdd">\uFF0B Create first application</button>' +
+        '<button class="sample" id="emptySample">Or click here to load sample data</button>' +
+      '</div></div>';
+    $("emptyAdd").onclick = function (){ openModal(null); };
+    $("emptySample").onclick = loadSample;
+  }
+
   function renderTable(rows) {
-    var head = "<tr>" +
-      "<th>Company / Role</th><th>Status</th><th>Term</th><th>Location</th>" +
-      "<th>Applied</th><th>Deadline</th><th>Next action</th><th></th></tr>";
+    var head = "<tr><th>Company / Role</th><th>Status</th><th>Term</th><th>Location</th><th>Applied</th><th>Deadline</th><th>Next action</th><th></th></tr>";
     var body = rows.map(function (x) {
-      var sd = statusDef(x.status);
       return '<tr data-open="'+x.id+'">' +
         '<td><div class="co">'+esc(x.company||"—")+'</div><div class="rl">'+esc(x.role||"")+'</div></td>' +
-        '<td><span class="pill" style="'+pillStyle(sd.key)+'"><span class="dot"></span>'+esc(x.status)+'</span></td>' +
-        '<td class="sub nowrap">'+esc(x.term||"")+'</td>' +
-        '<td class="sub">'+esc(x.location||"")+'</td>' +
-        '<td class="sub nowrap">'+esc(fmtDate(x.appliedDate))+'</td>' +
-        '<td class="sub nowrap">'+(x.deadline?esc(fmtDate(x.deadline))+" "+deadlineFlag(x.deadline,x.status):"")+'</td>' +
-        '<td class="sub">'+esc(x.nextAction||"")+'</td>' +
-        '<td class="row-actions">' +
-          '<button class="icon-btn" data-edit="'+x.id+'" title="Edit">✎</button>' +
-          '<button class="icon-btn del" data-del="'+x.id+'" title="Delete">🗑</button>' +
-        '</td></tr>';
+        '<td>'+pillHTML(x.status)+'</td>' +
+        '<td class="sub2 nowrap">'+esc(x.term||"")+'</td>' +
+        '<td class="sub2">'+esc(x.location||"")+'</td>' +
+        '<td class="sub2 nowrap">'+esc(fmtDate(x.appliedDate))+'</td>' +
+        '<td class="sub2 nowrap">'+(x.deadline?esc(fmtDate(x.deadline))+" "+deadlineFlag(x.deadline,x.status):"")+'</td>' +
+        '<td class="sub2">'+esc(x.nextAction||"")+'</td>' +
+        '<td class="row-actions"><button class="icon-btn" data-edit="'+x.id+'" title="Edit">\u270E</button>' +
+          '<button class="icon-btn del" data-del="'+x.id+'" title="Delete">\uD83D\uDDD1</button></td></tr>';
     }).join("");
-    $("view").innerHTML = '<div class="table-wrap"><table><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>';
+    $("view").innerHTML = '<div class="card-surface"><div class="table-wrap"><table><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div></div>';
   }
 
   function renderBoard(rows) {
@@ -430,19 +458,37 @@
       var cards = items.map(function (x) {
         var bits = [];
         if (x.term) bits.push('<span class="tag">'+esc(x.term)+'</span>');
-        if (x.deadline) bits.push('<span class="sub nowrap">⏳ '+esc(fmtDate(x.deadline))+'</span>');
-        if (x.location) bits.push('<span class="sub">'+esc(x.location)+'</span>');
-        return '<div class="bcard" data-open="'+x.id+'">' +
-          '<div class="bco">'+esc(x.company||"—")+'</div>' +
-          '<div class="brl">'+esc(x.role||"")+'</div>' +
-          (bits.length?'<div class="bmeta">'+bits.join("")+'</div>':'') +
-          '</div>';
+        if (x.deadline) bits.push('<span class="sub2 nowrap">\u23F3 '+esc(fmtDate(x.deadline))+' '+deadlineFlag(x.deadline,x.status)+'</span>');
+        else if (x.location) bits.push('<span class="sub2">'+esc(x.location)+'</span>');
+        return '<div class="bcard" draggable="true" data-id="'+x.id+'" data-open="'+x.id+'">' +
+          '<div class="bco">'+esc(x.company||"—")+'</div><div class="brl">'+esc(x.role||"")+'</div>' +
+          (bits.length?'<div class="bmeta">'+bits.join("")+'</div>':'') + '</div>';
       }).join("");
-      return '<div class="col">' +
-        '<div class="col-head"><span class="sw" style="'+pillStyle(s.key)+'"></span>'+esc(s.name)+' <span class="count">'+items.length+'</span></div>' +
-        cards + '</div>';
+      return '<div class="col" data-status="'+esc(s.name)+'">' +
+        '<div class="col-head">'+swatch(s.name)+esc(s.name)+'<span class="count">'+items.length+'</span></div>' +
+        (items.length?cards:'<div class="col-empty">Drop here</div>') + '</div>';
     }).join("");
     $("view").innerHTML = '<div class="board">'+cols+'</div>';
+    wireDnd();
+  }
+
+  function wireDnd() {
+    var dragId = null;
+    Array.prototype.forEach.call($("view").querySelectorAll(".bcard"), function (card) {
+      card.addEventListener("dragstart", function (e){ dragId = card.getAttribute("data-id"); card.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; });
+      card.addEventListener("dragend", function (){ card.classList.remove("dragging"); dragId=null; });
+    });
+    Array.prototype.forEach.call($("view").querySelectorAll(".col"), function (col) {
+      col.addEventListener("dragover", function (e){ e.preventDefault(); col.classList.add("drag-over"); });
+      col.addEventListener("dragleave", function (){ col.classList.remove("drag-over"); });
+      col.addEventListener("drop", function (e) {
+        e.preventDefault(); col.classList.remove("drag-over");
+        if (!dragId) return;
+        var item = data.find(function (x){ return x.id===dragId; });
+        var newStatus = col.getAttribute("data-status");
+        if (item && item.status !== newStatus) { item.status = newStatus; item._updated = Date.now(); save(); render(); }
+      });
+    });
   }
 
   function wireRows() {
@@ -458,12 +504,9 @@
     });
     Array.prototype.forEach.call(v.querySelectorAll("[data-del]"), function (b) {
       b.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var id = b.getAttribute("data-del");
-        var item = data.find(function (x){ return x.id===id; });
-        if (confirm('Delete "' + (item ? item.company+" — "+item.role : "this") + '"?')) {
-          data = data.filter(function (x){ return x.id!==id; }); save(); render();
-        }
+        e.stopPropagation(); var id=b.getAttribute("data-del");
+        var item=data.find(function (x){ return x.id===id; });
+        if (confirm('Delete "'+(item?item.company+" — "+item.role:"this")+'"?')) { data=data.filter(function (x){ return x.id!==id; }); save(); render(); }
       });
     });
   }
@@ -481,51 +524,78 @@
   function closeModal() { $("modalBg").classList.remove("show"); editingId = null; }
 
   function saveForm() {
-    var company = $("f_company").value.trim(), role = $("f_role").value.trim();
+    var company=$("f_company").value.trim(), role=$("f_role").value.trim();
     if (!company || !role) { alert("Company name and role / job title are required."); return; }
     var obj = editingId ? data.find(function (x){ return x.id===editingId; }) : null;
     if (!obj) { obj = { id: uid() }; data.push(obj); }
-    FIELDS.forEach(function (f){ var el=$("f_"+f); if (el) obj[f] = el.value.trim(); });
+    FIELDS.forEach(function (f){ var el=$("f_"+f); if (el) obj[f]=el.value.trim(); });
     obj._updated = Date.now();
     save(); closeModal(); render();
   }
 
+  // ---------- sample data ----------
+  function loadSample() {
+    if (data.length && !confirm("Load sample data? This adds example applications.")) return;
+    var today = new Date();
+    function d(off){ var x=new Date(today); x.setDate(x.getDate()+off); return x.toISOString().slice(0,10); }
+    var sample = [
+      { company:"Stripe", role:"Software Engineering Intern", term:"Summer 2027 (May–Aug)", location:"Singapore / Hybrid", status:"Technical / Round 1 Interview", appliedDate:d(-21), deadline:d(-10), interviewDates:"Oct 22", interviewer:"Jane Tan, Eng Manager", stageNotes:"Passed OA; tech round scheduled.", nextAction:"Prep system design questions", url:"https://stripe.com/jobs" },
+      { company:"Razer", role:"Data Analytics Intern", term:"Off-Peak", location:"Singapore / On-site", status:"Applied / Pending", appliedDate:d(-14), deadline:d(4), followup:d(7), nextAction:"Follow up with recruiter", docs:"Data_Analytics_v3.pdf" },
+      { company:"Endowus", role:"Fintech SWE Intern", term:"Winter 2026", location:"Remote", status:"OA / Technical Assessment", appliedDate:d(-7), deadline:d(1), oaDate:d(2), nextAction:"Complete HackerRank test", referral:"Alex Lim (LinkedIn)" },
+      { company:"Apple", role:"iOS Engineering Intern", term:"Summer 2027", location:"Hybrid", status:"Offer Received", appliedDate:d(-40), comp:"$2,500/month", hours:"Full-time, 12 weeks", offerDeadline:d(9), priority:"High", prosCons:"Pros: brand, pay. Cons: relocation.", nextAction:"Decide by offer deadline" },
+      { company:"Grab", role:"Backend Intern", term:"Summer 2027", location:"Singapore / On-site", status:"Rejected", appliedDate:d(-30), stageNotes:"Rejected after final round." },
+      { company:"Shopee", role:"ML Engineering Intern", term:"Off-Peak", location:"Singapore / Hybrid", status:"Not Started / To Apply", deadline:d(5), nextAction:"Tailor resume and apply", priority:"Medium" }
+    ];
+    sample.forEach(function (s){ s.id=uid(); s._updated=Date.now()-Math.floor(Math.random()*1e6); });
+    data = data.concat(sample);
+    save(); render();
+  }
+
+  // ---------- sync badge ----------
+  function markSync(action) { localStorage.setItem(SYNC_KEY, JSON.stringify({ action:action, at:Date.now() })); renderSyncBadge(); }
+  function renderSyncBadge() {
+    var raw; try { raw = JSON.parse(localStorage.getItem(SYNC_KEY)); } catch(e){ raw=null; }
+    if (!raw) { $("syncBadge").innerHTML = ""; return; }
+    var dt = new Date(raw.at);
+    var s = dt.toLocaleString(undefined, { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
+    $("syncBadge").innerHTML = 'Last '+esc(raw.action)+': <b>'+esc(s)+'</b>';
+  }
+
   function exportData() {
     var blob = new Blob([JSON.stringify(data,null,2)], { type:"application/json" });
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "internship-tracker-" + new Date().toISOString().slice(0,10) + ".json";
-    a.click(); URL.revokeObjectURL(a.href);
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = "internship-tracker-"+new Date().toISOString().slice(0,10)+".json"; a.click(); URL.revokeObjectURL(a.href);
+    markSync("export");
   }
   function importData(file) {
     var r = new FileReader();
     r.onload = function () {
-      try {
-        var parsed = JSON.parse(r.result);
-        if (!Array.isArray(parsed)) throw new Error("Invalid file");
+      try { var parsed=JSON.parse(r.result); if (!Array.isArray(parsed)) throw new Error("Invalid file");
         if (!confirm("Import "+parsed.length+" application(s)? This replaces current data.")) return;
         data = parsed.map(function (x){ if (!x.id) x.id=uid(); if (!x._updated) x._updated=Date.now(); return x; });
-        save(); render();
-      } catch (e) { alert("Could not import: " + e.message); }
+        save(); markSync("import"); render();
+      } catch (e) { alert("Could not import: "+e.message); }
     };
     r.readAsText(file);
   }
 
-  // wire up
+  // ---------- wire up ----------
   fillStatusSelects();
+  // ⌘K vs Ctrl+K label
+  $("kbdHint").textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
   $("addBtn").onclick = function (){ openModal(null); };
   $("closeModal").onclick = closeModal;
   $("cancelBtn").onclick = closeModal;
   $("saveBtn").onclick = saveForm;
   $("modalBg").addEventListener("click", function (e){ if (e.target===$("modalBg")) closeModal(); });
   document.addEventListener("keydown", function (e) {
+    if ((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="k") { e.preventDefault(); $("search").focus(); return; }
     if (e.key==="Escape") closeModal();
     if (e.key==="Enter" && (e.metaKey||e.ctrlKey) && $("modalBg").classList.contains("show")) saveForm();
   });
   $("search").oninput = render;
   $("statusFilter").onchange = render;
   $("sortBy").onchange = render;
-  $("pendingOnly").onchange = render;
   $("exportBtn").onclick = exportData;
   $("importBtn").onclick = function (){ $("importFile").click(); };
   $("importFile").onchange = function (e){ if (e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
