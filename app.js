@@ -1377,6 +1377,11 @@
     return { pros:pros, cons:cons };
   }
   var cmpSelected = [];
+  var cmpShowThird = false;
+  // One labelled row inside a comparison card: a key on the left, value(s) on the right.
+  function cmpRow(label, valueHTML) {
+    return '<div class="cmp-row"><div class="k">'+esc(label)+'</div><div class="v">'+valueHTML+'</div></div>';
+  }
   // Build the <option> list for the Course dropdown from ihlCoursesMap.
   function courseOptionsHTML(ihl, selected) {
     if (!ihl) return '<option value="" disabled selected>Select an institution first…</option>';
@@ -1413,36 +1418,78 @@
     var course = effectiveCourse ? courseDef(st.ihl, effectiveCourse) : null;
     var picker = studyPicker();
     if (!data.length) { $("compareInline").innerHTML = picker + '<div class="cmp-empty">Add applications first, then compare them here.</div>'; bindStudy(); return; }
-    var chips = data.map(function (x){ var on=cmpSelected.indexOf(x.id)>=0; return '<span class="cmp-chip'+(on?' on':'')+'" data-pick="'+x.id+'">'+esc(x.company||"—")+' <span class="c">'+esc(x.role||"")+'</span></span>'; }).join("");
-    var pick = '<div class="cmp-pickwrap"><div class="lbl">Select roles to compare (2+)</div><div class="cmp-picks">'+chips+'</div></div>';
+    // --- Dropdown selectors (Role #1 / #2 / optional #3) ---
+    // cmpSelected holds up to 3 application ids chosen from the dropdowns.
+    if (cmpSelected.length < 2) { while (cmpSelected.length < 2) cmpSelected.push(""); }
+    var slots = cmpSelected.slice(0, cmpShowThird ? 3 : 2);
+    function optionList(selectedId) {
+      return '<option value="">Select an applied role…</option>' +
+        data.map(function (x) {
+          var pay = stipendValue(x.comp); var payStr = (pay!=null&&pay>=0) ? " ($"+Math.round(pay).toLocaleString()+"/mo)" : "";
+          return '<option value="'+x.id+'"'+(selectedId===x.id?" selected":"")+'>'+esc((x.company||"—")+" — "+(x.role||"Role")+payStr)+'</option>';
+        }).join("");
+    }
+    var selHTML = slots.map(function (id, i) {
+      return '<div class="cmp-field"><label>Select Applied Role #'+(i+1)+'</label>' +
+        '<select id="compareRoleSelect'+(i+1)+'" class="compare-select" data-slot="'+i+'">'+optionList(id)+'</select></div>';
+    }).join("");
+    var addBtn = (!cmpShowThird) ? '<button type="button" class="cmp-add-role" id="cmpAddRole">+ Add Role to Compare</button>' : '';
+    var pick = '<div class="cmp-pickwrap"><div class="lbl">Compare your applied roles</div>' +
+      '<div class="compare-selects">'+selHTML+'</div>'+addBtn+'</div>';
+
+    // --- Resolve chosen applications ---
+    var cols = slots.map(function (id){ return id ? data.find(function (x){ return x.id===id; }) : null; }).filter(Boolean);
     var body;
-    if (cmpSelected.length < 2) { body = '<div class="cmp-empty">Pick at least two roles above to see them side by side.</div>'; }
+    if (cols.length < 2) { body = '<div class="cmp-empty">Select at least two applied roles above to compare them side by side.</div>'; }
     else {
-      var cols=cmpSelected.map(function (id){ return data.find(function (x){ return x.id===id; }); }).filter(Boolean);
-      var fits=cols.map(function (x){ return computeFit(x, course); });
+      var fits = cols.map(function (x){ return computeFit(x, course); });
       var maxScore=-1; fits.forEach(function (f){ if (f.score!==null&&f.score>maxScore) maxScore=f.score; });
-      var colsHTML=cols.map(function (x,i){
+      // highest salary among selected (for green highlight)
+      var payVals = cols.map(function (x){ var v=stipendValue(x.comp); return (v!=null&&v>=0)?v:-1; });
+      var maxPay = Math.max.apply(null, payVals);
+      var colsHTML = cols.map(function (x,i) {
         var f=fits[i]; var isBest=f.score!==null&&f.score===maxScore&&maxScore>0; var pc=autoProsCons(x);
         var tagHTML = (f.tags && f.tags.length)
           ? '<div class="align-tags">'+f.tags.map(function (tg){ return '<span class="align-tag '+tg.kind+'">✦ '+esc(tg.t)+'</span>'; }).join("")+(f.bonus?'<span class="align-bonus">+'+f.bonus+'%</span>':'')+'</div>'
           : '';
-        var scoreBlock=(f.score===null)?'<div class="fit"><div class="k">Pick your institution &amp; course above to see a fit score.</div></div>'
+        var scoreBlock=(f.score===null)?'<div class="fit"><div class="k">Pick your university &amp; course above to see a fit score.</div></div>'
           :'<div class="fit"><div class="score">'+f.score+'<span style="font-size:14px;color:var(--muted)">% fit</span></div><div class="bar"><span style="width:'+f.score+'%"></span></div>'+
-            tagHTML +
-            (f.matched.length?'<div class="matched">'+f.matched.slice(0,8).map(function (m){ return '<span class="kw">'+esc(m)+'</span>'; }).join("")+'</div>':'<div class="k" style="margin-top:8px">No course keywords found in this role</div>')+'</div>';
-        function rf(list,cls){ return list.map(function (tt){ return '<div class="cmp-row '+cls+'"><div class="v">'+(cls==="pro"?"✔ ":"✘ ")+esc(tt)+'</div></div>'; }).join(""); }
-        return '<div class="cmp-col'+(isBest?' best':'')+'"><div class="cmp-col-head"><div class="cco">'+esc(x.company||"—")+'</div><div class="crl">'+esc(x.role||"")+'</div>'+(isBest?'<span class="cmp-badge-best">★ Best fit for you</span>':'')+'</div>'+
-          scoreBlock+'<div class="cmp-rows">'+cmpRow("Status",pillHTML(x.status))+cmpRow("Availability",esc(availabilityLabel(x)||"—"))+cmpRow("Location",esc(x.location||"—"))+cmpRow("Compensation",esc(x.comp||"—"))+cmpRow("Hours",esc(x.hours||"—"))+cmpRow("Priority",esc(x.priority||"—"))+
-          '<div class="cmp-row"><div class="k">Advantages</div>'+(pc.pros.length?rf(pc.pros,"pro"):'<div class="v">—</div>')+'</div>'+
-          '<div class="cmp-row"><div class="k">Disadvantages</div>'+(pc.cons.length?rf(pc.cons,"con"):'<div class="v">—</div>')+'</div>'+
-          (x.prosCons?cmpRow("Your Notes",esc(x.prosCons)):"")+'</div></div>';
+            tagHTML + '</div>';
+        // salary row — green-highlight the higher pay
+        var payHigh = payVals[i]>=0 && payVals[i]===maxPay && cols.length>1 && payVals.filter(function(p){return p===maxPay;}).length===1;
+        var payCell = x.comp ? ('<span class="'+(payHigh?"cmp-win":"")+'">'+esc(x.comp)+(payHigh?' 🏆':'')+'</span>') : '—';
+        // work arrangement flag
+        var loc=(x.location||"").toLowerCase(); var workFlag="";
+        if (loc.indexOf("remote")>=0) workFlag=' <span class="cmp-flag good">remote</span>';
+        else if (loc.indexOf("hybrid")>=0) workFlag=' <span class="cmp-flag ok">hybrid</span>';
+        else if (loc.indexOf("on-site")>=0||loc.indexOf("onsite")>=0) workFlag=' <span class="cmp-flag warn">on-site</span>';
+        return '<div class="cmp-col'+(isBest?' best':'')+'">' +
+          '<div class="cmp-col-head"><div class="cco">'+esc(x.company||"—")+'</div><div class="crl">'+esc(x.role||"")+'</div>'+(isBest?'<span class="cmp-badge-best">★ Best fit for you</span>':'')+'</div>'+
+          scoreBlock +
+          '<div class="cmp-rows">' +
+            cmpRow("Salary", payCell) +
+            cmpRow("Work Arrangement", esc(x.location||"—")+workFlag) +
+            cmpRow("Industry", esc(industryOf(x)||"—")) +
+            cmpRow("Application Stage", pillHTML(x.status)) +
+            cmpRow("Availability", esc(availabilityLabel(x)||"—")) +
+            cmpRow("Hours", esc(x.hours||"—")) +
+            '<div class="cmp-row"><div class="k">Advantages</div>'+(pc.pros.length?pc.pros.map(function(tt){return '<div class="cmp-mini pro">✔ '+esc(tt)+'</div>';}).join(""):'<div class="v">—</div>')+'</div>'+
+            '<div class="cmp-row"><div class="k">Disadvantages</div>'+(pc.cons.length?pc.cons.map(function(tt){return '<div class="cmp-mini con">✘ '+esc(tt)+'</div>';}).join(""):'<div class="v">—</div>')+'</div>'+
+            (x.prosCons?cmpRow("Your Notes",esc(x.prosCons)):"") +
+          '</div></div>';
       }).join("");
       body='<div class="cmp-grid">'+colsHTML+'</div>';
     }
+
     $("compareInline").innerHTML = picker + suggestionsHTML(effectiveCourse) + pick + body;
     bindStudy();
     wireSuggestions();
-    $("compareInline").querySelectorAll("[data-pick]").forEach(function (chip){ chip.onclick=function (){ var id=chip.getAttribute("data-pick"); var idx=cmpSelected.indexOf(id); if (idx>=0) cmpSelected.splice(idx,1); else cmpSelected.push(id); renderCompareInline(); }; });
+    // dropdown change handlers
+    $("compareInline").querySelectorAll(".compare-select").forEach(function (sel) {
+      sel.onchange = function () { var i=parseInt(sel.getAttribute("data-slot"),10); cmpSelected[i]=sel.value; renderCompareInline(); };
+    });
+    var addRole = $("cmpAddRole");
+    if (addRole) addRole.onclick = function () { cmpShowThird = true; if (cmpSelected.length<3) cmpSelected.push(""); renderCompareInline(); };
   }
   // Suggested-roles block shown below the Course dropdown.
   function suggestionsHTML(courseTitle) {

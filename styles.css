@@ -441,7 +441,7 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   background: var(--surface); font-size: 13px; color: var(--text-2); }
 .cmp-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .cmp-chip .c { font-size: 11px; opacity: .7; }
-.cmp-grid { display: flex; flex-direction: column; gap: 14px; }
+.cmp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; align-items: start; }
 .cmp-col { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); overflow: hidden; }
 .cmp-col.best { border-color: var(--s-green); box-shadow: 0 0 0 2px rgba(16,185,129,.18); }
 .cmp-col-head { padding: 14px 15px; border-bottom: 1px solid var(--border); }
@@ -461,6 +461,33 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .cmp-row .v { font-size: 13.5px; color: var(--text); margin-top: 2px; white-space: pre-wrap; }
 .cmp-row.pro .v { color: var(--s-green); } .cmp-row.con .v { color: var(--s-rose); }
 .cmp-empty { text-align: center; color: var(--muted); padding: 30px 10px; }
+
+/* --- Compare: dropdown role selectors --- */
+.compare-selects { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.compare-select { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid #cbd5e1;
+  background: #fff; font-family: inherit; font-size: 0.9rem; font-weight: 500; color: #0f172a;
+  outline: none; cursor: pointer; }
+.compare-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.14); }
+.cmp-add-role { margin-top: 12px; display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 10px; border: 1px dashed var(--border-2);
+  background: var(--surface); color: var(--accent-strong); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background .15s, border-color .15s; }
+.cmp-add-role:hover { background: rgba(14,165,233,.08); border-color: var(--accent); }
+.cmp-pickwrap { margin: 16px 0 18px; }
+
+/* --- Compare: salary win + work-arrangement flags --- */
+.cmp-win { color: var(--s-green); font-weight: 800; background: var(--s-green-bg);
+  border-radius: 6px; padding: 1px 7px; }
+.cmp-flag { display: inline-block; margin-left: 6px; font-size: 10.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em; border-radius: 20px; padding: 2px 8px; vertical-align: middle; }
+.cmp-flag.good { color: var(--s-green); background: var(--s-green-bg); }
+.cmp-flag.ok   { color: #b45309; background: rgba(245,158,11,.15); }
+.cmp-flag.warn { color: var(--s-rose); background: rgba(244,63,94,.12); }
+
+/* --- Compare: advantages / disadvantages mini-chips --- */
+.cmp-mini { display: block; font-size: 12.5px; margin-top: 4px; }
+.cmp-mini.pro { color: var(--s-green); }
+.cmp-mini.con { color: var(--s-rose); }
 
 /* toast */
 .toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%) translateY(16px); z-index: 90;
