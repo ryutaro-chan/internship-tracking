@@ -723,7 +723,7 @@
       if (!matchesFilter(x, f)) return false;
       if (!matchesStatusTab(x, STATUS_TAB_CURRENT)) return false; // status filter tab
       if (favOnly && !x.bookmarked) return false;                 // ★ Favorites quick filter
-      if (hideArchived && (x.status==="Rejected"||x.status==="Withdrawn")) return false; // 🗄 hide archived
+      if (hideArchived && (x.archived || x.status==="Rejected" || x.status==="Withdrawn")) return false; // 🗄 hide archived
       if (q) { var hay=[x.company,x.role,x.location,x.term,availabilityLabel(x),x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
         if (hay.indexOf(q)===-1) return false; }
       return true;
@@ -805,7 +805,8 @@
       var avail = availabilityLabel(x); if (avail) tags.push('<span class="chiptag">🗓 '+esc(avail)+'</span>');
       var cd = countdownBadge(x); if (cd) tags.push(cd);
       if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up due</span>');
-      return '<div class="fcard" data-open="'+x.id+'">' +
+      if (x.archived) tags.push('<span class="arch-tag">🗄 Archived</span>');
+      return '<div class="fcard'+(x.archived?' archived':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div>' +
             '<div style="margin-top:8px">'+pillHTML(x.status)+'</div></div>' +
@@ -817,6 +818,7 @@
           '<button class="qbtn" data-status="'+x.id+'">🔄 Status</button>' +
           '<button class="qbtn" data-mail="'+x.id+'">✉️ Follow-up</button>' +
           '<span class="spacer"></span>' +
+          '<button class="qbtn" data-archive="'+x.id+'" title="'+(x.archived?'Unarchive':'Archive')+'">'+(x.archived?'📤':'🗄')+'</button>' +
           '<button class="qbtn" data-edit="'+x.id+'">✎</button>' +
           '<button class="qbtn" data-del="'+x.id+'">🗑</button>' +
         '</div></div>';
@@ -867,7 +869,7 @@
   function wireCards() {
     document.querySelectorAll("[data-open]").forEach(function (el) {
       el.addEventListener("click", function (e) {
-        if (e.target.closest("[data-edit],[data-del],[data-mail],[data-status],[data-bm]")) return;
+        if (e.target.closest("[data-edit],[data-del],[data-mail],[data-status],[data-bm],[data-archive]")) return;
         openModal(el.getAttribute("data-open"));
       });
     });
@@ -875,6 +877,7 @@
     document.querySelectorAll("[data-mail]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); copyFollowUp(b.getAttribute("data-mail")); }); });
     document.querySelectorAll("[data-status]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); openStatusSheet(b.getAttribute("data-status")); }); });
     document.querySelectorAll("[data-bm]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); toggleBookmark(b.getAttribute("data-bm")); }); });
+    document.querySelectorAll("[data-archive]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); toggleArchive(b.getAttribute("data-archive")); }); });
     document.querySelectorAll("[data-del]").forEach(function (b){
       b.addEventListener("click", function (e){ e.stopPropagation(); var id=b.getAttribute("data-del"); var item=data.find(function (x){ return x.id===id; });
         if (confirm('Delete "'+(item?item.company+" — "+item.role:"this")+'"?')) { data=data.filter(function (x){ return x.id!==id; }); save(); render(); } });
@@ -882,6 +885,7 @@
   }
 
   function toggleBookmark(id) { var x=data.find(function (v){ return v.id===id; }); if (!x) return; x.bookmarked=!x.bookmarked; x._updated=Date.now(); save(); render(); }
+  function toggleArchive(id) { var x=data.find(function (v){ return v.id===id; }); if (!x) return; x.archived=!x.archived; x._updated=Date.now(); save(); render(); showToast(x.archived?"Archived":"Unarchived"); }
 
   // ---------- quick status sheet ----------
   function openStatusSheet(id) {
