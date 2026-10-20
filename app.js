@@ -365,7 +365,7 @@
 
   function renderAnalytics() {
     renderSummary("summary2");
-    renderCalendar("calendar", false);
+    renderCalendar("calendar", true);   // interactive: allow clicking dates to add/edit notes here too
   }
 
   // ---------- Deadline Calendar ----------
