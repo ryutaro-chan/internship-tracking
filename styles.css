@@ -474,3 +474,47 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
 
 /* Hide the ⌘K hint on touch/mobile where there's no keyboard shortcut */
 body.is-mobile-ios .kbd { display: none; }
+
+/* ===================================================================
+   DEADLINE CALENDAR + DESKTOP BOTTOM-NAV SAFETY NET
+   =================================================================== */
+
+/* Pure media-query safety net: never show the sticky bottom bar on wide screens */
+@media (min-width: 768px) {
+  body:not(.is-mobile-ios) .bottom-nav { display: none; }
+  body:not(.is-mobile-ios) .fab { display: none; }
+}
+
+/* Deadline calendar widget */
+.cal-card { background: var(--glass-bg); -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm); }
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.cal-head .mo { font-size: 15px; font-weight: 800; }
+.cal-nav { display: flex; gap: 6px; }
+.cal-nav button { width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--border-2); background: var(--surface);
+  cursor: pointer; font-size: 14px; color: var(--text-2); transition: .12s; }
+.cal-nav button:hover { border-color: var(--accent); color: var(--accent-strong); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal-dow { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--faint); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
+.cal-cell { position: relative; aspect-ratio: 1 / 1; border-radius: 9px; display: flex; align-items: flex-start; justify-content: flex-end;
+  padding: 5px 6px; font-size: 12px; font-weight: 600; color: var(--text-2); background: var(--surface-2); border: 1px solid transparent; }
+.cal-cell.empty { background: transparent; }
+.cal-cell.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.cal-cell.has-amber { background: var(--s-amber-bg); color: var(--s-amber); }
+.cal-cell.has-red   { background: var(--s-rose-bg);  color: var(--s-rose); }
+.cal-cell .ddot { position: absolute; left: 6px; bottom: 6px; display: flex; gap: 3px; }
+.cal-cell .ddot i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.cal-cell .ddot i.amber { background: var(--s-amber); }
+.cal-cell .ddot i.red { background: var(--s-rose); }
+.cal-cell .ddot i.norm { background: var(--accent); }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; font-size: 11.5px; color: var(--muted); }
+.cal-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.cal-legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.cal-upcoming { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.cal-upcoming .u-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 13px; }
+.cal-upcoming .u-row .u-when { flex: 0 0 auto; font-size: 11.5px; font-weight: 700; border-radius: 20px; padding: 2px 9px; }
+.cal-upcoming .u-row .u-when.amber { background: var(--s-amber-bg); color: var(--s-amber); }
+.cal-upcoming .u-row .u-when.red { background: var(--s-rose-bg); color: var(--s-rose); }
+.cal-upcoming .u-row .u-when.norm { background: var(--surface-2); color: var(--muted); }
+.cal-upcoming .u-row .u-co { font-weight: 600; }
+.cal-upcoming .u-row .u-rl { color: var(--muted); font-size: 12px; }

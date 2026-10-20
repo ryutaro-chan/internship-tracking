@@ -52,6 +52,7 @@
         <option value="updated">Last Updated</option>
         <option value="deadline">Deadline (Soonest)</option>
         <option value="applied">Date Applied</option>
+        <option value="stipend">Stipend (High to Low)</option>
         <option value="company">Company (A–Z)</option>
       </select>
     </div>
@@ -83,6 +84,8 @@
     <section id="tab-analytics" class="hidden">
       <div class="section-label">Overview</div>
       <div class="summary" id="summary2"></div>
+      <div class="section-label">📅 Deadline Calendar</div>
+      <div class="cal-card" id="calendar"></div>
       <div class="section-label">Status Breakdown</div>
       <div class="analytics" id="analytics"></div>
     </section>
@@ -180,6 +183,7 @@
     <div class="sheet-head"><h2>More</h2><button class="icon-btn" id="closeMore">✕</button></div>
     <div class="sheet-body">
       <div class="section-label" style="margin-top:0" id="syncBadge"></div>
+      <button class="btn" id="exportCsvBtn" style="width:100%; margin-bottom:10px;">📊 Export to CSV (spreadsheet)</button>
       <button class="btn" id="exportBtn" style="width:100%; margin-bottom:10px;">⬇ Export data (JSON)</button>
       <button class="btn" id="importBtn" style="width:100%; margin-bottom:10px;">⬆ Import data (JSON)</button>
       <input type="file" id="importFile" accept="application/json" style="display:none" />

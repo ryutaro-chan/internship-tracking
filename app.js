@@ -90,6 +90,20 @@
     var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]; return m[parseInt(p[1],10)-1]+" "+parseInt(p[2],10); }
   function daysUntil(d) { if (!d) return null; var t=new Date(); t.setHours(0,0,0,0); return Math.round((new Date(d+"T00:00:00")-t)/86400000); }
   function daysSince(d) { if (!d) return null; var t=new Date(); t.setHours(0,0,0,0); return Math.round((t-new Date(d+"T00:00:00"))/86400000); }
+  // Parse a stipend/comp string into a comparable monthly number (e.g. "$2,500/month" -> 2500)
+  function stipendValue(comp) {
+    if (!comp) return -1;
+    var s = String(comp).toLowerCase().replace(/,/g, "");
+    var m = s.match(/(\d+(?:\.\d+)?)\s*k\b/); // handle "2.5k"
+    var n;
+    if (m) { n = parseFloat(m[1]) * 1000; }
+    else { var d = s.match(/\d+(?:\.\d+)?/); n = d ? parseFloat(d[0]) : -1; }
+    if (n < 0) return -1;
+    if (/year|annum|\/yr|p\.a|pa\b/.test(s)) n = n / 12; // normalize annual -> monthly
+    if (/week|\/wk/.test(s)) n = n * 4.33;               // weekly -> monthly
+    if (/hour|\/hr|hourly/.test(s)) n = n * 160;         // hourly -> monthly (approx)
+    return n;
+  }
 
   function countdownBadge(x) {
     var du = daysUntil(x.deadline); if (du===null) return "";
@@ -228,6 +242,84 @@
         '<div class="vn">'+n+'</div></div>';
     }).join("");
     $("analytics").innerHTML = data.length ? html : '<div class="empty-note">No data yet — add applications to see your breakdown.</div>';
+    renderCalendar();
+  }
+
+  // ---------- Deadline Calendar ----------
+  var calMonth = (function(){ var d=new Date(); return { y:d.getFullYear(), m:d.getMonth() }; })();
+  function deadlineSeverity(dateStr) {
+    var du = daysUntil(dateStr);
+    if (du === null) return null;
+    if (du <= 0) return "red";       // today or passed
+    if (du <= 3) return "amber";     // within 3 days
+    return "norm";
+  }
+  function renderCalendar() {
+    var el = $("calendar"); if (!el) return;
+    var y = calMonth.y, m = calMonth.m;
+    var first = new Date(y, m, 1);
+    var startDow = first.getDay();           // 0=Sun
+    var daysInMonth = new Date(y, m+1, 0).getDate();
+    var monthName = first.toLocaleString(undefined, { month:"long", year:"numeric" });
+    var today = new Date(); today.setHours(0,0,0,0);
+
+    // group deadlines by day-of-month for this month
+    var byDay = {};
+    data.forEach(function (x) {
+      if (!x.deadline) return;
+      var p = x.deadline.split("-"); if (p.length!==3) return;
+      if (parseInt(p[0],10)===y && parseInt(p[1],10)-1===m) {
+        var day = parseInt(p[2],10);
+        (byDay[day] = byDay[day] || []).push(x);
+      }
+    });
+
+    var dows = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(function (d){ return '<div class="cal-dow">'+d+'</div>'; }).join("");
+    var cells = "";
+    for (var i=0;i<startDow;i++) cells += '<div class="cal-cell empty"></div>';
+    for (var day=1; day<=daysInMonth; day++) {
+      var items = byDay[day] || [];
+      var sevs = items.map(function (it){ return deadlineSeverity(it.deadline); });
+      var hasRed = sevs.indexOf("red")>=0, hasAmber = sevs.indexOf("amber")>=0;
+      var cls = "cal-cell";
+      var isToday = (y===today.getFullYear() && m===today.getMonth() && day===today.getDate());
+      if (isToday) cls += " today";
+      if (hasRed) cls += " has-red"; else if (hasAmber) cls += " has-amber";
+      var dots = "";
+      if (items.length) {
+        dots = '<div class="ddot">' + items.slice(0,3).map(function (it){ var s=deadlineSeverity(it.deadline); return '<i class="'+(s||"norm")+'" title="'+esc((it.company||"")+" — "+(it.role||""))+'"></i>'; }).join("") + '</div>';
+      }
+      cells += '<div class="'+cls+'">'+day+dots+'</div>';
+    }
+
+    // upcoming list (next 5 future-or-today deadlines across all months)
+    var upcoming = data.filter(function (x){ return x.deadline && daysUntil(x.deadline)!==null && daysUntil(x.deadline)>=0; })
+      .sort(function (a,b){ return a.deadline.localeCompare(b.deadline); }).slice(0,5);
+    var upHTML = upcoming.length ? '<div class="cal-upcoming">' + upcoming.map(function (x){
+      var du=daysUntil(x.deadline), sev=deadlineSeverity(x.deadline);
+      var when = du===0 ? "Today" : (du+"d");
+      return '<div class="u-row"><span class="u-when '+sev+'">'+when+'</span>' +
+        '<span class="u-co">'+esc(x.company||"—")+'</span><span class="u-rl">'+esc(x.role||"")+' · '+esc(fmtDate(x.deadline))+'</span></div>';
+    }).join("") + '</div>' : '';
+
+    el.innerHTML =
+      '<div class="cal-head"><div class="mo">'+esc(monthName)+'</div>' +
+        '<div class="cal-nav"><button data-cal="prev">‹</button><button data-cal="today">•</button><button data-cal="next">›</button></div></div>' +
+      '<div class="cal-grid">'+dows+cells+'</div>' +
+      '<div class="cal-legend">' +
+        '<span><i style="background:var(--s-rose)"></i>Due today / passed</span>' +
+        '<span><i style="background:var(--s-amber)"></i>Within 3 days</span>' +
+        '<span><i style="background:var(--accent)"></i>Upcoming</span></div>' +
+      upHTML;
+
+    el.querySelectorAll("[data-cal]").forEach(function (b){
+      b.onclick = function () {
+        var dir = b.getAttribute("data-cal");
+        if (dir==="today") { var d=new Date(); calMonth={y:d.getFullYear(),m:d.getMonth()}; }
+        else { calMonth.m += (dir==="next"?1:-1); if (calMonth.m>11){calMonth.m=0;calMonth.y++;} if (calMonth.m<0){calMonth.m=11;calMonth.y--;} }
+        renderCalendar();
+      };
+    });
   }
 
   // ---------- filtering ----------
@@ -252,6 +344,7 @@
       if (sort==="company") return (a.company||"").localeCompare(b.company||"");
       if (sort==="applied") return (b.appliedDate||"").localeCompare(a.appliedDate||"");
       if (sort==="deadline") return (a.deadline||"9999").localeCompare(b.deadline||"9999");
+      if (sort==="stipend") return stipendValue(b.comp) - stipendValue(a.comp); // high to low
       return (b._updated||0)-(a._updated||0);
     });
     return rows;
@@ -445,6 +538,36 @@
     $("syncBadge").textContent = "Last "+raw.action+": "+s; }
   function exportData() { var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}); var a=document.createElement("a");
     a.href=URL.createObjectURL(blob); a.download="catchtheoffer-"+new Date().toISOString().slice(0,10)+".json"; a.click(); URL.revokeObjectURL(a.href); markSync("export"); showToast("Exported"); }
+
+  // ---------- CSV export ----------
+  function csvCell(v) {
+    var s = (v==null) ? "" : String(v);
+    if (/[",\n\r]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"'; // RFC-4180 quoting
+    return s;
+  }
+  function exportCsv() {
+    if (!data.length) { showToast("Nothing to export yet"); return; }
+    var cols = [
+      { h:"Company Name", f:function (x){ return x.company; } },
+      { h:"Job Title", f:function (x){ return x.role; } },
+      { h:"Category", f:function (x){ return catLabel(categorize(x)); } },
+      { h:"Status", f:function (x){ return x.status; } },
+      { h:"Date Applied", f:function (x){ return x.appliedDate; } },
+      { h:"Deadline", f:function (x){ return x.deadline; } },
+      { h:"Location", f:function (x){ return x.location; } },
+      { h:"Monthly Stipend", f:function (x){ return x.comp; } },
+      { h:"Notes", f:function (x){ return [x.stageNotes, x.prosCons].filter(Boolean).join(" | "); } }
+    ];
+    var lines = [ cols.map(function (c){ return csvCell(c.h); }).join(",") ];
+    data.forEach(function (x){ lines.push(cols.map(function (c){ return csvCell(c.f(x)); }).join(",")); });
+    var csv = "\uFEFF" + lines.join("\r\n"); // BOM so Excel reads UTF-8 correctly
+    var blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "catchtheoffer-"+new Date().toISOString().slice(0,10)+".csv";
+    a.click(); URL.revokeObjectURL(a.href);
+    markSync("CSV export"); showToast("📊 CSV exported");
+  }
   function importData(file) { var r=new FileReader(); r.onload=function () {
       try { var parsed=JSON.parse(r.result); if (!Array.isArray(parsed)) throw new Error("Invalid file");
         if (!confirm("Import "+parsed.length+" application(s)? This replaces current data.")) return;
@@ -755,6 +878,7 @@
   $("moreBg").addEventListener("click", function (e){ if (e.target===$("moreBg")) closeMore(); });
   $("compareBtn").onclick = function (){ switchTab("compare"); };
   $("exportBtn").onclick = exportData;
+  $("exportCsvBtn").onclick = exportCsv;
   $("importBtn").onclick = function (){ $("importFile").click(); };
   $("importFile").onchange = function (e){ if (e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
   $("sampleBtn").onclick = loadSample;
