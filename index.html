@@ -71,7 +71,7 @@
 
   /* ---------- Toolbar ---------- */
   .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
-  .search { flex: 1 1 320px; min-width: 280px; position: relative; display: flex; align-items: center;
+  .search { flex: 1 1 260px; min-width: 220px; position: relative; display: flex; align-items: center; gap: 2px;
     background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius);
     padding: 0 10px; transition: border-color .15s, box-shadow .15s; }
   .search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.15); }
@@ -206,7 +206,7 @@
   <div class="toolbar">
     <div class="search">
       <span class="ico">🔍</span>
-      <input id="search" placeholder="Search Company, Role, Location…" />
+      <input id="search" placeholder="Search…" />
       <span class="kbd" id="kbdHint">⌘K</span>
     </div>
     <div class="seg" id="viewSeg">
