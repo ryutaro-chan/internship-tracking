@@ -484,15 +484,13 @@
       cells += '<div class="'+cls+'" data-date="'+dkey+'"><span class="cal-daynum">'+day+'</span>'+dots+notePill+'</div>';
     }
 
-    var legend = full
-      ? '<div class="cal-legend">' +
+    // Single, unambiguous legend: each event type has a distinct colour,
+    // plus the note indicator. (No more duplicate rose dots.)
+    var legend = '<div class="cal-legend">' +
           '<span><i class="ev-deadline"></i>Deadline</span>' +
           '<span><i class="ev-oa"></i>Online Assessment</span>' +
-          '<span><i class="ev-interview"></i>Interview</span></div>'
-      : '<div class="cal-legend">' +
-          '<span><i style="background:var(--s-rose)"></i>Due today / passed</span>' +
-          '<span><i style="background:var(--s-amber)"></i>Within 3 days</span>' +
-          '<span><i class="ev-deadline"></i>Deadline</span></div>';
+          '<span><i class="ev-interview"></i>Interview</span>' +
+          '<span><i class="ev-note"></i>Note</span></div>';
 
     // upcoming list of all event types (next 6 future-or-today), soonest first
     var upcoming = [];
