@@ -64,7 +64,7 @@ body {
 
 /* ============ Header — floating glassmorphic card ============ */
 .appbar {
-  position: sticky; top: 0.75rem; z-index: 30;
+  position: relative;   /* scrolls with page content instead of locking on top */
   margin: 0.75rem auto; width: calc(100% - 1.5rem);
   padding: 16px 18px 12px;
   border-radius: 16px;
@@ -495,7 +495,7 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
 
   /* Header becomes a floating, rounded glassmorphic card (horizontal nav bar) */
   body.is-desktop .appbar {
-    position: sticky; top: 1.25rem;
+    position: relative;   /* non-sticky: scrolls off cleanly with page content */
     margin: 1.25rem auto 1.5rem auto; width: calc(100% - 2.5rem); max-width: 1280px;
     padding: 1.25rem 1.75rem;
     border-radius: 20px;
