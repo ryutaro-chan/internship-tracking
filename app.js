@@ -365,15 +365,6 @@
 
   function renderAnalytics() {
     renderSummary("summary2");
-    var total = data.length || 1;
-    var html = STATUSES.map(function (s) {
-      var n = data.filter(function (x){ return x.status===s.name; }).length;
-      var pct = Math.round(n/total*100);
-      return '<div class="abar-row"><div class="nm">'+esc(s.name)+'</div>' +
-        '<div class="abar"><span class="pill '+s.key+'" style="display:block;width:'+pct+'%;height:100%;border-radius:8px;box-shadow:none;"></span></div>' +
-        '<div class="vn">'+n+'</div></div>';
-    }).join("");
-    $("analytics").innerHTML = data.length ? html : '<div class="empty-note">No data yet — add applications to see your breakdown.</div>';
     renderCalendar("calendar", false);
   }
 
