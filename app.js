@@ -364,23 +364,7 @@
       } catch (e) { alert("Could not import: "+e.message); } }; r.readAsText(file); }
 
   // ---------- compare engine ----------
-  // Singapore Higher Education Institutions
-  var IHLS = [
-    "National University of Singapore (NUS)",
-    "Nanyang Technological University (NTU)",
-    "Singapore Management University (SMU)",
-    "Singapore Institute of Technology (SIT)",
-    "Singapore University of Technology and Design (SUTD)",
-    "Singapore University of Social Sciences (SUSS)",
-    "Temasek Polytechnic (TP)",
-    "Singapore Polytechnic (SP)",
-    "Ngee Ann Polytechnic (NP)",
-    "Nanyang Polytechnic (NYP)",
-    "Republic Polytechnic (RP)"
-  ];
-
   // Role categories a course aligns to (used for the relevance bonus + explanation tag)
-  // Course catalog: category -> [ { name, kws:[...], roles:[role-category tokens] } ]
   var ROLE_TOKENS = {
     swe:       ["software","engineer","developer","backend","frontend","full stack","programming","sde"],
     data:      ["data","analytics","analyst","machine learning","ml","ai","bi","insights"],
@@ -396,60 +380,169 @@
     design:    ["design","ux","ui","product design","interaction","visual","figma"],
     media:     ["media","interactive","animation","content","multimedia","motion"]
   };
-  var COURSE_CATALOG = {
-    "Computing & IT": [
-      { name:"Applied Computing in Fintech", kws:["software","fintech","python","api","blockchain","payments","data","sql"], roles:["swe","fintech","data","cloud"] },
-      { name:"Computer Science", kws:["software","engineer","developer","algorithm","python","java","c++","backend","frontend","api","cloud","data structure","system design","sql"], roles:["swe","data","cyber","cloud"] },
-      { name:"Information Systems", kws:["information systems","sql","database","erp","business process","requirements","integration","data"], roles:["swe","data","product"] },
-      { name:"Software Engineering", kws:["software","engineer","developer","agile","api","microservices","backend","frontend","testing","ci/cd","docker"], roles:["swe","cloud"] },
-      { name:"Cybersecurity", kws:["security","cyber","network","penetration","encryption","soc","vulnerability","firewall","infosec"], roles:["cyber","cloud","swe"] },
-      { name:"Data Analytics", kws:["data","analytics","sql","tableau","power bi","dashboard","statistics","python","etl","insights","kpi"], roles:["data","fintech"] }
+  // Reusable program templates (keywords + affinity role categories + signature "core" skills)
+  // core = skills that, when present in a JD, flag a "Core Tech Requirement" match.
+  var P = {
+    appliedFintech: { kws:["software","fintech","python","api","blockchain","payments","data","sql","cloud"], roles:["swe","fintech","data","cloud"], core:["fintech","payments","blockchain","api"] },
+    softwareEng:    { kws:["software","engineer","developer","agile","api","microservices","backend","frontend","testing","ci/cd","docker","git"], roles:["swe","cloud"], core:["api","backend","ci/cd","microservices"] },
+    computing:      { kws:["software","engineer","developer","algorithm","python","java","c++","backend","frontend","api","cloud","data structure","system design","sql"], roles:["swe","data","cyber","cloud"], core:["algorithm","data structure","system design","api"] },
+    compSci:        { kws:["software","engineer","developer","algorithm","python","java","c++","backend","frontend","api","cloud","data structure","system design","sql","distributed"], roles:["swe","data","cyber","cloud"], core:["algorithm","data structure","system design","distributed"] },
+    infoSec:        { kws:["security","cyber","network","penetration","encryption","soc","vulnerability","firewall","infosec","forensics"], roles:["cyber","cloud","swe"], core:["penetration","soc","vulnerability","encryption"] },
+    systemsEng:     { kws:["systems","integration","automation","controls","requirements","industrial","optimization","embedded"], roles:["systems","ee","swe"], core:["integration","controls","automation"] },
+    mechatronics:   { kws:["mechatronics","robotics","embedded","automation","control","sensors","firmware","plc","iot"], roles:["ee","mech","systems"], core:["robotics","embedded","automation","plc"] },
+    dataSci:        { kws:["data","machine learning","ml","ai","python","statistics","model","analytics","sql","visualization","deep learning","pandas","big data"], roles:["data","fintech","swe"], core:["machine learning","model","deep learning","ml"] },
+    dataAnalytics:  { kws:["data","analytics","sql","tableau","power bi","dashboard","statistics","python","etl","insights","kpi","reporting"], roles:["data","fintech","product"], core:["sql","tableau","etl","dashboard"] },
+    businessAnly:   { kws:["business analytics","data","sql","analysis","insights","visualization","forecasting","stakeholder","kpi","reporting"], roles:["data","product","finance"], core:["sql","forecasting","kpi"] },
+    infoSystems:    { kws:["information systems","sql","database","erp","business process","requirements","integration","data","systems analysis"], roles:["swe","data","product"], core:["erp","database","requirements","integration"] },
+    compEng:        { kws:["computer engineering","embedded","firmware","hardware","software","fpga","iot","architecture","c","low-level"], roles:["ee","swe","systems"], core:["embedded","firmware","fpga","architecture"] },
+    mathCompSci:    { kws:["mathematics","algorithm","quant","modelling","python","statistics","optimization","software","data","machine learning"], roles:["data","swe","fintech"], core:["algorithm","quant","modelling","optimization"] },
+    csGames:        { kws:["software","game","unity","unreal","c#","c++","graphics","engine","3d","gameplay","physics"], roles:["swe","media"], core:["unity","unreal","engine","graphics"] },
+    csd:            { kws:["software","design","computing","hci","interaction","prototype","full stack","python","product"], roles:["swe","design","product"], core:["hci","interaction","full stack"] },
+    epd:            { kws:["product development","mechanical","electrical","embedded","design","prototyping","robotics","iot","cad"], roles:["ee","mech","systems","design"], core:["prototyping","embedded","cad"] },
+    istd:           { kws:["information systems","software","data","full stack","cloud","database","api","analytics","technology design"], roles:["swe","data","cloud","product"], core:["full stack","api","cloud","database"] },
+    dai:            { kws:["artificial intelligence","machine learning","deep learning","data","python","model","design","ai","neural"], roles:["data","swe"], core:["machine learning","deep learning","neural","ai"] },
+    ict:            { kws:["ict","information communication","network","software","systems","support","infrastructure","cloud"], roles:["swe","cloud","cyber"], core:["network","infrastructure","systems"] },
+    finance:        { kws:["finance","banking","investment","equity","trading","risk","valuation","markets","fintech","accounting"], roles:["finance","fintech"], core:["valuation","risk","equity","trading"] },
+    econFinance:    { kws:["economics","finance","markets","quantitative","analysis","investment","risk","forecasting","data"], roles:["finance","fintech","data"], core:["quantitative","valuation","risk"] },
+    bba:            { kws:["business","strategy","operations","management","stakeholder","project","consulting","marketing","finance"], roles:["product","finance","marketing"], core:["strategy","operations","stakeholder"] },
+    business:       { kws:["business","administration","operations","management","strategy","stakeholder","project","sales"], roles:["product","finance","marketing"], core:["operations","management","strategy"] },
+    businessStudies:{ kws:["business","management","operations","marketing","sales","administration","retail","stakeholder"], roles:["product","marketing","finance"], core:["operations","management"] },
+    businessIntel:  { kws:["business intelligence","data","analytics","sql","dashboard","reporting","etl","insights","power bi","tableau"], roles:["data","product"], core:["sql","etl","dashboard","power bi"] },
+    businessInfoSys:{ kws:["business information systems","erp","sql","database","analytics","process","requirements","integration"], roles:["swe","data","product"], core:["erp","database","requirements"] },
+    businessAdmin:  { kws:["business administration","operations","management","strategy","finance","hr","project"], roles:["product","finance"], core:["operations","management"] },
+    accounting:     { kws:["accounting","audit","tax","financial reporting","compliance","ledger","reconciliation"], roles:["finance"], core:["audit","tax","reporting"] },
+    digitalMedia:   { kws:["media","digital","content","design","animation","creative","social media","video","multimedia"], roles:["media","marketing","design"], core:["content","animation","multimedia"] },
+    itDiploma:      { kws:["information technology","software","programming","web","database","network","support","python","java"], roles:["swe","data","cyber"], core:["programming","database","web"] },
+    cyberForensics: { kws:["cybersecurity","digital forensics","security","network","penetration","malware","soc","incident","investigation"], roles:["cyber","cloud"], core:["forensics","penetration","malware","soc"] },
+    fintechDip:     { kws:["financial technology","fintech","payments","blockchain","software","api","data","banking","digital finance"], roles:["fintech","swe","data","finance"], core:["fintech","payments","blockchain","api"] },
+    fintechAnly:    { kws:["financial technology","fintech","analytics","data","sql","payments","dashboard","insights","banking"], roles:["fintech","data","finance"], core:["fintech","analytics","payments"] },
+    bigData:        { kws:["big data","data","analytics","hadoop","spark","sql","python","visualization","etl","pipeline"], roles:["data","swe"], core:["big data","spark","etl","pipeline"] },
+    appliedAI:      { kws:["artificial intelligence","ai","machine learning","data","analytics","python","model","deep learning","computer vision"], roles:["data","swe"], core:["ai","machine learning","model","deep learning"] },
+    dataScienceDip: { kws:["data science","data","machine learning","analytics","python","statistics","sql","visualization","model"], roles:["data","swe"], core:["data science","machine learning","model"] },
+    aiDataEng:      { kws:["ai","data engineering","machine learning","data","python","pipeline","etl","sql","model","cloud"], roles:["data","swe","cloud"], core:["data engineering","pipeline","model","etl"] },
+    cloudComputing: { kws:["cloud","aws","azure","devops","infrastructure","kubernetes","docker","deployment","sre","networking"], roles:["cloud","swe","cyber"], core:["cloud","aws","kubernetes","devops"] }
+  };
+
+  // Institution -> official programs (name + template)
+  var INSTITUTIONS = {
+    "Singapore Institute of Technology (SIT)": [
+      { name:"B.Sc. (Hons) Applied Computing (Fintech)", t:P.appliedFintech },
+      { name:"B.Eng. (Hons) Software Engineering", t:P.softwareEng },
+      { name:"B.Sc. (Hons) Computing Science", t:P.computing },
+      { name:"B.Sc. (Hons) Information and Communications Technology (Information Security)", t:P.infoSec },
+      { name:"B.Eng. (Hons) Systems Engineering", t:P.systemsEng },
+      { name:"B.Eng. (Hons) Mechatronics Systems", t:P.mechatronics }
     ],
-    "Business & Finance": [
-      { name:"Business Administration", kws:["business","strategy","operations","management","stakeholder","project","consulting"], roles:["product","finance","marketing"] },
-      { name:"Banking & Finance", kws:["finance","banking","investment","equity","trading","risk","valuation","markets","fintech"], roles:["finance","fintech"] },
-      { name:"Accounting", kws:["accounting","audit","tax","financial reporting","compliance","ledger"], roles:["finance"] },
-      { name:"Marketing", kws:["marketing","brand","campaign","social media","content","seo","digital","growth","crm"], roles:["marketing","product"] }
+    "National University of Singapore (NUS)": [
+      { name:"B.Sc. Computer Science", t:P.compSci },
+      { name:"B.Sc. Data Science and Analytics", t:P.dataSci },
+      { name:"B.Sc. Information Systems", t:P.infoSystems },
+      { name:"B.Sc. Information Security", t:P.infoSec },
+      { name:"B.Sc. Business Analytics", t:P.businessAnly },
+      { name:"B.B.A. Finance", t:P.finance }
     ],
-    "Engineering": [
-      { name:"Electrical Engineering", kws:["electrical","electronics","circuit","embedded","firmware","hardware","signal","pcb","iot"], roles:["ee","systems"] },
-      { name:"Mechanical Engineering", kws:["mechanical","cad","solidworks","manufacturing","thermodynamics","robotics","automation"], roles:["mech","systems"] },
-      { name:"Systems Engineering", kws:["systems","integration","automation","controls","requirements","industrial","optimization"], roles:["systems","ee","swe"] }
+    "Nanyang Technological University (NTU)": [
+      { name:"B.Sc. Computer Science", t:P.compSci },
+      { name:"B.Sc. Data Science and AI", t:P.dataSci },
+      { name:"B.Sc. Mathematical and Computer Sciences", t:P.mathCompSci },
+      { name:"B.Eng. Computer Engineering", t:P.compEng },
+      { name:"B.B.A. Business", t:P.bba }
     ],
-    "Design & Digital Media": [
-      { name:"UX/UI Design", kws:["design","ui","ux","figma","prototype","user research","wireframe","usability","interaction"], roles:["design","product"] },
-      { name:"Interactive Media", kws:["media","interactive","animation","motion","content","multimedia","creative","design"], roles:["media","design"] }
+    "Singapore Management University (SMU)": [
+      { name:"B.Sc. Computer Science", t:P.compSci },
+      { name:"B.Sc. Information Systems", t:P.infoSystems },
+      { name:"B.Sc. Computer Science (Games & Tech)", t:P.csGames },
+      { name:"B.Sc. Software Engineering", t:P.softwareEng },
+      { name:"B.Sc. Economics & Finance", t:P.econFinance },
+      { name:"B.B.A.", t:P.bba }
+    ],
+    "Singapore University of Technology and Design (SUTD)": [
+      { name:"Computer Science and Design (CSD)", t:P.csd },
+      { name:"Engineering Product Development (EPD)", t:P.epd },
+      { name:"Information Systems Technology and Design (ISTD)", t:P.istd },
+      { name:"Design and Artificial Intelligence (DAI)", t:P.dai }
+    ],
+    "Singapore University of Social Sciences (SUSS)": [
+      { name:"B.Sc. Information and Communication Technology", t:P.ict },
+      { name:"B.Sc. Business Analytics", t:P.businessAnly },
+      { name:"B.Sc. Finance", t:P.finance },
+      { name:"B.Sc. Digital Media", t:P.digitalMedia }
+    ],
+    "Temasek Polytechnic (TP)": [
+      { name:"Diploma in Business", t:P.business },
+      { name:"Diploma in Information Technology", t:P.itDiploma },
+      { name:"Diploma in Cybersecurity & Digital Forensics", t:P.cyberForensics },
+      { name:"Diploma in Financial Technology", t:P.fintechDip },
+      { name:"Diploma in Big Data Analytics", t:P.bigData },
+      { name:"Diploma in Business Intelligence & Analytics", t:P.businessIntel }
+    ],
+    "Singapore Polytechnic (SP)": [
+      { name:"Diploma in Information Technology", t:P.itDiploma },
+      { name:"Diploma in Applied AI & Analytics", t:P.appliedAI },
+      { name:"Diploma in Cybersecurity & Digital Forensics", t:P.cyberForensics },
+      { name:"Diploma in Financial Technology", t:P.fintechDip },
+      { name:"Diploma in Business Administration", t:P.businessAdmin }
+    ],
+    "Ngee Ann Polytechnic (NP)": [
+      { name:"Diploma in Information Technology", t:P.itDiploma },
+      { name:"Diploma in Cybersecurity & Digital Forensics", t:P.cyberForensics },
+      { name:"Diploma in Data Science", t:P.dataScienceDip },
+      { name:"Diploma in Financial Technology", t:P.fintechDip },
+      { name:"Diploma in Business Studies", t:P.businessStudies }
+    ],
+    "Nanyang Polytechnic (NYP)": [
+      { name:"Diploma in Information Technology", t:P.itDiploma },
+      { name:"Diploma in Cybersecurity & Digital Forensics", t:P.cyberForensics },
+      { name:"Diploma in AI & Data Engineering", t:P.aiDataEng },
+      { name:"Diploma in Financial Tech & Analytics", t:P.fintechAnly },
+      { name:"Diploma in Business Management", t:P.business }
+    ],
+    "Republic Polytechnic (RP)": [
+      { name:"Diploma in Information Technology", t:P.itDiploma },
+      { name:"Diploma in Financial Technology", t:P.fintechDip },
+      { name:"Diploma in Cybersecurity & Digital Forensics", t:P.cyberForensics },
+      { name:"Diploma in Enterprise Cloud Computing", t:P.cloudComputing },
+      { name:"Diploma in Business Information Systems", t:P.businessInfoSys }
     ]
   };
-  function courseDef(name) {
-    var found=null; Object.keys(COURSE_CATALOG).forEach(function (cat){ COURSE_CATALOG[cat].forEach(function (c){ if (c.name===name) found=c; }); });
-    return found;
+  // IHLS is derived from the institution catalog (keeps dropdown + data in sync)
+  var IHLS = Object.keys(INSTITUTIONS);
+
+  function coursesForIhl(ihl) { return INSTITUTIONS[ihl] || []; }
+  function courseDef(ihl, name) {
+    var list = coursesForIhl(ihl);
+    for (var i=0;i<list.length;i++) if (list[i].name===name) { var c=list[i]; return { name:c.name, kws:c.t.kws, roles:c.t.roles, core:c.t.core }; }
+    return null;
   }
   function getStudy() { try { return JSON.parse(localStorage.getItem(STUDY_KEY)) || {ihl:"",course:""}; } catch(e){ return {ihl:"",course:""}; } }
   function setStudy(obj) { try { localStorage.setItem(STUDY_KEY, JSON.stringify(obj)); } catch(e){} }
 
-  // Compute fit: keyword overlap + relevance bonus when role matches the course's affinity categories.
+  // Compute fit: keyword overlap + relevance bonus + alignment tags.
   function computeFit(x, course) {
-    if (!course) return { score:null, matched:[], relevant:false, reasons:[] };
+    if (!course) return { score:null, matched:[], relevant:false, tags:[], bonus:0 };
     var text=((x.role||"")+" "+(x.jobdesc||"")+" "+(x.term||"")+" "+(x.location||"")).toLowerCase();
     var kws = course.kws || [];
     var matched=[]; kws.forEach(function (k){ if (text.indexOf(k)>=0 && matched.indexOf(k)<0) matched.push(k); });
     var base = kws.length ? Math.round(matched.length/kws.length*100) : 0;
 
-    // relevance bonus: does the role hit any of the course's target role categories?
-    var reasons=[]; var hitRoles=[];
+    // affinity: does the role hit the course's target role categories?
+    var hitRoles=[];
     (course.roles||[]).forEach(function (rc) {
       var toks = ROLE_TOKENS[rc] || [];
-      var hit = toks.some(function (t){ return text.indexOf(t)>=0; });
-      if (hit) hitRoles.push(rc);
+      if (toks.some(function (t){ return text.indexOf(t)>=0; })) hitRoles.push(rc);
     });
-    var relevant = hitRoles.length > 0;
-    var bonus = relevant ? Math.min(30, 12 + hitRoles.length*6) : 0;
-    if (relevant) reasons.push("Relevant to " + course.name);
+    // core tech: does the JD mention the course's signature skills?
+    var coreHits = (course.core||[]).filter(function (k){ return text.indexOf(k)>=0; });
+
+    var tags = [];
+    var bonus = 0;
+    if (hitRoles.length) { tags.push({ t:"Direct Discipline Match", kind:"disc" }); bonus += Math.min(20, 10 + hitRoles.length*4); }
+    if (coreHits.length) { tags.push({ t:"Core Tech Requirement", kind:"core" }); bonus += Math.min(15, coreHits.length*5); }
     if ((x.jobdesc||"").length>120 && base>0) base += 5;
 
+    var relevant = tags.length > 0;
     var score = Math.min(100, base + bonus);
-    return { score: score, matched: matched, relevant: relevant, reasons: reasons, bonus: bonus };
+    return { score: score, matched: matched, relevant: relevant, tags: tags, bonus: bonus, coreHits: coreHits };
   }
   function autoProsCons(x) {
     var pros=[],cons=[]; var loc=(x.location||"").toLowerCase();
@@ -467,20 +560,23 @@
     var st = getStudy();
     var ihlOpts = '<option value="">Select institution…</option>' +
       IHLS.map(function (i){ return '<option'+(st.ihl===i?' selected':'')+'>'+esc(i)+'</option>'; }).join("");
-    var courseOpts = '<option value="">Select course / major…</option>' +
-      Object.keys(COURSE_CATALOG).map(function (cat){
-        return '<optgroup label="'+esc(cat)+'">' +
-          COURSE_CATALOG[cat].map(function (c){ return '<option'+(st.course===c.name?' selected':'')+'>'+esc(c.name)+'</option>'; }).join("") +
-          '</optgroup>';
-      }).join("");
+    // Course options are populated dynamically based on the selected institution
+    var courses = coursesForIhl(st.ihl);
+    var courseOpts, courseDisabled = st.ihl ? "" : " disabled";
+    if (!st.ihl) {
+      courseOpts = '<option value="">Select an institution first…</option>';
+    } else {
+      courseOpts = '<option value="">Select course / major…</option>' +
+        courses.map(function (c){ return '<option'+(st.course===c.name?' selected':'')+'>'+esc(c.name)+'</option>'; }).join("");
+    }
     return '<div class="cmp-study cmp-study-2">' +
       '<div class="cmp-field"><label>🏫 Institution / University (IHL)</label><select id="cmpIhl" class="ctl-wide">'+ihlOpts+'</select></div>' +
-      '<div class="cmp-field"><label>🎓 Course / Major</label><select id="cmpCourse" class="ctl-wide">'+courseOpts+'</select></div>' +
+      '<div class="cmp-field"><label>🎓 Course / Major</label><select id="cmpCourse" class="ctl-wide"'+courseDisabled+'>'+courseOpts+'</select></div>' +
       '</div>';
   }
   function renderCompareInline() {
     var st = getStudy();
-    var course = courseDef(st.course);
+    var course = courseDef(st.ihl, st.course);
     var picker = studyPicker();
     if (!data.length) { $("compareInline").innerHTML = picker + '<div class="cmp-empty">Add applications first, then compare them here.</div>'; bindStudy(); return; }
     var chips = data.map(function (x){ var on=cmpSelected.indexOf(x.id)>=0; return '<span class="cmp-chip'+(on?' on':'')+'" data-pick="'+x.id+'">'+esc(x.company||"—")+' <span class="c">'+esc(x.role||"")+'</span></span>'; }).join("");
@@ -493,10 +589,12 @@
       var maxScore=-1; fits.forEach(function (f){ if (f.score!==null&&f.score>maxScore) maxScore=f.score; });
       var colsHTML=cols.map(function (x,i){
         var f=fits[i]; var isBest=f.score!==null&&f.score===maxScore&&maxScore>0; var pc=autoProsCons(x);
-        var relTag = f.relevant ? '<div class="rel-tag">✦ '+esc(f.reasons[0])+(f.bonus?' · +'+f.bonus+'% relevance':'')+'</div>' : '';
-        var scoreBlock=(f.score===null)?'<div class="fit"><div class="k">Pick your course above to see a fit score.</div></div>'
+        var tagHTML = (f.tags && f.tags.length)
+          ? '<div class="align-tags">'+f.tags.map(function (tg){ return '<span class="align-tag '+tg.kind+'">✦ '+esc(tg.t)+'</span>'; }).join("")+(f.bonus?'<span class="align-bonus">+'+f.bonus+'%</span>':'')+'</div>'
+          : '';
+        var scoreBlock=(f.score===null)?'<div class="fit"><div class="k">Pick your institution &amp; course above to see a fit score.</div></div>'
           :'<div class="fit"><div class="score">'+f.score+'<span style="font-size:14px;color:var(--muted)">% fit</span></div><div class="bar"><span style="width:'+f.score+'%"></span></div>'+
-            relTag +
+            tagHTML +
             (f.matched.length?'<div class="matched">'+f.matched.slice(0,8).map(function (m){ return '<span class="kw">'+esc(m)+'</span>'; }).join("")+'</div>':'<div class="k" style="margin-top:8px">No course keywords found in this role</div>')+'</div>';
         function rf(list,cls){ return list.map(function (tt){ return '<div class="cmp-row '+cls+'"><div class="v">'+(cls==="pro"?"✔ ":"✘ ")+esc(tt)+'</div></div>'; }).join(""); }
         return '<div class="cmp-col'+(isBest?' best':'')+'"><div class="cmp-col-head"><div class="cco">'+esc(x.company||"—")+'</div><div class="crl">'+esc(x.role||"")+'</div>'+(isBest?'<span class="cmp-badge-best">★ Best fit for you</span>':'')+'</div>'+
@@ -514,7 +612,7 @@
   function cmpRow(k,v){ return '<div class="cmp-row"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
   function bindStudy() {
     var ihl=$("cmpIhl"), course=$("cmpCourse");
-    if (ihl) ihl.onchange=function (){ var st=getStudy(); st.ihl=ihl.value; setStudy(st); renderCompareInline(); };
+    if (ihl) ihl.onchange=function (){ var st=getStudy(); st.ihl=ihl.value; st.course=""; setStudy(st); renderCompareInline(); }; // reset course when institution changes
     if (course) course.onchange=function (){ var st=getStudy(); st.course=course.value; setStudy(st); renderCompareInline(); };
   }
 

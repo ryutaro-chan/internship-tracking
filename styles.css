@@ -299,6 +299,11 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .ctl-wide:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.15); }
 .rel-tag { display: inline-block; margin-top: 10px; font-size: 11.5px; font-weight: 700; color: var(--s-green);
   background: var(--s-green-bg); border: 1px solid rgba(16,185,129,.35); border-radius: 20px; padding: 3px 10px; }
+.align-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; }
+.align-tag { font-size: 11px; font-weight: 700; border-radius: 20px; padding: 3px 10px; border: 1px solid transparent; }
+.align-tag.disc { color: var(--s-green); background: var(--s-green-bg); border-color: rgba(16,185,129,.35); }
+.align-tag.core { color: var(--s-sky); background: var(--s-sky-bg); border-color: rgba(2,132,199,.35); }
+.align-bonus { font-size: 11px; font-weight: 800; color: var(--accent-strong); background: rgba(14,165,233,.12); border-radius: 20px; padding: 3px 9px; }
 .cmp-pickwrap .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
 .cmp-picks { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .cmp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--border-2);
