@@ -358,10 +358,11 @@
         '<div class="rs">'+ (m.total - m.pending) +' of '+m.total+' applications have progressed</div>' +
         '<div class="ratebar"><span style="width:'+m.respRate+'%"></span></div></div></div>';
     $(into).innerHTML =
-      card("Total Applications", m.total, "#0891b2", "rgba(8,145,178,.12)", "💼") +
-      card("In Progress", m.inprog, "#d97706", "rgba(217,119,6,.14)", "⏳") +
-      card("Offers Received", m.offers, "#059669", "rgba(16,185,129,.15)", "🎉") +
-      card("Action Required", m.action, "#e11d48", "rgba(225,29,72,.12)", "⚡") +
+      // Uniform white cards; status is conveyed by the metric number + icon tint.
+      card("Total Applications", m.total, "#0077ed", "rgba(0,119,237,.12)", "💼") +   // primary brand blue
+      card("In Progress", m.inprog, "#d97706", "rgba(217,119,6,.14)", "⏳") +          // amber
+      card("Offers Received", m.offers, "#059669", "rgba(16,185,129,.15)", "🎉") +     // emerald green
+      card("Action Required", m.action, "#e11d48", "rgba(225,29,72,.12)", "⚡") +       // rose red
       ring;
   }
 
