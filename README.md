@@ -25,7 +25,7 @@ Otherwise, download the three web files and open `index.html` in a browser.
 
 ## Web features
 
-- **6-stage status pipeline**: Applied → Online Assessment → Interview → Offer
+- **6-stage status pipeline**: Applied → Online Assessment / Test → Interview → Offer
   Received → Rejected → Withdrawn (soft glowing color pills).
 - **Category tabs** — All Jobs · Tech & Software Engineering · Data Analytics &
   AI · Fintech & Payments · Product & Operations (auto-classified by role).

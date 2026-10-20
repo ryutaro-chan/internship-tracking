@@ -6,16 +6,18 @@
   var STUDY_KEY = "catchtheoffer.study";
 
   var STATUSES = [
-    { name: "Applied",           key: "sky",    pending: true  },
-    { name: "Online Assessment", key: "violet", pending: true  },
-    { name: "Interview",         key: "amber",  pending: true  },
-    { name: "Offer Received",    key: "green",  pending: false },
-    { name: "Rejected",          key: "rose",   pending: false },
-    { name: "Withdrawn",         key: "slate",  pending: false }
+    { name: "Applied",                   key: "sky",    pending: true  },
+    { name: "Online Assessment / Test",  key: "violet", pending: true  },
+    { name: "Interview",                 key: "amber",  pending: true  },
+    { name: "Offer Received",            key: "green",  pending: false },
+    { name: "Rejected",                  key: "rose",   pending: false },
+    { name: "Withdrawn",                 key: "slate",  pending: false }
   ];
   var LEGACY_MAP = {
     "Not Started / To Apply": "Applied", "Applied / Pending": "Applied",
-    "OA / Technical Assessment": "Online Assessment",
+    "OA / Technical Assessment": "Online Assessment / Test",
+    "Online Assessment": "Online Assessment / Test",  // migrate prior naming
+    "OA": "Online Assessment / Test",
     "HR / Screening Interview": "Interview", "Technical / Round 1 Interview": "Interview",
     "Final Round Interview": "Interview", "Offer Received": "Offer Received",
     "Rejected": "Rejected", "Withdrawn": "Withdrawn"
@@ -213,7 +215,7 @@
   // ---------- metrics ----------
   function metrics() {
     var total = data.length;
-    var inprog = data.filter(function (x){ return x.status==="Online Assessment"||x.status==="Interview"; }).length;
+    var inprog = data.filter(function (x){ return x.status==="Online Assessment / Test"||x.status==="Interview"; }).length;
     var pending = data.filter(function (x){ return statusDef(x.status).pending; }).length;
     var offers = data.filter(function (x){ return x.status==="Offer Received"; }).length;
     var rejected = data.filter(function (x){ return x.status==="Rejected"; }).length;
@@ -540,7 +542,7 @@
     var sample = [
       { company:"Stripe", role:"Software Engineering Intern", term:"Summer 2027", location:"Singapore / Hybrid", comp:"$2,400/mo", status:"Interview", appliedDate:d(-21), deadline:d(-10), interviewDates:d(3), stageNotes:"Passed OA; tech round scheduled.", nextAction:"Prep system design", url:"https://stripe.com/jobs", jobdesc:"Build backend APIs in Python and Go, work with cloud, databases and distributed systems." },
       { company:"Razer", role:"Data Analytics Intern", term:"Off-Peak", location:"Singapore / On-site", comp:"$1,500/mo", status:"Applied", appliedDate:d(-16), deadline:d(4), followup:d(-16), nextAction:"Follow up with recruiter", docs:"Data_Analytics_v3.pdf", jobdesc:"SQL, dashboards, Tableau, reporting and business intelligence." },
-      { company:"Endowus", role:"Fintech SWE Intern", term:"Winter 2026", location:"Remote", comp:"$2,000/mo", status:"Online Assessment", appliedDate:d(-7), deadline:d(1), oaDate:d(2), nextAction:"Complete HackerRank test", referral:"Alex Lim (LinkedIn)" },
+      { company:"Endowus", role:"Fintech SWE Intern", term:"Winter 2026", location:"Remote", comp:"$2,000/mo", status:"Online Assessment / Test", appliedDate:d(-7), deadline:d(1), oaDate:d(2), nextAction:"Complete HackerRank test", referral:"Alex Lim (LinkedIn)" },
       { company:"Apple", role:"iOS Engineering Intern", term:"Summer 2027", location:"Hybrid", comp:"$3,000/mo", status:"Offer Received", appliedDate:d(-40), hours:"Full-time, 12 weeks", offerDeadline:d(9), priority:"High", prosCons:"Pros: brand, pay. Cons: relocation.", bookmarked:true, nextAction:"Decide by offer deadline" },
       { company:"Grab", role:"Backend Intern", term:"Summer 2027", location:"Singapore / On-site", status:"Rejected", appliedDate:d(-30), stageNotes:"Rejected after final round." }
     ];

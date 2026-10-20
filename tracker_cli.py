@@ -39,7 +39,7 @@ from typing import Any, Dict, List, Optional
 # Canonical status pipeline (mirrors the web app's STATUSES order).
 STATUS_ORDER: List[str] = [
     "Applied",
-    "Online Assessment",
+    "Online Assessment / Test",
     "Interview",
     "Offer Received",
     "Rejected",
@@ -47,13 +47,15 @@ STATUS_ORDER: List[str] = [
 ]
 
 # A status counts as "awaiting reply" (still live, no response yet).
-PENDING_STATUSES = {"Applied", "Online Assessment", "Interview"}
+PENDING_STATUSES = {"Applied", "Online Assessment / Test", "Interview"}
 
 # Legacy -> current status remapping, matching the web app's migration rules.
 LEGACY_STATUS_MAP = {
     "Not Started / To Apply": "Applied",
     "Applied / Pending": "Applied",
-    "OA / Technical Assessment": "Online Assessment",
+    "OA / Technical Assessment": "Online Assessment / Test",
+    "Online Assessment": "Online Assessment / Test",
+    "OA": "Online Assessment / Test",
     "HR / Screening Interview": "Interview",
     "Technical / Round 1 Interview": "Interview",
     "Final Round Interview": "Interview",

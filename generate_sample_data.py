@@ -27,7 +27,7 @@ from typing import Any, Dict, List
 
 STATUSES = [
     "Applied",
-    "Online Assessment",
+    "Online Assessment / Test",
     "Interview",
     "Offer Received",
     "Rejected",
@@ -151,7 +151,7 @@ def make_record(today: date) -> Dict[str, Any]:
     }
 
     # Stage-specific extra context.
-    if status == "Online Assessment":
+    if status == "Online Assessment / Test":
         record["oaDate"] = _iso(today + timedelta(days=random.randint(1, 7)))
         record["stageNotes"] = "Completed online assessment; awaiting results."
         record["nextAction"] = "Review OA feedback"
