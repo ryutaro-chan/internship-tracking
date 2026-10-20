@@ -1,0 +1,27 @@
+# ---------------------------------------------------------------------------
+# GitHub Linguist language-statistics overrides
+#
+# The repository ships a self-contained, client-side web bundle (index.html,
+# styles.css, app.js) alongside the Python analytics tooling (tracker_cli.py,
+# generate_sample_data.py). By default GitHub's language bar is dominated by
+# the large static web assets. We mark the web bundle as "vendored" so that
+# Linguist excludes it from the language statistics, leaving the Python CLI as
+# the primary reported language.
+#
+# This only affects the language bar / stats — the files are untouched and
+# still render and run exactly as before.
+# ---------------------------------------------------------------------------
+
+# Treat the front-end bundle as vendored (excluded from language stats)
+app.js        linguist-vendored
+styles.css    linguist-vendored
+index.html    linguist-vendored
+
+# Explicitly keep the Python tooling counted as source
+*.py          linguist-detectable=true
+tracker_cli.py          linguist-language=Python
+generate_sample_data.py linguist-language=Python
+
+# Normalize line endings
+* text=auto
+*.py text eol=lf
