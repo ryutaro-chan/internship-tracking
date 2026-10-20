@@ -670,7 +670,11 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
 /* Location group */
 .ev-loc-group { display: flex; align-items: center; gap: 8px; }
 .ev-loc-ico { font-size: 15px; flex: 0 0 auto; }
-.ev-loc { background: transparent; border: none; border-radius: 0; margin-bottom: 0; padding: 0; color: var(--text); }
+/* Location input sits flush inside the group — strip the base input box + focus ring */
+.ev-input.ev-loc, .ev-input.ev-loc:focus {
+  flex: 1; width: auto; background: transparent; border: none; border-radius: 0;
+  margin-bottom: 0; padding: 0; box-shadow: none; color: var(--text);
+}
 
 /* Details notes */
 .ev-notes { width: 100%; min-height: 72px; resize: vertical; background: transparent; border: none; color: var(--text);
