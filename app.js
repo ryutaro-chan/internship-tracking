@@ -5,6 +5,7 @@
   var LEGACY_KEYS = ["catchtheoffer.v1", "internship-tracker.v1"];
   var SYNC_KEY = "jobtrackr.sync";
   var STUDY_KEY = "jobtrackr.study";
+  var USER_KEY  = "jobtrackr.user";   // display name shown in the greeting banner
 
   var STATUSES = [
     { name: "Applied",                   key: "sky",    pending: true  },
@@ -756,7 +757,156 @@
   function statusTabLabel(id) { return statusTabDef(id).label; }
 
   // ---------- main render ----------
+  // ---------- greeting banner ----------
+  function getUserName() { try { return (localStorage.getItem(USER_KEY) || "").trim(); } catch (e) { return ""; } }
+  function setUserName(n) { try { localStorage.setItem(USER_KEY, (n||"").trim()); } catch (e) {} }
+  function greetingWord() {
+    var h = new Date().getHours();
+    if (h < 12) return "Good Morning,";
+    if (h < 18) return "Good Afternoon,";
+    return "Good Evening,";
+  }
+  function renderGreeting() {
+    var hello = $("greetHello"); if (hello) hello.textContent = greetingWord();
+    var name = getUserName();
+    var nm = $("greetName");
+    if (nm) {
+      nm.textContent = name || "Set your name";
+      nm.classList.toggle("unset", !name);
+    }
+    var av = $("greetAvatar");
+    if (av) {
+      var initials = name ? name.split(/\s+/).map(function (w){ return w[0]||""; }).join("").slice(0,2).toUpperCase() : "";
+      av.textContent = initials || "🙂";
+    }
+    // Bell dot: lit when any pending application has a deadline within 7 days.
+    var soon = data.some(function (x) {
+      if (!statusDef(x.status).pending) return false;
+      var du = daysUntil(x.deadline); return du !== null && du >= 0 && du <= 7;
+    });
+    var dot = $("bellDot"); if (dot) dot.style.display = soon ? "block" : "none";
+  }
+  function promptUserName() {
+    var current = getUserName();
+    var n = window.prompt("What should we call you?", current);
+    if (n === null) return;                 // cancelled
+    setUserName(n.trim());
+    renderGreeting();
+    if (n.trim()) showToast("Hi " + n.trim().split(/\s+/)[0] + " 👋");
+  }
+
+  // ---------- read-only detail view ----------
+  var detailId = null;
+  // Split a job description / notes block into bullet points.
+  function toBullets(text) {
+    if (!text) return [];
+    var raw = String(text).split(/\r?\n|•|·|;|(?:\.\s+(?=[A-Z]))/);
+    return raw.map(function (s){ return s.trim().replace(/^[-*–]\s*/, ""); })
+              .filter(function (s){ return s.length > 1; });
+  }
+  function bulletList(items) {
+    if (!items.length) return '<div class="d-none">Not added yet.</div>';
+    return '<ul class="d-bullets">' + items.map(function (b){ return '<li>'+esc(b)+'</li>'; }).join("") + '</ul>';
+  }
+  function detailAboutHTML(x) {
+    var rows = [];
+    function row(label, val) { if (val) rows.push('<div class="d-row"><span class="d-k">'+esc(label)+'</span><span class="d-v">'+val+'</span></div>'); }
+    row("Status", pillHTML(x.status));
+    row("Industry", esc(industryOf(x)));
+    row("Work Type", esc(x.location||""));
+    var avail = availabilityLabel(x); row("Availability", esc(avail));
+    row("Applied", esc(fmtDate(x.appliedDate)));
+    row("Deadline", esc(fmtDate(x.deadline)));
+    if (x.url) row("Portal", '<a class="d-link" href="'+esc(x.url)+'" target="_blank" rel="noopener">Open ↗</a>');
+    if (!rows.length) return '<div class="d-none">No company details added yet.</div>';
+    return '<div class="d-rows">' + rows.join("") + '</div>';
+  }
+  function renderDetail(id) {
+    var x = data.find(function (v){ return v.id===id; }); if (!x) return;
+    detailId = id;
+    // header: favourite heart reflects bookmark state
+    var fav = $("detailFav");
+    if (fav) { fav.textContent = x.bookmarked ? "♥" : "♡"; fav.classList.toggle("on", !!x.bookmarked); }
+
+    var dur = availabilityLabel(x);
+    var meta = [];
+    if (dur) meta.push('🗓 '+esc(dur));
+    if (x.location) meta.push('📍 '+esc(x.location));
+
+    // Benefits: salary + work type + hours as green-dot bullets
+    var benefits = [];
+    if (x.comp) benefits.push(esc(x.comp) + " monthly allowance");
+    if (x.hours) benefits.push(esc(x.hours));
+    if (x.location) benefits.push(esc(x.location) + " work arrangement");
+    if (x.priority) benefits.push(esc(x.priority) + " priority role");
+
+    var reqItems = toBullets(x.jobdesc);
+    var notesItems = toBullets(x.stageNotes).concat(toBullets(x.prosCons));
+
+    var body =
+      '<div class="d-hero">' +
+        '<div class="d-logo">' + avatar(x.company, companyDomain(x.company, x.url)) + '</div>' +
+        '<h2 class="d-role">' + esc(x.role||"—") + '</h2>' +
+        '<div class="d-company">' + esc(x.company||"") + '</div>' +
+        (meta.length ? '<div class="d-meta">'+meta.join('<span class="d-dot">·</span>')+'</div>' : '') +
+      '</div>' +
+      '<div class="d-tabs" id="dTabs">' +
+        '<button class="d-tab active" data-dtab="desc">Description</button>' +
+        '<button class="d-tab" data-dtab="about">About Company</button>' +
+      '</div>' +
+      '<div class="d-pane" id="dPaneDesc">' +
+        '<div class="d-card">' +
+          '<div class="d-title">Requirements</div>' +
+          bulletList(reqItems) +
+        '</div>' +
+        '<div class="d-card">' +
+          '<div class="d-title">Benefits</div>' +
+          bulletList(benefits) +
+        '</div>' +
+        (notesItems.length ? '<div class="d-card"><div class="d-title">Notes</div>'+bulletList(notesItems)+'</div>' : '') +
+      '</div>' +
+      '<div class="d-pane hidden" id="dPaneAbout">' +
+        '<div class="d-card">' +
+          '<div class="d-title">About ' + esc(x.company||"this company") + '</div>' +
+          detailAboutHTML(x) +
+        '</div>' +
+      '</div>' +
+      '<div class="d-foot">' +
+        (x.url ? '<a class="d-apply" href="'+esc(x.url)+'" target="_blank" rel="noopener">Open Application Portal</a>'
+               : '<button class="d-apply" id="dApplyEdit">Open / Add Portal Link</button>') +
+        '<button class="d-edit" id="dEditBtn">✎ Edit Application</button>' +
+      '</div>';
+
+    $("detailBody").innerHTML = body;
+    $("detailBody").scrollTop = 0;
+
+    // tab switching
+    $("dTabs").querySelectorAll("[data-dtab]").forEach(function (b) {
+      b.onclick = function () {
+        $("dTabs").querySelectorAll("[data-dtab]").forEach(function (t){ t.classList.toggle("active", t===b); });
+        var which = b.getAttribute("data-dtab");
+        $("dPaneDesc").classList.toggle("hidden", which!=="desc");
+        $("dPaneAbout").classList.toggle("hidden", which!=="about");
+      };
+    });
+    var eb = $("dEditBtn"); if (eb) eb.onclick = function () { closeDetail(); openModal(id); };
+    var ae = $("dApplyEdit"); if (ae) ae.onclick = function () { closeDetail(); openModal(id); };
+  }
+  function openDetail(id) {
+    renderDetail(id);
+    $("detailView").classList.add("show");
+    $("detailView").setAttribute("aria-hidden", "false");
+    document.body.classList.add("detail-open");
+  }
+  function closeDetail() {
+    $("detailView").classList.remove("show");
+    $("detailView").setAttribute("aria-hidden", "true");
+    document.body.classList.remove("detail-open");
+    detailId = null;
+  }
+
   function render() {
+    renderGreeting();
     renderSummary("summary");
     renderSyncBadge();
     renderCatTabs();
@@ -818,12 +968,13 @@
         (tags.length?'<div class="tags">'+tags.join("")+'</div>':'') +
         progressStepper(x) +
         '<div class="foot">' +
+          '<button class="qbtn primary" data-view-detail="'+x.id+'">View details</button>' +
           '<button class="qbtn" data-status="'+x.id+'">🔄 Status</button>' +
-          '<button class="qbtn" data-mail="'+x.id+'">✉️ Follow-up</button>' +
           '<span class="spacer"></span>' +
+          '<button class="qbtn" data-mail="'+x.id+'" title="Copy follow-up email">✉️</button>' +
           '<button class="qbtn" data-archive="'+x.id+'" title="'+(x.archived?'Unarchive':'Archive')+'">'+(x.archived?'📤':'🗄')+'</button>' +
-          '<button class="qbtn" data-edit="'+x.id+'">✎</button>' +
-          '<button class="qbtn" data-del="'+x.id+'">🗑</button>' +
+          '<button class="qbtn" data-edit="'+x.id+'" title="Edit">✎</button>' +
+          '<button class="qbtn" data-del="'+x.id+'" title="Delete">🗑</button>' +
         '</div></div>';
     }).join("");
     $(into).innerHTML = '<div class="feed">'+html+'</div>';
@@ -872,9 +1023,13 @@
   function wireCards() {
     document.querySelectorAll("[data-open]").forEach(function (el) {
       el.addEventListener("click", function (e) {
-        if (e.target.closest("[data-edit],[data-del],[data-mail],[data-status],[data-bm],[data-archive]")) return;
-        openModal(el.getAttribute("data-open"));
+        if (e.target.closest("[data-edit],[data-del],[data-mail],[data-status],[data-bm],[data-archive],[data-view-detail]")) return;
+        openDetail(el.getAttribute("data-open"));
       });
+    });
+    // explicit "View details" button (feed card primary action)
+    document.querySelectorAll("[data-view-detail]").forEach(function (b){
+      b.addEventListener("click", function (e){ e.stopPropagation(); openDetail(b.getAttribute("data-view-detail")); });
     });
     document.querySelectorAll("[data-edit]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); openModal(b.getAttribute("data-edit")); }); });
     document.querySelectorAll("[data-mail]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); copyFollowUp(b.getAttribute("data-mail")); }); });
@@ -1650,6 +1805,43 @@
       render();
     };
   });
+
+  // Greeting banner: tap name or avatar to set your display name
+  (function wireGreeting() {
+    var nm = $("greetName"); if (nm) nm.onclick = promptUserName;
+    var av = $("greetAvatar"); if (av) av.onclick = promptUserName;
+    var bell = $("greetBell"); if (bell) bell.onclick = function () {
+      switchTab("analytics");
+      document.querySelectorAll(".navtab, .htab").forEach(function (b){ b.classList.toggle("active", b.getAttribute("data-tab")==="analytics"); });
+    };
+  })();
+
+  // Search-row filter button: scroll to + flash the filter controls
+  (function wireFilterBtn() {
+    var fb = $("filterBtn"); if (!fb) return;
+    fb.onclick = function () {
+      var row = $("filterRow"); if (!row) return;
+      row.classList.add("flash");
+      try { row.scrollIntoView({ behavior:"smooth", block:"nearest" }); } catch (e) {}
+      var first = row.querySelector("select"); if (first) { try { first.focus(); } catch (e) {} }
+      setTimeout(function (){ row.classList.remove("flash"); }, 900);
+    };
+  })();
+
+  // Detail view: back + favourite(heart) controls
+  (function wireDetail() {
+    var back = $("detailBack"); if (back) back.onclick = closeDetail;
+    var fav = $("detailFav");
+    if (fav) fav.onclick = function () {
+      if (!detailId) return;
+      toggleBookmark(detailId);                 // persists + re-renders feed
+      var x = data.find(function (v){ return v.id===detailId; });
+      fav.textContent = (x && x.bookmarked) ? "♥" : "♡";
+      fav.classList.toggle("on", !!(x && x.bookmarked));
+    };
+    // Esc closes the detail panel
+    document.addEventListener("keydown", function (e){ if (e.key==="Escape" && detailId) closeDetail(); });
+  })();
 
   // Adaptive layout: detect platform on load + react to viewport changes
   applyPlatform();
