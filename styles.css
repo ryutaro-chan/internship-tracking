@@ -521,11 +521,19 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .cmp-empty { text-align: center; color: var(--muted); padding: 30px 10px; }
 
 /* --- Compare: dropdown role selectors --- */
-.compare-selects { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.compare-select { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid #cbd5e1;
-  background: #fff; font-family: inherit; font-size: 0.9rem; font-weight: 500; color: #0f172a;
-  outline: none; cursor: pointer; }
-.compare-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,119,237,.14); }
+.compare-selects { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 16px; }
+/* field label above each role dropdown */
+.compare-selects .cmp-field label { display: block; margin-bottom: 7px;
+  font-size: 12px; font-weight: 600; color: var(--ink-sub); }
+/* polished brand-consistent dropdown: custom chevron + brand focus ring */
+.compare-select { width: 100%; padding: 11px 36px 11px 14px; border-radius: 12px; border: 1px solid #cbd5e1;
+  background-color: #ffffff; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  outline: none; cursor: pointer; transition: border-color .15s, box-shadow .15s;
+  -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='%230077ed' stroke-width='1.4'/></svg>");
+  background-repeat: no-repeat; background-position: right 13px center; }
+.compare-select:hover { border-color: var(--brand-blue); }
+.compare-select:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(0,119,237,.15); }
 .cmp-add-role { margin-top: 12px; display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 14px; border-radius: 10px; border: 1px dashed var(--border-2);
   background: var(--surface); color: var(--accent-strong); font-size: 13px; font-weight: 700;
