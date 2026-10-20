@@ -109,7 +109,50 @@
     var initials = name.split(/\s+/).map(function (w){ return w[0]||""; }).join("").slice(0,2).toUpperCase() || "?";
     var sum = 0; for (var i=0;i<name.length;i++) sum += name.charCodeAt(i);
     var g = AV_GRADS[sum % AV_GRADS.length];
-    return '<div class="avatar" style="background:linear-gradient(135deg,'+g[0]+','+g[1]+')">'+esc(initials)+'</div>';
+    var grad = 'linear-gradient(135deg,'+g[0]+','+g[1]+')';
+    // The gradient initials sit underneath; a company logo <img> is layered on top.
+    // If the logo fails to load, onerror hides the img, revealing the initials fallback.
+    var domain = (arguments.length > 1 && arguments[1]) ? arguments[1] : companyDomain(name);
+    var img = "";
+    if (domain) {
+      var src = "https://logo.clearbit.com/" + encodeURIComponent(domain);
+      var fav = "https://www.google.com/s2/favicons?domain=" + encodeURIComponent(domain) + "&sz=128";
+      // First error -> try Google favicon; second error -> hide img (show initials).
+      img = '<img class="logo-img" src="'+src+'" alt="'+esc(name)+' logo" loading="lazy" ' +
+            'onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src=\''+fav+'\';}else{this.style.display=\'none\';}" />';
+    }
+    return '<div class="avatar" style="background:'+grad+'"><span class="av-initials">'+esc(initials)+'</span>'+img+'</div>';
+  }
+
+  // Map common company names to official domains; fall back to a sensible guess.
+  var DOMAIN_MAP = {
+    "grab":"grab.com", "razer":"razer.com", "endowus":"endowus.com", "stripe":"stripe.com",
+    "apple":"apple.com", "visa":"visa.com", "shopee":"shopee.com", "google":"google.com",
+    "meta":"meta.com", "facebook":"meta.com", "amazon":"amazon.com", "microsoft":"microsoft.com",
+    "netflix":"netflix.com", "tiktok":"tiktok.com", "bytedance":"bytedance.com", "sea":"sea.com",
+    "sea limited":"sea.com", "garena":"garena.com", "dbs":"dbs.com", "ocbc":"ocbc.com",
+    "uob":"uob.com.sg", "gic":"gic.com.sg", "temasek":"temasek.com.sg", "grabpay":"grab.com",
+    "paypal":"paypal.com", "wise":"wise.com", "revolut":"revolut.com", "nvidia":"nvidia.com",
+    "intel":"intel.com", "ibm":"ibm.com", "oracle":"oracle.com", "salesforce":"salesforce.com",
+    "goldman sachs":"goldmansachs.com", "jpmorgan":"jpmorgan.com", "morgan stanley":"morganstanley.com",
+    "shopify":"shopify.com", "airbnb":"airbnb.com", "uber":"uber.com", "lazada":"lazada.com",
+    "singtel":"singtel.com", "starhub":"starhub.com", "accenture":"accenture.com", "deloitte":"deloitte.com"
+  };
+  function companyDomain(name, portalUrl) {
+    // 1) explicit portal URL wins
+    if (portalUrl) {
+      try {
+        var u = portalUrl.indexOf("http")===0 ? portalUrl : "https://"+portalUrl;
+        var host = new URL(u).hostname.replace(/^www\./, "");
+        if (host && host.indexOf(".")>0) return host;
+      } catch (e) {}
+    }
+    var key = (name||"").trim().toLowerCase();
+    if (!key) return "";
+    if (DOMAIN_MAP[key]) return DOMAIN_MAP[key];
+    // 2) guess: strip punctuation/spaces -> name.com (works for most single-word brands)
+    var slug = key.replace(/&/g,"and").replace(/[^a-z0-9]/g,"");
+    return slug ? slug + ".com" : "";
   }
 
   // ---------- follow-up email ----------
@@ -270,7 +313,7 @@
       var cd = countdownBadge(x); if (cd) tags.push(cd);
       if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up due</span>');
       return '<div class="fcard" data-open="'+x.id+'">' +
-        '<div class="head">' + avatar(x.company) +
+        '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div>' +
             '<div style="margin-top:8px">'+pillHTML(x.status)+'</div></div>' +
           '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
@@ -296,7 +339,7 @@
         if (x.deadline) bits.push(countdownBadge(x));
         if (followUpDue(x)) bits.push('<span class="fu-flag">⚠️</span>');
         return '<div class="bcard" draggable="true" data-id="'+x.id+'" data-open="'+x.id+'">' +
-          '<div class="bh">'+avatar(x.company)+'<div><div class="bco">'+esc(x.company||"—")+'</div><div class="brl">'+esc(x.role||"")+'</div></div></div>' +
+          '<div class="bh">'+avatar(x.company, companyDomain(x.company, x.url))+'<div><div class="bco">'+esc(x.company||"—")+'</div><div class="brl">'+esc(x.role||"")+'</div></div></div>' +
           (bits.length?'<div class="bmeta">'+bits.join("")+'</div>':'') +
           '<div class="bmeta"><button class="qbtn" data-mail="'+x.id+'">✉️</button></div>' +
           '</div>';

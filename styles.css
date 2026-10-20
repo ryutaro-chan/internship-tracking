@@ -155,8 +155,12 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   transition: transform .16s, box-shadow .2s, border-color .2s; cursor: pointer; }
 .fcard:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: rgba(56,189,248,.35); }
 .fcard .head { display: flex; align-items: flex-start; gap: 12px; }
-.avatar { flex: 0 0 auto; width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 800; color: #fff; box-shadow: var(--shadow-sm); }
+.avatar { position: relative; flex: 0 0 auto; width: 48px; height: 48px; border-radius: 14px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #fff; box-shadow: var(--shadow-sm); }
+.avatar .av-initials { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+/* Company logo layered on top of the gradient initials; hidden by onerror if it fails to load */
+.avatar .logo-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 6px;
+  background: #ffffff; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(15,23,42,.06); }
 .fcard .ht { flex: 1; min-width: 0; }
 .fcard .title { font-size: 16px; font-weight: 700; letter-spacing: -.01em; line-height: 1.25; }
 .fcard .company { color: var(--muted); font-size: 13px; margin-top: 2px; }
@@ -209,6 +213,7 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .bcard.dragging { opacity: .5; }
 .bcard .bh { display: flex; align-items: center; gap: 9px; }
 .bcard .avatar { width: 34px; height: 34px; border-radius: 10px; font-size: 14px; }
+.bcard .avatar .logo-img { padding: 4px; }
 .bcard .bco { font-weight: 700; font-size: 13.5px; }
 .bcard .brl { color: var(--muted); font-size: 12px; }
 .bcard .bmeta { margin-top: 9px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
