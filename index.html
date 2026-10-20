@@ -19,7 +19,17 @@
           <div class="sub" id="appbarSub">Your internship command center</div>
         </div>
       </div>
-      <div style="display:flex; gap:8px;">
+
+      <!-- Desktop-only header tab navigation -->
+      <nav class="header-nav" id="headerNav">
+        <button class="htab active" data-tab="dashboard"><span class="ic">🏠</span>Dashboard</button>
+        <button class="htab" data-tab="applications"><span class="ic">🗂️</span>Applications</button>
+        <button class="htab" data-tab="analytics"><span class="ic">📊</span>Analytics</button>
+        <button class="htab" data-tab="compare"><span class="ic">⚖️</span>Compare</button>
+      </nav>
+
+      <div class="appbar-actions" style="display:flex; gap:8px;">
+        <button class="btn-new-desktop" id="addDesktop">＋ New Application</button>
         <button class="icon-pill" id="compareBtn" title="Compare roles">⚖</button>
         <button class="icon-pill" id="moreBtn" title="Export / Import">⋯</button>
       </div>

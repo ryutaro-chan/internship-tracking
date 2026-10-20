@@ -522,7 +522,8 @@
   function switchTab(t) {
     tab = t;
     ["dashboard","applications","analytics","compare"].forEach(function (name){ $("tab-"+name).classList.toggle("hidden", name!==t); });
-    document.querySelectorAll(".navtab").forEach(function (b){ b.classList.toggle("active", b.getAttribute("data-tab")===t); });
+    // keep BOTH mobile bottom nav and desktop header nav in sync
+    document.querySelectorAll(".navtab, .htab").forEach(function (b){ b.classList.toggle("active", b.getAttribute("data-tab")===t); });
     // view switcher + filters only relevant to list tabs
     var listTab = (t==="dashboard"||t==="applications");
     $("viewSeg").style.display = listTab ? "" : "none";
@@ -530,6 +531,24 @@
     $("searchWrap").style.display = (t==="analytics") ? "none" : "";
     $("scroll").scrollTop = 0;
     render();
+  }
+
+  // ---------- platform detection (adaptive layout) ----------
+  function isTouchDevice() {
+    return ("ontouchstart" in window) || (navigator.maxTouchPoints > 0) ||
+           /iPhone|iPad|iPod|Android/i.test(navigator.userAgent || "");
+  }
+  function applyPlatform() {
+    var touch = isTouchDevice();
+    var narrow = window.innerWidth < 768;
+    // Desktop experience when the viewport is wide AND it's not a primary touch device
+    var desktop = window.innerWidth >= 768 && !touch;
+    var b = document.body;
+    b.classList.toggle("is-desktop", desktop);
+    b.classList.toggle("is-mobile-ios", !desktop);
+    // ⌘K only meaningful with a physical keyboard
+    var hint = $("kbdHint");
+    if (hint) hint.textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
   }
 
   // ---------- more menu ----------
@@ -560,14 +579,29 @@
   $("search").oninput = render;
   $("statusFilter").onchange = render;
   $("sortBy").onchange = render;
-  document.querySelectorAll(".navtab").forEach(function (b){ b.onclick = function (){ switchTab(b.getAttribute("data-tab")); }; });
+  $("addDesktop").onclick = function (){ openModal(null); };
+  // both mobile bottom tabs and desktop header tabs drive switchTab
+  document.querySelectorAll(".navtab, .htab").forEach(function (b){ b.onclick = function (){ switchTab(b.getAttribute("data-tab")); }; });
   $("viewSeg").querySelectorAll("button").forEach(function (b){
     b.onclick = function () {
       view = b.getAttribute("data-view");
       $("viewSeg").querySelectorAll("button").forEach(function (x){ x.classList.toggle("active", x===b); });
-      $("app").classList.toggle("wide", view==="board");
+      $("app").classList.toggle("wide", view==="board" && !document.body.classList.contains("is-desktop"));
       render();
     };
+  });
+
+  // Adaptive layout: detect platform on load + react to viewport changes
+  applyPlatform();
+  var rzTimer;
+  window.addEventListener("resize", function () {
+    clearTimeout(rzTimer);
+    rzTimer = setTimeout(function () {
+      var wasDesktop = document.body.classList.contains("is-desktop");
+      applyPlatform();
+      var nowDesktop = document.body.classList.contains("is-desktop");
+      if (wasDesktop !== nowDesktop) { $("app").classList.remove("wide"); render(); }
+    }, 150);
   });
 
   render();

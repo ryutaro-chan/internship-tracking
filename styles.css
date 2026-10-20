@@ -333,3 +333,121 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 .hidden { display: none !important; }
+
+/* ===================================================================
+   RESPONSIVE / ADAPTIVE LAYOUT
+   Mobile-first (default above) = iOS app frame.
+   Desktop (>=768px with body.is-desktop) = full-width dashboard.
+   =================================================================== */
+
+/* Desktop header nav + desktop New button are hidden by default (mobile) */
+.header-nav { display: none; }
+.btn-new-desktop { display: none; }
+
+/* --- iOS safe-area padding (mobile) --- */
+body.is-mobile-ios .scroll { padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px)); }
+body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+
+@media (min-width: 768px) {
+  body.is-desktop {
+    background:
+      radial-gradient(900px 480px at 20% -6%, rgba(56,189,248,.10), transparent 60%),
+      radial-gradient(1000px 520px at 85% -4%, rgba(147,51,234,.10), transparent 62%),
+      var(--app-bg);
+    padding: 0;
+  }
+
+  /* Expand the phone frame into a full-width dashboard */
+  body.is-desktop .app {
+    max-width: 1200px; width: 100%; margin: 0 auto; min-height: 100vh;
+    border-radius: 0; box-shadow: none; background: transparent;
+  }
+
+  /* Header becomes a horizontal top navigation bar */
+  body.is-desktop .appbar {
+    position: sticky; top: 0; padding: 14px 32px;
+    display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto;
+    grid-template-areas: "brand nav actions" "search search search";
+    gap: 12px 24px; align-items: center;
+    background: var(--glass-bg); border-bottom: 1px solid var(--border);
+  }
+  body.is-desktop .appbar .top {
+    display: contents;
+  }
+  body.is-desktop .appbar .brand { grid-area: brand; }
+  body.is-desktop .appbar-actions { grid-area: actions; }
+  body.is-desktop .search {
+    grid-area: search; margin-top: 0; max-width: 520px;
+  }
+
+  /* Desktop header tab nav */
+  body.is-desktop .header-nav { grid-area: nav; display: flex; gap: 4px; justify-content: center; }
+  body.is-desktop .htab {
+    border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600;
+    color: var(--muted); padding: 8px 16px; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px;
+    transition: background .15s, color .15s;
+  }
+  body.is-desktop .htab:hover { background: var(--surface-2); color: var(--text-2); }
+  body.is-desktop .htab.active { background: rgba(14,165,233,.12); color: var(--accent-strong); }
+  body.is-desktop .btn-new-desktop {
+    display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; font-family: inherit;
+    font-size: 14px; font-weight: 700; color: #fff; background: var(--accent-strong); border-radius: 12px; padding: 10px 16px;
+    box-shadow: 0 6px 16px rgba(14,165,233,.3); transition: transform .14s, box-shadow .2s;
+  }
+  body.is-desktop .btn-new-desktop:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(14,165,233,.4); }
+
+  /* Hide mobile-only chrome on desktop */
+  body.is-desktop .bottom-nav { display: none; }
+  body.is-desktop .fab { display: none; }
+
+  /* Content area: roomy, scrolls with the page */
+  body.is-desktop .scroll { overflow: visible; padding: 28px 32px 48px; }
+
+  /* KPI / summary grid: four side-by-side metric cards + full-width ring */
+  body.is-desktop .summary { grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 4px 0 22px; }
+  body.is-desktop .scard { padding: 20px 22px; }
+  body.is-desktop .scard .num { font-size: 38px; }
+  body.is-desktop .ratecard { grid-column: 1 / -1; }
+
+  /* Horizontal filter bar */
+  body.is-desktop .filters { overflow: visible; margin-top: 0; }
+  body.is-desktop .seg { margin-top: 0; }
+
+  /* A desktop toolbar row that lays filters + view toggle side by side */
+  body.is-desktop #tab-dashboard > .section-label,
+  body.is-desktop #tab-applications > .section-label { display: flex; align-items: center; }
+
+  /* Feed becomes a responsive multi-column card grid on desktop */
+  body.is-desktop .feed { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; }
+
+  /* Board columns can breathe */
+  body.is-desktop .board { gap: 18px; }
+  body.is-desktop .col { flex: 1 1 0; min-width: 220px; }
+
+  /* Analytics wider bars */
+  body.is-desktop .analytics .nm { width: 180px; }
+
+  /* Compare: lay role columns side by side instead of stacked */
+  body.is-desktop .cmp-grid { flex-direction: row; align-items: flex-start; overflow-x: auto; }
+  body.is-desktop .cmp-col { flex: 0 0 300px; }
+  body.is-desktop .cmp-study-2 { flex-direction: row; }
+  body.is-desktop .cmp-field { flex: 1; }
+
+  /* Add/edit opens as a centered desktop modal instead of a bottom sheet */
+  body.is-desktop .sheet {
+    left: 50%; right: auto; bottom: auto; top: 50%; transform: translate(-50%, -48%) scale(.98);
+    max-width: 680px; width: calc(100% - 64px); max-height: 88vh; border-radius: 18px; opacity: 0;
+    transition: transform .2s ease, opacity .2s ease;
+  }
+  body.is-desktop .modal-bg.show .sheet { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  body.is-desktop .sheet .grab { display: none; }
+  body.is-desktop .sheet-foot { padding-bottom: 16px; }
+  body.is-desktop .form-grid { grid-template-columns: 1fr 1fr 1fr; }
+  body.is-desktop .field.full { grid-column: 1 / -1; }
+
+  /* ⌘K hint only meaningful on desktop — keep visible */
+  body.is-desktop .kbd { display: inline-block; }
+}
+
+/* Hide the ⌘K hint on touch/mobile where there's no keyboard shortcut */
+body.is-mobile-ios .kbd { display: none; }
