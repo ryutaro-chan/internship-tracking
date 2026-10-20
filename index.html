@@ -2,95 +2,139 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
 <title>CatchTheOffer</title>
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div class="page">
+<div class="app" id="app">
 
-  <div class="title-row">
-    <span class="emoji">🎯</span>
-    <h1>CatchTheOffer</h1>
-  </div>
-  <p class="subtitle">Every application, deadline, and interview stage — in one calm place.</p>
+  <!-- App bar -->
+  <header class="appbar">
+    <div class="top">
+      <div class="brand">
+        <span class="logo">🎯</span>
+        <div>
+          <h1>CatchTheOffer</h1>
+          <div class="sub" id="appbarSub">Your internship command center</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="icon-pill" id="compareBtn" title="Compare roles">⚖</button>
+        <button class="icon-pill" id="moreBtn" title="Export / Import">⋯</button>
+      </div>
+    </div>
 
-  <div class="kpis" id="kpis"></div>
-
-  <div class="toolbar">
-    <div class="search">
+    <div class="search" id="searchWrap">
       <span class="ico">🔍</span>
       <input id="search" placeholder="Search company, role, location…" />
       <span class="kbd" id="kbdHint">⌘K</span>
     </div>
+
+    <div class="filters" id="filterRow">
+      <select class="ctl" id="statusFilter">
+        <option value="__all">All Statuses</option>
+        <option value="__pending">Awaiting Reply</option>
+        <option value="__bookmarked">★ Bookmarked</option>
+        <option value="__sep" disabled>──────────</option>
+      </select>
+      <select class="ctl" id="sortBy">
+        <option value="updated">Last Updated</option>
+        <option value="deadline">Deadline (Soonest)</option>
+        <option value="applied">Date Applied</option>
+        <option value="company">Company (A–Z)</option>
+      </select>
+    </div>
+
     <div class="seg" id="viewSeg">
-      <button data-view="table" class="active">▤ Table</button>
+      <button data-view="feed" class="active">▤ Feed</button>
       <button data-view="board">▦ Board</button>
     </div>
-    <select class="ctl" id="statusFilter">
-      <option value="__all">All Statuses</option>
-      <option value="__pending">Awaiting Reply</option>
-      <option value="__sep" disabled>──────────</option>
-    </select>
-    <select class="ctl" id="sortBy">
-      <option value="updated">Last Updated</option>
-      <option value="deadline">Deadline (Soonest)</option>
-      <option value="applied">Date Applied</option>
-      <option value="company">Company (A–Z)</option>
-    </select>
-    <span style="flex:1"></span>
-    <button class="btn" id="compareBtn">⚖ Compare</button>
-    <button class="btn" id="exportBtn">⬇ Export</button>
-    <button class="btn" id="importBtn">⬆ Import</button>
-    <input type="file" id="importFile" accept="application/json" style="display:none" />
-    <button class="btn btn-primary" id="addBtn">＋ New</button>
-  </div>
+  </header>
 
-  <div class="exportbar"><span class="badge" id="syncBadge"></span></div>
+  <!-- Scrollable content -->
+  <main class="scroll" id="scroll">
+    <!-- Dashboard tab -->
+    <section id="tab-dashboard">
+      <div class="summary" id="summary"></div>
+      <div class="section-label" id="feedLabel">Applications</div>
+      <div id="view"></div>
+    </section>
 
-  <div id="view" style="flex:1; display:flex; flex-direction:column;"></div>
+    <!-- Applications tab (reuses feed) -->
+    <section id="tab-applications" class="hidden">
+      <div class="section-label">All Applications</div>
+      <div id="viewApps"></div>
+    </section>
+
+    <!-- Analytics tab -->
+    <section id="tab-analytics" class="hidden">
+      <div class="section-label">Overview</div>
+      <div class="summary" id="summary2"></div>
+      <div class="section-label">Status Breakdown</div>
+      <div class="analytics" id="analytics"></div>
+    </section>
+
+    <!-- Compare tab -->
+    <section id="tab-compare" class="hidden">
+      <div class="section-label">⚖ Compare Roles — Best Fit</div>
+      <div id="compareInline"></div>
+    </section>
+  </main>
+
+  <!-- Floating action button -->
+  <button class="fab" id="fab" title="New application">＋</button>
+
+  <!-- Bottom navigation -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="navtab active" data-tab="dashboard"><span class="ic">🏠</span>Dashboard</button>
+    <button class="navtab" data-tab="applications"><span class="ic">🗂️</span>Applications</button>
+    <button class="navtab" data-tab="analytics"><span class="ic">📊</span>Analytics</button>
+    <button class="navtab" data-tab="compare"><span class="ic">⚖️</span>Compare</button>
+  </nav>
 </div>
 
-<!-- Side-panel modal -->
+<!-- Add/Edit sheet -->
 <div class="modal-bg" id="modalBg">
-  <div class="modal">
-    <div class="modal-head">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head">
       <h2 id="modalTitle">New Application</h2>
       <button class="icon-btn" id="closeModal">✕</button>
     </div>
-    <div class="modal-body">
+    <div class="sheet-body">
       <form id="form">
         <input type="hidden" id="f_id" />
         <div class="section-title">Job Info</div>
         <div class="form-grid">
-          <div class="field"><label>Company Name *</label><input id="f_company" required placeholder="e.g. Stripe" /></div>
-          <div class="field"><label>Role / Job Title *</label><input id="f_role" required placeholder="e.g. Software Engineering Intern" /></div>
-          <div class="field"><label>Target Period / Term</label><input id="f_term" placeholder="e.g. Summer 2027 (May–Aug)" /></div>
+          <div class="field full"><label>Company Name *</label><input id="f_company" required placeholder="e.g. Stripe" /></div>
+          <div class="field full"><label>Role / Job Title *</label><input id="f_role" required placeholder="e.g. Software Engineering Intern" /></div>
+          <div class="field"><label>Target Period / Term</label><input id="f_term" placeholder="e.g. Summer 2027" /></div>
           <div class="field"><label>Location & Work Type</label><input id="f_location" placeholder="e.g. Singapore / Hybrid" /></div>
-          <div class="field full"><label>Application Status</label><select id="f_status"></select></div>
+          <div class="field"><label>Compensation / Stipend</label><input id="f_comp" placeholder="e.g. $1,500/month" /></div>
+          <div class="field"><label>Application Status</label><select id="f_status"></select></div>
         </div>
-        <div class="field full"><label>Job Description</label><textarea id="f_jobdesc" placeholder="Paste the role's responsibilities, requirements, tech stack… (used for the Fit comparison)"></textarea></div>
+        <div class="field full"><label>Job Description</label><textarea id="f_jobdesc" placeholder="Paste responsibilities, requirements, tech stack… (used for the Fit comparison)"></textarea></div>
         <div class="field full"><label>Portal URL</label><input id="f_url" type="url" placeholder="https://…" /></div>
 
         <div class="section-title">Important Dates</div>
         <div class="form-grid">
           <div class="field"><label>Application Date</label><input id="f_appliedDate" type="date" /></div>
           <div class="field"><label>Application Deadline</label><input id="f_deadline" type="date" /></div>
-          <div class="field"><label>Last Updated / Follow-up Date</label><input id="f_followup" type="date" /></div>
+          <div class="field full"><label>Last Updated / Follow-up Date</label><input id="f_followup" type="date" /></div>
         </div>
         <div class="section-title">Interview Tracking</div>
         <div class="form-grid">
           <div class="field"><label>Online Assessment / Test Date</label><input id="f_oaDate" type="date" /></div>
           <div class="field"><label>Interview Date</label><input id="f_interviewDates" type="date" /></div>
-          <div class="field full"><label>Notes</label><textarea id="f_stageNotes" placeholder="e.g. Completed HackerRank test on Oct 15; waiting for results"></textarea></div>
+          <div class="field full"><label>Notes</label><textarea id="f_stageNotes" placeholder="e.g. Completed HackerRank test; waiting for results"></textarea></div>
         </div>
         <div class="section-title">Offer & Decision</div>
         <div class="form-grid">
-          <div class="field"><label>Compensation / Allowance</label><input id="f_comp" placeholder="e.g. $1,500/month" /></div>
           <div class="field"><label>Work Hours & Duration</label><input id="f_hours" placeholder="e.g. Full-time, 12 weeks" /></div>
           <div class="field"><label>Offer Deadline / Decision Date</label><input id="f_offerDeadline" type="date" /></div>
           <div class="field"><label>Priority Rating</label><select id="f_priority"><option value="">—</option><option>High</option><option>Medium</option><option>Low</option></select></div>
-          <div class="field full"><label>Notes</label><textarea id="f_prosCons" placeholder="Advantages, disadvantages, thoughts about this offer…"></textarea></div>
+          <div class="field full"><label>Notes</label><textarea id="f_prosCons" placeholder="Advantages, disadvantages, thoughts…"></textarea></div>
         </div>
         <div class="section-title">Follow Up</div>
         <div class="form-grid">
@@ -100,25 +144,33 @@
         </div>
       </form>
     </div>
-    <div class="modal-foot">
+    <div class="sheet-foot">
       <button class="btn" id="cancelBtn" type="button">Cancel</button>
       <button class="btn btn-primary" id="saveBtn" type="button">Save</button>
     </div>
   </div>
 </div>
 
-<!-- Compare modal (centered, wide) -->
-<div class="modal-bg" id="compareBg">
-  <div class="modal modal-wide">
-    <div class="modal-head">
-      <h2>⚖ Compare Roles — Best Fit</h2>
-      <button class="icon-btn" id="closeCompare">✕</button>
-    </div>
-    <div class="modal-body" id="compareBody"></div>
-    <div class="modal-foot">
-      <span class="cmp-hint" id="cmpHint"></span>
-      <span style="flex:1"></span>
-      <button class="btn" id="cmpCloseBtn" type="button">Close</button>
+<!-- Quick status-change sheet -->
+<div class="modal-bg" id="statusBg">
+  <div class="sheet" style="max-height:auto">
+    <div class="grab"></div>
+    <div class="sheet-head"><h2>Update Status</h2><button class="icon-btn" id="closeStatus">✕</button></div>
+    <div class="sheet-body" id="statusBody"></div>
+  </div>
+</div>
+
+<!-- More menu sheet -->
+<div class="modal-bg" id="moreBg">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head"><h2>More</h2><button class="icon-btn" id="closeMore">✕</button></div>
+    <div class="sheet-body">
+      <div class="section-label" style="margin-top:0" id="syncBadge"></div>
+      <button class="btn" id="exportBtn" style="width:100%; margin-bottom:10px;">⬇ Export data (JSON)</button>
+      <button class="btn" id="importBtn" style="width:100%; margin-bottom:10px;">⬆ Import data (JSON)</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none" />
+      <button class="btn" id="sampleBtn" style="width:100%;">✨ Load sample data</button>
     </div>
   </div>
 </div>
