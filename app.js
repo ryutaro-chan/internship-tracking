@@ -364,34 +364,92 @@
       } catch (e) { alert("Could not import: "+e.message); } }; r.readAsText(file); }
 
   // ---------- compare engine ----------
-  var MAJOR_KEYWORDS = {
-    "computer science": ["software","engineer","developer","programming","python","java","c++","javascript","typescript","algorithm","backend","frontend","full stack","api","cloud","aws","git","web","mobile","system design","distributed","database","sql","devops","react","node","go"],
-    "software engineering": ["software","engineer","developer","agile","testing","ci/cd","api","microservices","backend","frontend","full stack","git","architecture","cloud","docker","kubernetes"],
-    "data science": ["data","machine learning","ml","ai","python","pandas","statistics","model","analytics","sql","visualization","regression","deep learning","tensorflow","pytorch","big data","spark"],
-    "data analytics": ["data","analytics","sql","excel","tableau","power bi","dashboard","reporting","statistics","visualization","etl","business intelligence","insights","python","metrics","kpi"],
-    "business": ["business","strategy","operations","marketing","finance","consulting","analysis","stakeholder","project management","market research","sales","product","growth"],
-    "finance": ["finance","financial","investment","banking","equity","trading","valuation","accounting","modelling","risk","portfolio","fintech","markets","excel","analyst"],
-    "marketing": ["marketing","brand","campaign","social media","content","seo","digital","growth","analytics","advertising","crm","market research"],
-    "electrical engineering": ["electrical","electronics","circuit","embedded","firmware","hardware","signal","pcb","fpga","microcontroller","iot"],
-    "mechanical engineering": ["mechanical","cad","solidworks","manufacturing","design","thermodynamics","robotics","automation"],
-    "design": ["design","ui","ux","figma","prototype","user research","wireframe","visual","interaction","product design","usability"]
+  // Singapore Higher Education Institutions
+  var IHLS = [
+    "National University of Singapore (NUS)",
+    "Nanyang Technological University (NTU)",
+    "Singapore Management University (SMU)",
+    "Singapore Institute of Technology (SIT)",
+    "Singapore University of Technology and Design (SUTD)",
+    "Singapore University of Social Sciences (SUSS)",
+    "Temasek Polytechnic (TP)",
+    "Singapore Polytechnic (SP)",
+    "Ngee Ann Polytechnic (NP)",
+    "Nanyang Polytechnic (NYP)",
+    "Republic Polytechnic (RP)"
+  ];
+
+  // Role categories a course aligns to (used for the relevance bonus + explanation tag)
+  // Course catalog: category -> [ { name, kws:[...], roles:[role-category tokens] } ]
+  var ROLE_TOKENS = {
+    swe:       ["software","engineer","developer","backend","frontend","full stack","programming","sde"],
+    data:      ["data","analytics","analyst","machine learning","ml","ai","bi","insights"],
+    cyber:     ["security","cyber","soc","penetration","infosec","vulnerability"],
+    fintech:   ["fintech","finance","trading","payments","banking","quant"],
+    cloud:     ["cloud","devops","infrastructure","aws","sre","platform"],
+    product:   ["product","business","operations","strategy","consulting","project"],
+    finance:   ["finance","banking","investment","equity","accounting","audit","risk","treasury"],
+    marketing: ["marketing","brand","growth","social media","content","seo","advertising"],
+    ee:        ["electrical","electronics","embedded","firmware","hardware","iot","circuit"],
+    mech:      ["mechanical","cad","manufacturing","robotics","automation","thermodynamics"],
+    systems:   ["systems","integration","automation","controls","industrial"],
+    design:    ["design","ux","ui","product design","interaction","visual","figma"],
+    media:     ["media","interactive","animation","content","multimedia","motion"]
   };
-  function studyField() { try { return localStorage.getItem(STUDY_KEY)||""; } catch(e){ return ""; } }
-  function setStudyField(v) { try { localStorage.setItem(STUDY_KEY, v); } catch(e){} }
-  function keywordsForStudy(study) {
-    var s=(study||"").toLowerCase().trim(); if (!s) return [];
-    if (MAJOR_KEYWORDS[s]) return MAJOR_KEYWORDS[s];
-    var best=null,bl=0; Object.keys(MAJOR_KEYWORDS).forEach(function (k){ if (s.indexOf(k)>=0||k.indexOf(s)>=0){ if (k.length>bl){best=k;bl=k.length;} } });
-    if (best) return MAJOR_KEYWORDS[best];
-    return s.split(/[^a-z+]+/).filter(function (w){ return w.length>2; });
+  var COURSE_CATALOG = {
+    "Computing & IT": [
+      { name:"Applied Computing in Fintech", kws:["software","fintech","python","api","blockchain","payments","data","sql"], roles:["swe","fintech","data","cloud"] },
+      { name:"Computer Science", kws:["software","engineer","developer","algorithm","python","java","c++","backend","frontend","api","cloud","data structure","system design","sql"], roles:["swe","data","cyber","cloud"] },
+      { name:"Information Systems", kws:["information systems","sql","database","erp","business process","requirements","integration","data"], roles:["swe","data","product"] },
+      { name:"Software Engineering", kws:["software","engineer","developer","agile","api","microservices","backend","frontend","testing","ci/cd","docker"], roles:["swe","cloud"] },
+      { name:"Cybersecurity", kws:["security","cyber","network","penetration","encryption","soc","vulnerability","firewall","infosec"], roles:["cyber","cloud","swe"] },
+      { name:"Data Analytics", kws:["data","analytics","sql","tableau","power bi","dashboard","statistics","python","etl","insights","kpi"], roles:["data","fintech"] }
+    ],
+    "Business & Finance": [
+      { name:"Business Administration", kws:["business","strategy","operations","management","stakeholder","project","consulting"], roles:["product","finance","marketing"] },
+      { name:"Banking & Finance", kws:["finance","banking","investment","equity","trading","risk","valuation","markets","fintech"], roles:["finance","fintech"] },
+      { name:"Accounting", kws:["accounting","audit","tax","financial reporting","compliance","ledger"], roles:["finance"] },
+      { name:"Marketing", kws:["marketing","brand","campaign","social media","content","seo","digital","growth","crm"], roles:["marketing","product"] }
+    ],
+    "Engineering": [
+      { name:"Electrical Engineering", kws:["electrical","electronics","circuit","embedded","firmware","hardware","signal","pcb","iot"], roles:["ee","systems"] },
+      { name:"Mechanical Engineering", kws:["mechanical","cad","solidworks","manufacturing","thermodynamics","robotics","automation"], roles:["mech","systems"] },
+      { name:"Systems Engineering", kws:["systems","integration","automation","controls","requirements","industrial","optimization"], roles:["systems","ee","swe"] }
+    ],
+    "Design & Digital Media": [
+      { name:"UX/UI Design", kws:["design","ui","ux","figma","prototype","user research","wireframe","usability","interaction"], roles:["design","product"] },
+      { name:"Interactive Media", kws:["media","interactive","animation","motion","content","multimedia","creative","design"], roles:["media","design"] }
+    ]
+  };
+  function courseDef(name) {
+    var found=null; Object.keys(COURSE_CATALOG).forEach(function (cat){ COURSE_CATALOG[cat].forEach(function (c){ if (c.name===name) found=c; }); });
+    return found;
   }
-  function computeFit(x, kws) {
+  function getStudy() { try { return JSON.parse(localStorage.getItem(STUDY_KEY)) || {ihl:"",course:""}; } catch(e){ return {ihl:"",course:""}; } }
+  function setStudy(obj) { try { localStorage.setItem(STUDY_KEY, JSON.stringify(obj)); } catch(e){} }
+
+  // Compute fit: keyword overlap + relevance bonus when role matches the course's affinity categories.
+  function computeFit(x, course) {
+    if (!course) return { score:null, matched:[], relevant:false, reasons:[] };
     var text=((x.role||"")+" "+(x.jobdesc||"")+" "+(x.term||"")+" "+(x.location||"")).toLowerCase();
-    if (!kws.length) return { score:null, matched:[] };
+    var kws = course.kws || [];
     var matched=[]; kws.forEach(function (k){ if (text.indexOf(k)>=0 && matched.indexOf(k)<0) matched.push(k); });
-    var score=Math.round(matched.length/kws.length*100);
-    if ((x.jobdesc||"").length>120 && score>0) score=Math.min(100, score+5);
-    return { score:score, matched:matched };
+    var base = kws.length ? Math.round(matched.length/kws.length*100) : 0;
+
+    // relevance bonus: does the role hit any of the course's target role categories?
+    var reasons=[]; var hitRoles=[];
+    (course.roles||[]).forEach(function (rc) {
+      var toks = ROLE_TOKENS[rc] || [];
+      var hit = toks.some(function (t){ return text.indexOf(t)>=0; });
+      if (hit) hitRoles.push(rc);
+    });
+    var relevant = hitRoles.length > 0;
+    var bonus = relevant ? Math.min(30, 12 + hitRoles.length*6) : 0;
+    if (relevant) reasons.push("Relevant to " + course.name);
+    if ((x.jobdesc||"").length>120 && base>0) base += 5;
+
+    var score = Math.min(100, base + bonus);
+    return { score: score, matched: matched, relevant: relevant, reasons: reasons, bonus: bonus };
   }
   function autoProsCons(x) {
     var pros=[],cons=[]; var loc=(x.location||"").toLowerCase();
@@ -405,24 +463,41 @@
     return { pros:pros, cons:cons };
   }
   var cmpSelected = [];
+  function studyPicker() {
+    var st = getStudy();
+    var ihlOpts = '<option value="">Select institution…</option>' +
+      IHLS.map(function (i){ return '<option'+(st.ihl===i?' selected':'')+'>'+esc(i)+'</option>'; }).join("");
+    var courseOpts = '<option value="">Select course / major…</option>' +
+      Object.keys(COURSE_CATALOG).map(function (cat){
+        return '<optgroup label="'+esc(cat)+'">' +
+          COURSE_CATALOG[cat].map(function (c){ return '<option'+(st.course===c.name?' selected':'')+'>'+esc(c.name)+'</option>'; }).join("") +
+          '</optgroup>';
+      }).join("");
+    return '<div class="cmp-study cmp-study-2">' +
+      '<div class="cmp-field"><label>🏫 Institution / University (IHL)</label><select id="cmpIhl" class="ctl-wide">'+ihlOpts+'</select></div>' +
+      '<div class="cmp-field"><label>🎓 Course / Major</label><select id="cmpCourse" class="ctl-wide">'+courseOpts+'</select></div>' +
+      '</div>';
+  }
   function renderCompareInline() {
-    var study = studyField();
-    var picker = '<div class="cmp-study"><label>🎓 I\u2019m studying</label><input id="cmpStudy" placeholder="e.g. Computer Science, Finance…" value="'+esc(study)+'" /></div>';
+    var st = getStudy();
+    var course = courseDef(st.course);
+    var picker = studyPicker();
     if (!data.length) { $("compareInline").innerHTML = picker + '<div class="cmp-empty">Add applications first, then compare them here.</div>'; bindStudy(); return; }
     var chips = data.map(function (x){ var on=cmpSelected.indexOf(x.id)>=0; return '<span class="cmp-chip'+(on?' on':'')+'" data-pick="'+x.id+'">'+esc(x.company||"—")+' <span class="c">'+esc(x.role||"")+'</span></span>'; }).join("");
     var pick = '<div class="cmp-pickwrap"><div class="lbl">Select roles to compare (2+)</div><div class="cmp-picks">'+chips+'</div></div>';
     var body;
     if (cmpSelected.length < 2) { body = '<div class="cmp-empty">Pick at least two roles above to see them side by side.</div>'; }
     else {
-      var kws=keywordsForStudy(study);
       var cols=cmpSelected.map(function (id){ return data.find(function (x){ return x.id===id; }); }).filter(Boolean);
-      var fits=cols.map(function (x){ return computeFit(x,kws); });
+      var fits=cols.map(function (x){ return computeFit(x, course); });
       var maxScore=-1; fits.forEach(function (f){ if (f.score!==null&&f.score>maxScore) maxScore=f.score; });
       var colsHTML=cols.map(function (x,i){
         var f=fits[i]; var isBest=f.score!==null&&f.score===maxScore&&maxScore>0; var pc=autoProsCons(x);
-        var scoreBlock=(f.score===null)?'<div class="fit"><div class="k">Enter your field of study to see a fit score.</div></div>'
+        var relTag = f.relevant ? '<div class="rel-tag">✦ '+esc(f.reasons[0])+(f.bonus?' · +'+f.bonus+'% relevance':'')+'</div>' : '';
+        var scoreBlock=(f.score===null)?'<div class="fit"><div class="k">Pick your course above to see a fit score.</div></div>'
           :'<div class="fit"><div class="score">'+f.score+'<span style="font-size:14px;color:var(--muted)">% fit</span></div><div class="bar"><span style="width:'+f.score+'%"></span></div>'+
-            (f.matched.length?'<div class="matched">'+f.matched.slice(0,8).map(function (m){ return '<span class="kw">'+esc(m)+'</span>'; }).join("")+'</div>':'<div class="k" style="margin-top:8px">No study keywords found</div>')+'</div>';
+            relTag +
+            (f.matched.length?'<div class="matched">'+f.matched.slice(0,8).map(function (m){ return '<span class="kw">'+esc(m)+'</span>'; }).join("")+'</div>':'<div class="k" style="margin-top:8px">No course keywords found in this role</div>')+'</div>';
         function rf(list,cls){ return list.map(function (tt){ return '<div class="cmp-row '+cls+'"><div class="v">'+(cls==="pro"?"✔ ":"✘ ")+esc(tt)+'</div></div>'; }).join(""); }
         return '<div class="cmp-col'+(isBest?' best':'')+'"><div class="cmp-col-head"><div class="cco">'+esc(x.company||"—")+'</div><div class="crl">'+esc(x.role||"")+'</div>'+(isBest?'<span class="cmp-badge-best">★ Best fit for you</span>':'')+'</div>'+
           scoreBlock+'<div class="cmp-rows">'+cmpRow("Status",pillHTML(x.status))+cmpRow("Term",esc(x.term||"—"))+cmpRow("Location",esc(x.location||"—"))+cmpRow("Compensation",esc(x.comp||"—"))+cmpRow("Hours",esc(x.hours||"—"))+cmpRow("Priority",esc(x.priority||"—"))+
@@ -437,8 +512,11 @@
     $("compareInline").querySelectorAll("[data-pick]").forEach(function (chip){ chip.onclick=function (){ var id=chip.getAttribute("data-pick"); var idx=cmpSelected.indexOf(id); if (idx>=0) cmpSelected.splice(idx,1); else cmpSelected.push(id); renderCompareInline(); }; });
   }
   function cmpRow(k,v){ return '<div class="cmp-row"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
-  function bindStudy(){ var el=$("cmpStudy"); if (!el) return; el.oninput=function (){ setStudyField(el.value); };
-    el.onchange=function (){ setStudyField(el.value); renderCompareInline(); setTimeout(function (){ var e=$("cmpStudy"); if (e) e.focus(); },0); }; }
+  function bindStudy() {
+    var ihl=$("cmpIhl"), course=$("cmpCourse");
+    if (ihl) ihl.onchange=function (){ var st=getStudy(); st.ihl=ihl.value; setStudy(st); renderCompareInline(); };
+    if (course) course.onchange=function (){ var st=getStudy(); st.course=course.value; setStudy(st); renderCompareInline(); };
+  }
 
   // ---------- tabs ----------
   function switchTab(t) {

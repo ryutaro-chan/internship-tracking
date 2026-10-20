@@ -285,10 +285,20 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 
 /* ============ Compare ============ */
 .cmp-study { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; background: var(--surface-2);
-  border-radius: 12px; padding: 12px 14px; }
+  border-radius: 14px; padding: 14px; }
 .cmp-study label { font-size: 13px; color: var(--text-2); font-weight: 700; }
 .cmp-study input { flex: 1; min-width: 160px; font-family: inherit; font-size: 15px; background: var(--surface); border: 1px solid var(--border-2); border-radius: 10px; padding: 9px 11px; outline: none; }
 .cmp-study input:focus { border-color: var(--accent); }
+.cmp-study-2 { flex-direction: column; align-items: stretch; gap: 12px; }
+.cmp-field label { display: block; margin-bottom: 6px; }
+.ctl-wide { width: 100%; font-family: inherit; font-size: 15px; color: var(--text); background: var(--surface);
+  border: 1px solid var(--border-2); border-radius: 10px; padding: 11px 12px; outline: none; cursor: pointer;
+  -webkit-appearance: none; appearance: none; padding-right: 30px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='%2364748b' stroke-width='1.3'/></svg>");
+  background-repeat: no-repeat; background-position: right 11px center; }
+.ctl-wide:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.15); }
+.rel-tag { display: inline-block; margin-top: 10px; font-size: 11.5px; font-weight: 700; color: var(--s-green);
+  background: var(--s-green-bg); border: 1px solid rgba(16,185,129,.35); border-radius: 20px; padding: 3px 10px; }
 .cmp-pickwrap .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; margin-bottom: 8px; }
 .cmp-picks { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
 .cmp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--border-2);
