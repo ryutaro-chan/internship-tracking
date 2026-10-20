@@ -319,12 +319,18 @@
 
   // soft-fill pill colors for light surfaces
   var PILL = {
-    slate:  { bg:"rgba(100,116,139,.14)", fg:"#475569" },
-    sky:    { bg:"rgba(14,165,233,.14)",  fg:"#0284c7" },
-    violet: { bg:"rgba(124,58,237,.14)",  fg:"#6d28d9" },
-    amber:  { bg:"rgba(217,119,6,.15)",   fg:"#b45309" },
-    green:  { bg:"rgba(5,150,105,.14)",   fg:"#047857" },
-    red:    { bg:"rgba(220,38,38,.13)",   fg:"#dc2626" }
+    // Applied — soft sky blue
+    sky:    { bg:"rgba(56,189,248,.16)",  fg:"#0369a1" },
+    // Online Assessment / Awaiting Reply — soft lavender purple
+    violet: { bg:"rgba(139,92,246,.15)",  fg:"#6d28d9" },
+    // Interview / Interviewed — soft warm amber
+    amber:  { bg:"rgba(245,158,11,.18)",  fg:"#b45309" },
+    // Offer Received — bright emerald victory badge
+    green:  { bg:"rgba(16,185,129,.20)",  fg:"#047857" },
+    // Rejected — low-contrast subtle rose
+    red:    { bg:"rgba(244,63,94,.12)",   fg:"#be123c" },
+    // Withdrawn — muted low-contrast gray
+    slate:  { bg:"rgba(148,163,184,.18)", fg:"#64748b" }
   };
 
   var FIELDS = ["company","role","term","location","status","appliedDate","deadline","url","followup",
