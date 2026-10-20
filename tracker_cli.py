@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-tracker_cli.py — Command-line analytics & data management for CatchTheOffer.
+tracker_cli.py — Command-line analytics & data management for JobTrackr.
 
-CatchTheOffer (the web app) stores internship applications in the browser and
-can export them as a JSON file. This CLI loads that JSON export and lets you
-analyze your job search from the terminal: status distribution, conversion
-metrics, upcoming deadlines, and CSV report generation.
+JobTrackr — "Organize the hunt. Catch the offer." — stores internship
+applications in the browser and can export them as a JSON file. This CLI loads
+that JSON export and lets you analyze your job search from the terminal: status
+distribution, conversion metrics, upcoming deadlines, and CSV report generation.
 
 Usage examples
 --------------
@@ -16,7 +16,7 @@ Usage examples
     python tracker_cli.py --json            # machine-readable summary
 
 If no --file is given, the script auto-detects the most recent
-"catchtheoffer-*.json" export in the current directory.
+"jobtrackr*.json" export in the current directory.
 
 The web app is entirely client-side, so this is a pure, dependency-free
 companion tool (standard library only) — runs anywhere Python 3.8+ is present.
@@ -67,7 +67,7 @@ LEGACY_STATUS_MAP = {
 # --------------------------------------------------------------------------- #
 @dataclass
 class Application:
-    """A single internship application row from a CatchTheOffer export."""
+    """A single internship application row from a JobTrackr export."""
 
     company: str = ""
     role: str = ""
@@ -163,7 +163,7 @@ def parse_stipend(comp: str) -> Optional[float]:
 # Analytics engine
 # --------------------------------------------------------------------------- #
 class InternshipAnalytics:
-    """Load a CatchTheOffer JSON export and compute job-search analytics."""
+    """Load a JobTrackr JSON export and compute job-search analytics."""
 
     def __init__(self, applications: Optional[List[Application]] = None) -> None:
         self.applications: List[Application] = applications or []
@@ -183,8 +183,9 @@ class InternshipAnalytics:
 
     @staticmethod
     def autodetect_file(directory: str = ".") -> Optional[str]:
-        """Return the most recently modified catchtheoffer-*.json export."""
-        candidates = glob.glob(os.path.join(directory, "catchtheoffer-*.json"))
+        """Return the most recently modified JobTrackr JSON export."""
+        candidates = glob.glob(os.path.join(directory, "jobtrackr*.json"))
+        candidates += glob.glob(os.path.join(directory, "catchtheoffer-*.json"))  # legacy
         candidates += glob.glob(os.path.join(directory, "*.json"))
         candidates = [c for c in candidates if os.path.isfile(c)]
         if not candidates:
@@ -323,7 +324,7 @@ def print_summary(engine: InternshipAnalytics) -> None:
     dist = engine.status_distribution()
     total = engine.total
 
-    print("\n  CatchTheOffer — Job Search Summary")
+    print("\n  JobTrackr — Job Search Summary")
     print("  " + "=" * 42)
     print(f"  Total applications : {metrics['total']}")
     print(f"  Awaiting reply     : {metrics['pending']}")
@@ -383,7 +384,7 @@ def resolve_input_file(explicit: Optional[str]) -> str:
     detected = InternshipAnalytics.autodetect_file(".")
     if not detected:
         print(
-            "No JSON export found. Export your data from CatchTheOffer "
+            "No JSON export found. Export your data from JobTrackr "
             "(More ▸ Export data) into this folder, or pass --file <path>.",
             file=sys.stderr,
         )
@@ -395,9 +396,9 @@ def resolve_input_file(explicit: Optional[str]) -> str:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tracker_cli.py",
-        description="Analyze CatchTheOffer internship application exports from the CLI.",
+        description="Analyze JobTrackr internship application exports from the CLI.",
     )
-    parser.add_argument("--file", "-f", help="Path to a CatchTheOffer JSON export.")
+    parser.add_argument("--file", "-f", help="Path to a JobTrackr JSON export.")
     parser.add_argument("--summary", action="store_true", help="Print a full job-search summary.")
     parser.add_argument("--deadlines", action="store_true", help="List upcoming deadlines.")
     parser.add_argument("--within", type=int, default=None, help="Limit deadlines to N days ahead.")

@@ -1,4 +1,6 @@
-# 🎯 CatchTheOffer
+# 🎯 JobTrackr
+
+> **Organize the hunt. Catch the offer.**
 
 Track every internship application — the companies you've applied to, what
 you're still waiting to hear back on, deadlines, interview stages, offers, and
@@ -52,13 +54,13 @@ export from the app.
 # 1. Generate realistic mock data to experiment with
 python generate_sample_data.py --count 20 --seed 42
 
-# 2. Summarize your job search (auto-detects the newest catchtheoffer-*.json)
+# 2. Summarize your job search (auto-detects the newest jobtrackr_applications-*.json)
 python tracker_cli.py --summary
 ```
 
 ### `tracker_cli.py` — analytics & reporting
 
-Loads a CatchTheOffer JSON export (via `--file`, or auto-detected from the
+Loads a JobTrackr JSON export (via `--file`, or auto-detected from the
 current folder) and reports on it.
 
 ```bash
@@ -77,7 +79,7 @@ class, which you can also import and use programmatically:
 ```python
 from tracker_cli import InternshipAnalytics
 
-engine = InternshipAnalytics.from_file("catchtheoffer-2026-10-20.json")
+engine = InternshipAnalytics.from_file("jobtrackr_applications-2026-10-20.json")
 print(engine.conversion_metrics())
 print(engine.status_distribution())
 engine.export_csv("report.csv")
@@ -89,7 +91,7 @@ Creates a JSON file in the exact shape the web app imports, so you can populate
 the dashboard (**More ▸ Import data**) or feed `tracker_cli.py` for testing.
 
 ```bash
-python generate_sample_data.py                      # 12 records -> catchtheoffer-sample.json
+python generate_sample_data.py                      # 12 records -> jobtrackr-sample.json
 python generate_sample_data.py --count 30           # 30 records
 python generate_sample_data.py --out demo.json --seed 7 --pretty
 ```

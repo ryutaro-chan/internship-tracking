@@ -1,9 +1,10 @@
 (function () {
   "use strict";
-  var STORAGE_KEY = "catchtheoffer.v1";
-  var LEGACY_KEY = "internship-tracker.v1";
-  var SYNC_KEY = "catchtheoffer.sync";
-  var STUDY_KEY = "catchtheoffer.study";
+  var STORAGE_KEY = "jobtrackr.v1";
+  // Legacy storage keys (older brand names) — read as fallback so existing data migrates.
+  var LEGACY_KEYS = ["catchtheoffer.v1", "internship-tracker.v1"];
+  var SYNC_KEY = "jobtrackr.sync";
+  var STUDY_KEY = "jobtrackr.study";
 
   var STATUSES = [
     { name: "Applied",                   key: "sky",    pending: true  },
@@ -62,6 +63,16 @@
     ["#f43f5e","#f97316"], ["#6366f1","#3b82f6"]
   ];
 
+  // one-time migration of sync/study keys from older brand names
+  (function migrateKeys() {
+    try {
+      if (!localStorage.getItem(SYNC_KEY) && localStorage.getItem("catchtheoffer.sync"))
+        localStorage.setItem(SYNC_KEY, localStorage.getItem("catchtheoffer.sync"));
+      if (!localStorage.getItem(STUDY_KEY) && localStorage.getItem("catchtheoffer.study"))
+        localStorage.setItem(STUDY_KEY, localStorage.getItem("catchtheoffer.study"));
+    } catch (e) {}
+  })();
+
   var data = load();
   var editingId = null;
   var view = "feed";
@@ -72,7 +83,12 @@
   function load() {
     var raw = null;
     try { raw = localStorage.getItem(STORAGE_KEY); } catch (e) {}
-    if (!raw) { try { raw = localStorage.getItem(LEGACY_KEY); } catch (e) {} }
+    // migrate from older brand keys if the current key is empty
+    if (!raw) {
+      for (var i = 0; i < LEGACY_KEYS.length && !raw; i++) {
+        try { raw = localStorage.getItem(LEGACY_KEYS[i]); } catch (e) {}
+      }
+    }
     var arr = []; try { arr = raw ? JSON.parse(raw) : []; } catch (e) { arr = []; }
     arr.forEach(function (x) {
       if (x.status && LEGACY_MAP[x.status]) x.status = LEGACY_MAP[x.status];
@@ -590,7 +606,7 @@
     var s=new Date(raw.at).toLocaleString(undefined,{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});
     $("syncBadge").textContent = "Last "+raw.action+": "+s; }
   function exportData() { var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}); var a=document.createElement("a");
-    a.href=URL.createObjectURL(blob); a.download="catchtheoffer-"+new Date().toISOString().slice(0,10)+".json"; a.click(); URL.revokeObjectURL(a.href); markSync("export"); showToast("Exported"); }
+    a.href=URL.createObjectURL(blob); a.download="jobtrackr_applications-"+new Date().toISOString().slice(0,10)+".json"; a.click(); URL.revokeObjectURL(a.href); markSync("export"); showToast("Exported"); }
 
   // ---------- CSV export ----------
   function csvCell(v) {
@@ -617,7 +633,7 @@
     var blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "catchtheoffer-"+new Date().toISOString().slice(0,10)+".csv";
+    a.download = "jobtrackr_applications-"+new Date().toISOString().slice(0,10)+".csv";
     a.click(); URL.revokeObjectURL(a.href);
     markSync("CSV export"); showToast("📊 CSV exported");
   }

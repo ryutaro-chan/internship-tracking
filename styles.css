@@ -71,6 +71,10 @@ body {
 .appbar .brand .logo { font-size: 24px; }
 .appbar h1 { font-size: 21px; font-weight: 800; letter-spacing: -.02em; margin: 0; }
 .appbar .sub { color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+/* Brand tagline: subtle, muted, responsive */
+.appbar .tagline { color: var(--faint); font-weight: 500; letter-spacing: .01em;
+  font-size: clamp(11px, 3.2vw, 13px); margin-top: 2px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .icon-pill { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border-2); background: var(--surface);
   display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: pointer; color: var(--text-2);
   transition: transform .12s, box-shadow .2s; }

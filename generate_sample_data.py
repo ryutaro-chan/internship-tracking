@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-generate_sample_data.py — Generate realistic mock internship applications.
+generate_sample_data.py — Generate realistic mock internship applications for JobTrackr.
 
-Produces a JSON file in the exact shape CatchTheOffer imports/exports, so you
+Produces a JSON file in the exact shape JobTrackr imports/exports, so you
 can populate the dashboard (via More ▸ Import) or feed it to tracker_cli.py for
 analytics testing.
 
 Usage
 -----
-    python generate_sample_data.py                 # 12 records -> catchtheoffer-sample.json
+    python generate_sample_data.py                 # 12 records -> jobtrackr-sample.json
     python generate_sample_data.py --count 30
     python generate_sample_data.py --out demo.json --seed 7
     python generate_sample_data.py --count 20 --pretty
@@ -181,10 +181,10 @@ def generate(count: int, seed: int | None = None) -> List[Dict[str, Any]]:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="generate_sample_data.py",
-        description="Generate mock CatchTheOffer internship applications as JSON.",
+        description="Generate mock JobTrackr internship applications as JSON.",
     )
     parser.add_argument("--count", "-n", type=int, default=12, help="How many records (default 12).")
-    parser.add_argument("--out", "-o", default="catchtheoffer-sample.json", help="Output JSON path.")
+    parser.add_argument("--out", "-o", default="jobtrackr-sample.json", help="Output JSON path.")
     parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducible data.")
     parser.add_argument("--pretty", action="store_true", help="Pretty-print the JSON output.")
     return parser
@@ -205,7 +205,7 @@ def main(argv: List[str] | None = None) -> int:
 
     offers = sum(1 for r in records if r["status"] == "Offer Received")
     print(f"Generated {len(records)} mock application(s) -> {args.out}")
-    print(f"  ({offers} offer(s); import via CatchTheOffer ▸ More ▸ Import data)")
+    print(f"  ({offers} offer(s); import via JobTrackr ▸ More ▸ Import data)")
     return 0
 
 
