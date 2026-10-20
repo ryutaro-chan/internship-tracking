@@ -1004,8 +1004,7 @@
   $("statusBg").addEventListener("click", function (e){ if (e.target===$("statusBg")) closeStatus(); });
   $("moreBtn").onclick = openMore; $("closeMore").onclick = closeMore;
   $("moreBg").addEventListener("click", function (e){ if (e.target===$("moreBg")) closeMore(); });
-  $("compareBtn").onclick = function (){ switchTab("compare"); };
-  $("shortcutsBtn").onclick = openShortcuts;
+  // Compare is reached via the center nav tab; Shortcuts button removed (still openable via "?").
   $("closeShortcuts").onclick = closeShortcuts;
   $("shortcutsBg").addEventListener("click", function (e){ if (e.target===$("shortcutsBg")) closeShortcuts(); });
   $("exportBtn").onclick = exportData;
