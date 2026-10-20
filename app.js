@@ -990,10 +990,6 @@
   function openMore() { renderSyncBadge(); $("moreBg").classList.add("show"); }
   function closeMore() { $("moreBg").classList.remove("show"); }
 
-  // ---------- keyboard shortcuts modal ----------
-  function openShortcuts() { $("shortcutsBg").classList.add("show"); }
-  function closeShortcuts() { $("shortcutsBg").classList.remove("show"); }
-
   // ---------- wire up ----------
   fillStatusSelects();
   $("kbdHint").textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
@@ -1004,9 +1000,6 @@
   $("statusBg").addEventListener("click", function (e){ if (e.target===$("statusBg")) closeStatus(); });
   $("moreBtn").onclick = openMore; $("closeMore").onclick = closeMore;
   $("moreBg").addEventListener("click", function (e){ if (e.target===$("moreBg")) closeMore(); });
-  // Compare is reached via the center nav tab; Shortcuts button removed (still openable via "?").
-  $("closeShortcuts").onclick = closeShortcuts;
-  $("shortcutsBg").addEventListener("click", function (e){ if (e.target===$("shortcutsBg")) closeShortcuts(); });
   $("exportBtn").onclick = exportData;
   $("exportCsvBtn").onclick = exportCsv;
   $("exportCsvQuick").onclick = exportCsv;
@@ -1019,34 +1012,12 @@
   $("importFile").onchange = function (e){ if (e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
   $("sampleBtn").onclick = loadSample;
 
-  // platform-aware shortcut labels in the shortcuts modal
-  var isMac = /Mac|iPhone|iPad/.test(navigator.platform);
-  if ($("sc-k")) $("sc-k").textContent = isMac ? "⌘K" : "Ctrl K";
-  if ($("sc-enter")) $("sc-enter").textContent = isMac ? "⌘↵" : "Ctrl ↵";
-
-  function anyModalOpen() {
-    return ["modalBg","statusBg","moreBg","shortcutsBg"].some(function (id){ return $(id).classList.contains("show"); });
-  }
-  function typingInField(e) {
-    var t = e.target && e.target.tagName;
-    return t === "INPUT" || t === "TEXTAREA" || t === "SELECT";
-  }
+  // Minimal, standard editor behaviours only (no shortcuts feature):
+  // ⌘K/Ctrl+K focuses search, Esc closes dialogs, ⌘/Ctrl+Enter saves the open form.
   document.addEventListener("keydown", function (e) {
     if ((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="k") { e.preventDefault(); $("search").focus(); return; }
-    if (e.key==="Escape") { closeModal(); closeStatus(); closeMore(); closeShortcuts(); return; }
+    if (e.key==="Escape") { closeModal(); closeStatus(); closeMore(); return; }
     if (e.key==="Enter" && (e.metaKey||e.ctrlKey) && $("modalBg").classList.contains("show")) { saveForm(); return; }
-
-    // Single-key shortcuts — ignore while typing or when a dialog is open.
-    if (e.metaKey || e.ctrlKey || e.altKey || typingInField(e)) return;
-    if (e.key === "?") { e.preventDefault(); if (anyModalOpen()) return; openShortcuts(); return; }
-    if (anyModalOpen()) return;
-    var k = e.key.toLowerCase();
-    if (k === "n") { e.preventDefault(); openModal(null); }
-    else if (k === "d") { e.preventDefault(); loadSample(); }
-    else if (e.key === "1") switchTab("dashboard");
-    else if (e.key === "2") switchTab("applications");
-    else if (e.key === "3") switchTab("analytics");
-    else if (e.key === "4") switchTab("compare");
   });
   $("search").oninput = render;
   $("statusFilter").onchange = render;

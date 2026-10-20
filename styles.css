@@ -600,10 +600,3 @@ body.is-mobile-ios .kbd { display: none; }
 /* inactive (Rejected / Withdrawn) — everything muted */
 .stepper.inactive { opacity: .5; }
 
-/* Keyboard shortcuts list */
-.shortcut-list { list-style: none; margin: 0; padding: 0; }
-.shortcut-list li { display: flex; align-items: center; justify-content: space-between; padding: 11px 2px; border-bottom: 1px solid var(--border); font-size: 14px; }
-.shortcut-list li:last-child { border-bottom: none; }
-.shortcut-list li span { color: var(--text-2); }
-.sc-key { font-family: inherit; font-size: 12px; font-weight: 700; color: var(--text-2); background: var(--surface-2);
-  border: 1px solid var(--border-2); border-bottom-width: 2px; border-radius: 7px; padding: 4px 9px; min-width: 32px; text-align: center; }
