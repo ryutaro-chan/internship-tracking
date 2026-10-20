@@ -38,7 +38,25 @@
     { id:"fintech", label:"Fintech & Payments",           icon:"💳", kws:["fintech","payment","payments","banking","trading","quant","blockchain","crypto","digital finance","wealth","insurtech"] },
     { id:"product", label:"Product & Operations",         icon:"🧩", kws:["product","operations","program manager","project manager","business","strategy","consulting","ops","product manager","growth","go-to-market"] }
   ];
-  var CAT_CURRENT = "all";
+  // ---------- Status filter tabs ----------
+  // The feed tab bar groups applications by APPLICATION STATUS.
+  // Each tab maps to one or more canonical statuses. "all" matches everything.
+  var STATUS_TABS = [
+    { id:"all",        label:"All Applications",         statuses:null },
+    { id:"applied",    label:"Applied",                  statuses:["Applied"] },
+    { id:"test",       label:"Test / Online Assessment", statuses:["Online Assessment / Test"] },
+    { id:"interview",  label:"Interviewing",             statuses:["Interview"] },
+    { id:"offer",      label:"Offer Received",           statuses:["Offer Received"] },
+    { id:"closed",     label:"Rejected / Withdrawn",     statuses:["Rejected","Withdrawn"] }
+  ];
+  var STATUS_TAB_CURRENT = "all";
+  function statusTabDef(id) { for (var i=0;i<STATUS_TABS.length;i++) if (STATUS_TABS[i].id===id) return STATUS_TABS[i]; return STATUS_TABS[0]; }
+  function matchesStatusTab(x, id) {
+    var t = statusTabDef(id);
+    if (!t.statuses) return true;            // "all"
+    return t.statuses.indexOf(x.status) >= 0;
+  }
+
   function categorize(x) {
     // manual override wins (if user picked a specific category)
     if (x.category && x.category !== "auto" && x.category !== "all") {
@@ -398,7 +416,7 @@
     var sort = $("sortBy").value;
     var rows = data.filter(function (x) {
       if (!matchesFilter(x, f)) return false;
-      if (CAT_CURRENT !== "all" && categorize(x) !== CAT_CURRENT) return false; // category tab filter
+      if (!matchesStatusTab(x, STATUS_TAB_CURRENT)) return false; // status filter tab
       if (q) { var hay=[x.company,x.role,x.location,x.term,availabilityLabel(x),x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
         if (hay.indexOf(q)===-1) return false; }
       return true;
@@ -413,18 +431,19 @@
     return rows;
   }
 
-  // ---------- category tab bar ----------
+  // ---------- status filter tab bar ----------
   function renderCatTabs() {
-    var html = CATEGORIES.map(function (c) {
-      var n = (c.id==="all") ? data.length : data.filter(function (x){ return categorize(x)===c.id; }).length;
-      return '<button class="cat-tab'+(CAT_CURRENT===c.id?' active':'')+'" data-cat="'+c.id+'">' +
-        '<span>'+c.icon+'</span>'+esc(c.label)+'<span class="cnt">'+n+'</span></button>';
+    var html = STATUS_TABS.map(function (t) {
+      var n = (t.id==="all") ? data.length : data.filter(function (x){ return matchesStatusTab(x, t.id); }).length;
+      return '<button class="cat-tab'+(STATUS_TAB_CURRENT===t.id?' active':'')+'" data-cat="'+t.id+'">' +
+        esc(t.label)+'<span class="cnt">'+n+'</span></button>';
     }).join("");
     ["catTabs","catTabsApps"].forEach(function (id){ var el=$(id); if (el) el.innerHTML = html; });
     document.querySelectorAll(".cat-tab").forEach(function (b){
-      b.onclick = function () { CAT_CURRENT = b.getAttribute("data-cat"); render(); };
+      b.onclick = function () { STATUS_TAB_CURRENT = b.getAttribute("data-cat"); render(); };
     });
   }
+  function statusTabLabel(id) { return statusTabDef(id).label; }
 
   // ---------- main render ----------
   function render() {
@@ -438,7 +457,7 @@
     if (!data.length) { targets.forEach(function (t){ renderEmpty(t); }); return; }
     var rows = filtered();
     targets.forEach(function (t) {
-      if (!rows.length) { $(t).innerHTML = '<div class="empty-note">No applications in <b>'+esc(catLabel(CAT_CURRENT))+'</b> matching your filters.</div>'; return; }
+      if (!rows.length) { $(t).innerHTML = '<div class="empty-note">No applications in <b>'+esc(statusTabLabel(STATUS_TAB_CURRENT))+'</b> matching your filters.</div>'; return; }
       if (view === "board") renderBoard(rows, t); else renderFeed(rows, t);
     });
     wireCards();
