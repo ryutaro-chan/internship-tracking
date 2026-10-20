@@ -312,6 +312,13 @@
     var wrap = $("industryOtherWrap");
     if (wrap) wrap.style.display = ($("f_industry").value === "Others") ? "" : "none";
   }
+  // Mark empty date fields so the uppercase DD/MM/YYYY placeholder hint shows.
+  function refreshDatePlaceholders() {
+    var inputs = document.querySelectorAll("input.date-dmy");
+    Array.prototype.forEach.call(inputs, function (el) {
+      el.setAttribute("data-empty", el.value ? "false" : "true");
+    });
+  }
 
   // ---------- metrics ----------
   function metrics() {
@@ -667,6 +674,7 @@
     $("appEndDate").value = item.endDate || "";
     if (!id) $("f_status").value = "Applied";
     toggleIndustryOther();   // show/hide custom industry input to match loaded value
+    refreshDatePlaceholders();  // show/hide the uppercase DD/MM/YYYY hint per field
     $("f_id").value = id || "";
     $("modalBg").classList.add("show");
     setTimeout(function (){ $("f_company").focus(); }, 80);
@@ -1074,6 +1082,12 @@
   $("kbdHint").textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
   $("fab").onclick = function (){ openModal(null); };
   $("f_industry").onchange = toggleIndustryOther;   // reveal custom input when "Others" chosen
+  // keep the uppercase date placeholder hint in sync as users pick/clear dates
+  Array.prototype.forEach.call(document.querySelectorAll("input.date-dmy"), function (el) {
+    el.addEventListener("input", function (){ el.setAttribute("data-empty", el.value ? "false" : "true"); });
+    el.addEventListener("change", function (){ el.setAttribute("data-empty", el.value ? "false" : "true"); });
+  });
+  refreshDatePlaceholders();
   $("closeModal").onclick = closeModal; $("cancelBtn").onclick = closeModal; $("saveBtn").onclick = saveForm;
   $("modalBg").addEventListener("click", function (e){ if (e.target===$("modalBg")) closeModal(); });
   $("closeStatus").onclick = closeStatus;

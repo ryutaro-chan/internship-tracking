@@ -364,18 +364,20 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .field input[type="date"] { -webkit-appearance: none; appearance: none; }
 .field input:focus, .field select:focus, .field textarea:focus { background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.15); }
 .field textarea { resize: vertical; min-height: 50px; }
-/* Date fields: show a DD/MM/YYYY format hint before a value is picked.
-   (Native <input type=date> can't take a text placeholder, so we overlay the
-   format hint and hide it once the field holds a value.) */
-.field input.date-dmy { position: relative; }
-.field input.date-dmy:not(:focus):in-range::before,
-.field input.date-dmy:not(:focus):out-of-range::before { content: ""; }
+/* Date fields: show an UPPERCASE DD/MM/YYYY placeholder until a date is picked.
+   Native <input type=date> has no text placeholder, so when the field is empty
+   (JS sets data-empty="true") we overlay an uppercase format hint and hide the
+   browser's own faint placeholder text. The hint clears once a value is set. */
+.field input.date-dmy { text-transform: uppercase; }
+.field input.date-dmy[data-empty="true"] { color: transparent; position: relative; }
+.field input.date-dmy[data-empty="true"]::-webkit-datetime-edit { color: transparent; }  /* hide browser's dd/mm/yyyy */
+.field input.date-dmy[data-empty="true"]::before {
+  content: attr(data-format);
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--faint); text-transform: uppercase; letter-spacing: .02em; pointer-events: none;
+}
+/* Uppercase the real value segments too (e.g. month abbreviations in some locales) */
 .field input.date-dmy::-webkit-datetime-edit { text-transform: uppercase; }
-.field input.date-dmy:required:invalid::-webkit-datetime-edit,
-.field input.date-dmy::-webkit-datetime-edit-text,
-.field input.date-dmy::-webkit-datetime-edit-month-field,
-.field input.date-dmy::-webkit-datetime-edit-day-field,
-.field input.date-dmy::-webkit-datetime-edit-year-field { text-transform: uppercase; }
 /* Custom-industry input appears directly below the Industry select */
 #industryOtherWrap { margin-top: 4px; }
 .field select { -webkit-appearance: none; appearance: none; padding-right: 30px;
