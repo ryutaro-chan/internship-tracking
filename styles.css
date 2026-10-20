@@ -678,7 +678,7 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
     -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-    display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) max-content; grid-template-rows: auto auto;
     grid-template-areas: "brand nav actions" "search search search";
     gap: 12px 24px; align-items: center;
   }
@@ -702,10 +702,13 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
   body.is-desktop .htab.active { background: rgba(0,119,237,.12); color: var(--accent-strong); }
   body.is-desktop .btn-new-desktop {
     display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; font-family: inherit;
-    font-size: 14px; font-weight: 700; color: #fff; background: var(--accent-strong); border-radius: 12px; padding: 10px 16px;
+    font-size: 14px; font-weight: 700; color: #fff; background: var(--accent-strong); border-radius: 12px; padding: 10px 18px;
+    white-space: nowrap;   /* keep "+ New Application" on a single line */
     box-shadow: 0 6px 16px rgba(0,119,237,.3); transition: transform .14s, box-shadow .2s;
   }
   body.is-desktop .btn-new-desktop:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(0,119,237,.4); }
+  /* Keep the right-hand action zone from being squeezed so the button never wraps */
+  body.is-desktop .appbar-actions { flex: 0 0 auto; flex-shrink: 0; }
 
   /* Hide mobile-only chrome on desktop */
   body.is-desktop .bottom-nav { display: none; }
