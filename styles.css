@@ -679,7 +679,11 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
 .ev-delete { width: 100%; background: var(--surface-2); color: var(--s-rose); border: 1px solid var(--border-2); border-radius: 12px; padding: 11px;
   font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 2px; transition: background .15s, border-color .15s; }
 .ev-delete:hover { background: var(--s-rose-bg); border-color: rgba(225,29,72,.35); }
-.cal-cell.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+/* Today: a subtle accent-tinted fill with the day number badged, instead of a
+   prominent border (which read like a hover/selection state). */
+.cal-cell.today { background: rgba(14,165,233,.08); }
+.cal-cell.today .cal-daynum { background: var(--accent-strong); color: #fff; border-radius: 999px;
+  min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; }
 .cal-cell.has-amber { background: var(--s-amber-bg); color: var(--s-amber); }
 .cal-cell.has-red   { background: var(--s-rose-bg);  color: var(--s-rose); }
 .cal-cell .ddot { display: flex; gap: 3px; margin-top: 3px; flex-wrap: wrap; }

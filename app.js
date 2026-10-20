@@ -1323,7 +1323,7 @@
       IHLS.map(function (i){ return '<option'+(st.ihl===i?' selected':'')+'>'+esc(i)+'</option>'; }).join("");
     var showOther = st.course === OTHER_COURSE;
     return '<div class="cmp-study cmp-study-2">' +
-      '<div class="cmp-field"><label>🏫 Institution / University (IHL)</label><select id="cmpIhl" class="ctl-wide">'+ihlOpts+'</select></div>' +
+      '<div class="cmp-field"><label>🏫 University</label><select id="cmpIhl" class="ctl-wide">'+ihlOpts+'</select></div>' +
       '<div class="cmp-field"><label>🎓 Course / Major</label><select id="cmpCourse" class="ctl-wide"'+(st.ihl?"":" disabled")+'>'+courseOptionsHTML(st.ihl, st.course)+'</select></div>' +
       '<div class="cmp-field" id="cmpCourseOtherWrap" style="'+(showOther?"":"display:none")+'"><label>Enter your course / major</label><input id="cmpCourseOther" class="ctl-wide" placeholder="Type your major" value="'+esc(st.courseOther||"")+'" /></div>' +
       '</div>';
