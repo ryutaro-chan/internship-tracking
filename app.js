@@ -21,9 +21,10 @@
     "Rejected": "Rejected", "Withdrawn": "Withdrawn"
   };
 
-  var FIELDS = ["company","role","term","location","status","category","jobdesc","url","appliedDate","deadline","followup",
+  var FIELDS = ["company","role","location","status","category","jobdesc","url","appliedDate","deadline","followup",
     "oaDate","interviewDates","stageNotes","comp","hours","offerDeadline","priority","prosCons",
     "referral","docs","nextAction"];
+  // Availability dates are handled explicitly (custom input IDs, not the f_ convention).
 
   // ---------- Categories ----------
   // id, label, and keyword signals used to auto-classify by role title / JD.
@@ -88,6 +89,16 @@
 
   function fmtDate(d) { if (!d) return ""; var p=d.split("-"); if (p.length!==3) return d;
     var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]; return m[parseInt(p[1],10)-1]+" "+parseInt(p[2],10); }
+  // "May 2027 – Aug 2027" style from start/end ISO dates (falls back to legacy term text).
+  function monthYear(d) { if (!d) return ""; var p=d.split("-"); if (p.length<2) return d;
+    var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]; return m[parseInt(p[1],10)-1]+" "+p[0]; }
+  function availabilityLabel(x) {
+    var s = x.startDate, e = x.endDate;
+    if (s && e) return monthYear(s) + " – " + monthYear(e);
+    if (s) return "From " + monthYear(s);
+    if (e) return "Until " + monthYear(e);
+    return x.term || ""; // backward-compat: show legacy free-text term if present
+  }
   function daysUntil(d) { if (!d) return null; var t=new Date(); t.setHours(0,0,0,0); return Math.round((new Date(d+"T00:00:00")-t)/86400000); }
   function daysSince(d) { if (!d) return null; var t=new Date(); t.setHours(0,0,0,0); return Math.round((t-new Date(d+"T00:00:00"))/86400000); }
   // Parse a stipend/comp string into a comparable monthly number (e.g. "$2,500/month" -> 2500)
@@ -336,7 +347,7 @@
     var rows = data.filter(function (x) {
       if (!matchesFilter(x, f)) return false;
       if (CAT_CURRENT !== "all" && categorize(x) !== CAT_CURRENT) return false; // category tab filter
-      if (q) { var hay=[x.company,x.role,x.location,x.term,x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
+      if (q) { var hay=[x.company,x.role,x.location,x.term,availabilityLabel(x),x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
         if (hay.indexOf(q)===-1) return false; }
       return true;
     });
@@ -402,7 +413,7 @@
       tags.push('<span class="cat-badge">'+catIcon(cid)+' '+esc(catLabel(cid))+(x.category&&x.category!=="auto"?"":"")+'</span>');
       if (x.location) tags.push('<span class="chiptag loc">📍 '+esc(x.location)+'</span>');
       if (x.comp) tags.push('<span class="chiptag pay">💰 '+esc(x.comp)+'</span>');
-      if (x.term) tags.push('<span class="chiptag">🗓 '+esc(x.term)+'</span>');
+      var avail = availabilityLabel(x); if (avail) tags.push('<span class="chiptag">🗓 '+esc(avail)+'</span>');
       var cd = countdownBadge(x); if (cd) tags.push(cd);
       if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up due</span>');
       return '<div class="fcard" data-open="'+x.id+'">' +
@@ -501,6 +512,9 @@
     $("modalTitle").textContent = id ? "Edit Application" : "New Application";
     var item = (id ? data.find(function (x){ return x.id===id; }) : {}) || {};
     FIELDS.forEach(function (f){ var el=$("f_"+f); if (el) el.value = item[f]!=null?item[f]:""; });
+    // availability date fields (custom IDs, not f_ convention)
+    $("appStartDate").value = item.startDate || "";
+    $("appEndDate").value = item.endDate || "";
     if (!id) $("f_status").value = "Applied";
     $("f_id").value = id || "";
     $("modalBg").classList.add("show");
@@ -513,6 +527,8 @@
     var obj = editingId ? data.find(function (x){ return x.id===editingId; }) : null;
     if (!obj) { obj = { id: uid() }; data.push(obj); }
     FIELDS.forEach(function (f){ var el=$("f_"+f); if (el) obj[f]=el.value.trim(); });
+    obj.startDate = $("appStartDate").value;
+    obj.endDate = $("appEndDate").value;
     obj._updated = Date.now();
     save(); closeModal(); render(); showToast(editingId?"Saved":"Application added");
   }
@@ -831,7 +847,7 @@
             (f.matched.length?'<div class="matched">'+f.matched.slice(0,8).map(function (m){ return '<span class="kw">'+esc(m)+'</span>'; }).join("")+'</div>':'<div class="k" style="margin-top:8px">No course keywords found in this role</div>')+'</div>';
         function rf(list,cls){ return list.map(function (tt){ return '<div class="cmp-row '+cls+'"><div class="v">'+(cls==="pro"?"✔ ":"✘ ")+esc(tt)+'</div></div>'; }).join(""); }
         return '<div class="cmp-col'+(isBest?' best':'')+'"><div class="cmp-col-head"><div class="cco">'+esc(x.company||"—")+'</div><div class="crl">'+esc(x.role||"")+'</div>'+(isBest?'<span class="cmp-badge-best">★ Best fit for you</span>':'')+'</div>'+
-          scoreBlock+'<div class="cmp-rows">'+cmpRow("Status",pillHTML(x.status))+cmpRow("Term",esc(x.term||"—"))+cmpRow("Location",esc(x.location||"—"))+cmpRow("Compensation",esc(x.comp||"—"))+cmpRow("Hours",esc(x.hours||"—"))+cmpRow("Priority",esc(x.priority||"—"))+
+          scoreBlock+'<div class="cmp-rows">'+cmpRow("Status",pillHTML(x.status))+cmpRow("Availability",esc(availabilityLabel(x)||"—"))+cmpRow("Location",esc(x.location||"—"))+cmpRow("Compensation",esc(x.comp||"—"))+cmpRow("Hours",esc(x.hours||"—"))+cmpRow("Priority",esc(x.priority||"—"))+
           '<div class="cmp-row"><div class="k">Advantages</div>'+(pc.pros.length?rf(pc.pros,"pro"):'<div class="v">—</div>')+'</div>'+
           '<div class="cmp-row"><div class="k">Disadvantages</div>'+(pc.cons.length?rf(pc.cons,"con"):'<div class="v">—</div>')+'</div>'+
           (x.prosCons?cmpRow("Your Notes",esc(x.prosCons)):"")+'</div></div>';
