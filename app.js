@@ -783,6 +783,97 @@
   // Sentinel entry that reveals a custom text input when chosen.
   var OTHER_COURSE = "Other Course / Major...";
 
+  // ---------- Course -> suggested job roles ----------
+  var courseToRolesMap = {
+    // Computing, Fintech & IT
+    "Fintech": ["Fintech SWE Intern", "Blockchain Developer", "Quant Analyst", "Financial Tech Analyst", "Risk & Compliance Specialist"],
+    "Computer Science": ["Software Engineer Intern", "Backend Engineer", "Full Stack Developer", "Algorithms Engineer", "Systems Analyst"],
+    "Information Security": ["Cybersecurity Analyst", "Security Engineer", "SOC Analyst", "Penetration Tester", "Information Security Intern"],
+    "Software Engineering": ["Software Engineering Intern", "Frontend Engineer", "DevOps Engineer", "QA Automation Engineer"],
+    "Business Analytics": ["Business Analytics Intern", "Data Analyst", "BI Developer", "Product Analyst", "Operations Analyst"],
+    "Data Science": ["Data Science Intern", "AI/ML Engineer", "Data Engineer", "Predictive Modeller"],
+    "Artificial Intelligence": ["AI/ML Engineer", "Data Science Intern", "Machine Learning Engineer", "Computer Vision Engineer"],
+    "Information Systems": ["Systems Analyst", "IT Business Analyst", "ERP Consultant", "Technical Consultant"],
+    "Information and Communications Technology": ["IT Support Engineer", "Network Engineer", "Systems Administrator", "Cloud Associate"],
+    "Interactive Media": ["Game Developer", "Unity/Unreal Engine Programmer", "AR/VR Developer", "Graphics Engineer"],
+    "Computer Science in Interactive Media": ["Game Developer", "Unity/Unreal Engine Programmer", "AR/VR Developer", "Graphics Engineer"],
+
+    // Business, Management & Finance
+    "Business": ["Management Associate Intern", "Business Development Representative", "Operations Analyst", "Product Manager Intern"],
+    "Accountancy": ["Audit Associate Intern", "Tax Consultant", "Financial Accountant", "Risk Advisory Intern"],
+    "Finance": ["Investment Banking Intern", "Financial Analyst", "Asset Management Analyst", "Wealth Management Intern"],
+    "Quantitative Finance": ["Quant Analyst", "Financial Analyst", "Risk Analyst", "Algorithmic Trading Intern"],
+    "Economics": ["Economic Analyst", "Market Research Analyst", "Policy Analyst", "Financial Risk Analyst"],
+    "Supply Chain": ["Supply Chain Analyst", "Logistics Coordinator", "Procurement Associate", "Operations Trainee"],
+    "Hospitality": ["Hospitality Management Trainee", "Event Operations Coordinator", "Guest Experience Analyst"],
+    "Human Resource": ["HR Associate Intern", "Talent Acquisition Intern", "People Operations Analyst"],
+    "Real Estate": ["Real Estate Analyst", "Property Management Intern", "Valuation Analyst"],
+    "Marketing": ["Digital Marketing Specialist", "Brand Executive", "Growth Marketing Intern", "Social Media Strategist"],
+
+    // Design, Arts & Communications
+    "Art": ["UI/UX Designer", "Concept Artist", "3D Animator", "Visual Designer", "Graphic Designer"],
+    "Animation": ["3D Animator", "Motion Graphics Artist", "Concept Artist", "Visual Designer"],
+    "Digital Media": ["Digital Content Strategist", "Media Planner", "UI/UX Designer", "Motion Graphics Artist"],
+    "Communication": ["Corporate Communications Intern", "PR Executive", "Digital Marketing Specialist", "Content Strategist"],
+    "Architecture": ["Architectural Assistant", "Spatial Designer", "BIM Specialist", "Urban Planner Intern"],
+    "Design": ["UI/UX Designer", "Product Designer", "Visual Designer", "Design Researcher"],
+
+    // Engineering
+    "Electrical": ["Electrical Engineer", "Embedded Systems Engineer", "Hardware Engineer", "Power Systems Analyst"],
+    "Electronics": ["Electronics Engineer", "Embedded Systems Engineer", "Hardware Engineer"],
+    "Mechatronics": ["Robotics Engineer", "Embedded Systems Engineer", "Automation Engineer", "Mechatronics Intern"],
+    "Robotics": ["Robotics Engineer", "Automation Engineer", "Controls Engineer"],
+    "Mechanical": ["Mechanical Design Engineer", "Robotics Engineer", "Manufacturing Analyst", "CAD Specialist"],
+    "Aerospace": ["Aerospace Engineer", "Aircraft Systems Engineer", "Propulsion Analyst"],
+    "Aircraft": ["Aircraft Systems Engineer", "Aerospace Engineer", "Maintenance Engineer"],
+    "Civil": ["Civil Engineer", "Structural Engineer", "Project Management Intern", "Site Engineer"],
+    "Chemical": ["Process Engineer", "R&D Chemist", "Quality Control Engineer", "Bioprocess Engineer"],
+    "Biomedical": ["Biomedical Engineer", "Clinical Engineer", "Medical Device R&D Intern"],
+    "Materials": ["Materials Engineer", "R&D Engineer", "Quality Control Engineer"],
+    "Environmental": ["Environmental Engineer", "Sustainability Analyst", "EHS Associate"],
+    "Systems Engineering": ["Systems Engineer", "Integration Engineer", "Automation Engineer"],
+    "Engineering": ["Engineering Intern", "Project Engineer", "R&D Engineer", "Design Engineer"],
+
+    // Healthcare & Science
+    "Nursing": ["Staff Nurse Intern", "Clinical Operations Executive", "Healthcare Administrator"],
+    "Pharmacy": ["Pharmaceutical Analyst", "Clinical Research Associate", "Pharmacy Associate"],
+    "Pharmaceutical": ["Pharmaceutical Analyst", "Clinical Research Associate", "Process Engineer"],
+    "Physiotherapy": ["Physiotherapist Intern", "Rehabilitation Associate", "Clinical Operations Executive"],
+    "Life Sciences": ["Research Assistant", "Lab Analyst", "Biotech Associate"],
+    "Chemistry": ["R&D Chemist", "Lab Analyst", "Quality Control Associate"],
+    "Physics": ["Research Assistant", "R&D Engineer", "Data Analyst"],
+    "Food": ["Food Technologist", "Quality Assurance Associate", "R&D Food Scientist"],
+
+    // Law & Social Science
+    "Law": ["Legal Intern", "Paralegal", "Compliance Officer", "Regulatory Affairs Analyst"],
+    "Social Work": ["Social Work Associate", "Community Programme Coordinator", "Case Worker Intern"],
+    "Psychology": ["People Operations Analyst", "UX Researcher", "HR Associate Intern"],
+    "Early Childhood": ["Early Childhood Educator", "Curriculum Associate", "Programme Coordinator"],
+    "Public Safety": ["Security Operations Analyst", "Risk & Compliance Specialist", "Emergency Planning Associate"],
+    "Building": ["Project Management Intern", "Site Engineer", "Facilities Associate"]
+  };
+  // Ordered most-specific -> general so a full official title resolves to the best key.
+  var COURSE_KEY_ORDER = [
+    "Fintech","Quantitative Finance","Information Security","Software Engineering","Computer Science in Interactive Media",
+    "Computer Science","Business Analytics","Data Science","Artificial Intelligence","Information and Communications Technology",
+    "Information Systems","Interactive Media","Accountancy","Economics","Supply Chain","Hospitality","Human Resource",
+    "Real Estate","Marketing","Animation","Digital Media","Communication","Architecture","Mechatronics","Robotics",
+    "Electronics","Electrical","Aerospace","Aircraft","Mechanical","Civil","Chemical","Biomedical","Materials",
+    "Environmental","Systems Engineering","Pharmaceutical","Pharmacy","Physiotherapy","Nursing","Life Sciences",
+    "Chemistry","Physics","Food","Law","Social Work","Psychology","Early Childhood","Public Safety","Building",
+    "Design","Art","Business","Finance","Engineering"
+  ];
+  // Map a (possibly full official) course title to its suggested roles.
+  function suggestedRolesFor(courseTitle) {
+    if (!courseTitle || courseTitle === OTHER_COURSE) return { key:null, roles:[] };
+    var t = courseTitle.toLowerCase();
+    for (var i=0;i<COURSE_KEY_ORDER.length;i++) {
+      var key = COURSE_KEY_ORDER[i];
+      if (t.indexOf(key.toLowerCase()) >= 0) return { key:key, roles: courseToRolesMap[key] || [] };
+    }
+    return { key:null, roles:[] };
+  }
+
   // Complete, official undergraduate programme lists for the six Singapore
   // autonomous universities, using each university's exact full degree names.
   // Drives the Course dropdown directly.
@@ -1105,9 +1196,44 @@
       }).join("");
       body='<div class="cmp-grid">'+colsHTML+'</div>';
     }
-    $("compareInline").innerHTML = picker + pick + body;
+    $("compareInline").innerHTML = picker + suggestionsHTML(effectiveCourse) + pick + body;
     bindStudy();
+    wireSuggestions();
     $("compareInline").querySelectorAll("[data-pick]").forEach(function (chip){ chip.onclick=function (){ var id=chip.getAttribute("data-pick"); var idx=cmpSelected.indexOf(id); if (idx>=0) cmpSelected.splice(idx,1); else cmpSelected.push(id); renderCompareInline(); }; });
+  }
+  // Suggested-roles block shown below the Course dropdown.
+  function suggestionsHTML(courseTitle) {
+    var sug = suggestedRolesFor(courseTitle);
+    if (!sug.roles.length) return "";
+    var badges = sug.roles.map(function (r){ return '<button type="button" class="role-chip" data-role="'+esc(r)+'">'+esc(r)+'</button>'; }).join("");
+    return '<div class="role-suggest">' +
+      '<div class="role-suggest-title">💡 Suggested Roles for ' + esc(sug.key) + '</div>' +
+      '<div class="role-chips">' + badges + '</div></div>';
+  }
+  function wireSuggestions() {
+    $("compareInline").querySelectorAll("[data-role]").forEach(function (b) {
+      b.onclick = function () {
+        var role = b.getAttribute("data-role");
+        var rl = role.toLowerCase();
+        // Auto-select any tracked applications whose role matches the suggestion.
+        var matched = data.filter(function (x) {
+          var r = (x.role||"").toLowerCase();
+          return r.indexOf(rl) >= 0 || rl.indexOf(r) >= 0 ||
+                 r.split(/\s+/).some(function (w){ return w.length>3 && rl.indexOf(w)>=0; });
+        });
+        if (matched.length) {
+          matched.forEach(function (m){ if (cmpSelected.indexOf(m.id) < 0) cmpSelected.push(m.id); });
+          b.classList.add("picked");
+          showToast("Added " + matched.length + " matching role" + (matched.length===1?"":"s") + " to compare");
+          renderCompareInline();
+        } else {
+          // Pre-fill a new application with this role so the user can track it.
+          showToast("No tracked role matches — opening a new application");
+          openModal(null);
+          setTimeout(function (){ var el=$("f_role"); if (el) el.value = role; }, 120);
+        }
+      };
+    });
   }
   function cmpRow(k,v){ return '<div class="cmp-row"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
   function bindStudy() {
