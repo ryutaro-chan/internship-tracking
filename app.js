@@ -321,10 +321,13 @@
   }
   // Gray out form selects that are still on their empty "Select…" option,
   // so they read like placeholders rather than real selected values.
+  // Set color inline so it always wins over native select styling.
   function refreshSelectPlaceholders() {
     ["f_location","f_industry","f_priority"].forEach(function (id) {
       var el = $(id); if (!el) return;
-      el.setAttribute("data-placeholder", el.value ? "false" : "true");
+      var empty = !el.value;
+      el.setAttribute("data-placeholder", empty ? "true" : "false");
+      el.style.color = empty ? "#94a3b8" : "#0f172a";
     });
   }
 
