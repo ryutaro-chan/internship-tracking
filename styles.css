@@ -262,11 +262,13 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   border: 1px solid var(--glass-border); box-shadow: var(--shadow-sm);
   transition: transform .16s, box-shadow .2s, border-color .2s; cursor: pointer; }
 .fcard:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: rgba(56,189,248,.35); }
-/* Manually archived cards: dimmed to read as inactive (still shown unless Hide Archived is on) */
-.fcard.archived { opacity: .6; }
-.fcard.archived:hover { opacity: 1; }
+/* Manually archived cards: still fully legible (no whole-card fade — that made
+   the grid look inconsistent). Archived state is signalled by a muted surface
+   tint + the "Archived" tag, so every card reads at the same clarity. */
+.fcard.archived { background: var(--surface-2); border-color: var(--border-2); box-shadow: none; }
+.fcard.archived:hover { box-shadow: var(--shadow); }
 .arch-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--muted);
-  background: var(--surface-2); border: 1px solid var(--border-2); border-radius: 20px; padding: 3px 9px; }
+  background: var(--surface-3); border: 1px solid var(--border-2); border-radius: 20px; padding: 3px 9px; }
 .fcard .head { display: flex; align-items: flex-start; gap: 12px; }
 .avatar { position: relative; flex: 0 0 auto; width: 48px; height: 48px; border-radius: 14px; overflow: hidden;
   display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #fff; box-shadow: var(--shadow-sm); }
