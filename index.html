@@ -67,13 +67,15 @@
     <!-- Dashboard tab -->
     <section id="tab-dashboard">
       <div class="summary" id="summary"></div>
-      <div class="section-label" id="feedLabel">Applications</div>
+      <div class="section-label" id="feedLabel">Job Applications</div>
+      <div class="cat-tabs" id="catTabs"></div>
       <div id="view"></div>
     </section>
 
     <!-- Applications tab (reuses feed) -->
     <section id="tab-applications" class="hidden">
-      <div class="section-label">All Applications</div>
+      <div class="section-label">Job Applications</div>
+      <div class="cat-tabs" id="catTabsApps"></div>
       <div id="viewApps"></div>
     </section>
 
@@ -123,6 +125,7 @@
           <div class="field"><label>Location & Work Type</label><input id="f_location" placeholder="e.g. Singapore / Hybrid" /></div>
           <div class="field"><label>Compensation / Stipend</label><input id="f_comp" placeholder="e.g. $1,500/month" /></div>
           <div class="field"><label>Application Status</label><select id="f_status"></select></div>
+          <div class="field full"><label>Category <span style="color:var(--faint);font-weight:400">(auto-detected if left on Auto)</span></label><select id="f_category"></select></div>
         </div>
         <div class="field full"><label>Job Description</label><textarea id="f_jobdesc" placeholder="Paste responsibilities, requirements, tech stack… (used for the Fit comparison)"></textarea></div>
         <div class="field full"><label>Portal URL</label><input id="f_url" type="url" placeholder="https://…" /></div>

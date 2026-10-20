@@ -21,9 +21,36 @@
     "Rejected": "Rejected", "Withdrawn": "Withdrawn"
   };
 
-  var FIELDS = ["company","role","term","location","status","jobdesc","url","appliedDate","deadline","followup",
+  var FIELDS = ["company","role","term","location","status","category","jobdesc","url","appliedDate","deadline","followup",
     "oaDate","interviewDates","stageNotes","comp","hours","offerDeadline","priority","prosCons",
     "referral","docs","nextAction"];
+
+  // ---------- Categories ----------
+  // id, label, and keyword signals used to auto-classify by role title / JD.
+  var CATEGORIES = [
+    { id:"all",     label:"All Jobs",                     icon:"🗂️" },
+    { id:"tech",    label:"Tech & Software Engineering",  icon:"💻", kws:["software","engineer","developer","backend","frontend","full stack","full-stack","sde","swe","programmer","web","mobile","devops","cloud","platform","infrastructure","systems engineer"] },
+    { id:"data",    label:"Data Analytics & AI",          icon:"📈", kws:["data","analytics","analyst","machine learning","ml ","ai ","artificial intelligence","data science","data scientist","bi ","business intelligence","big data","data engineer","deep learning"] },
+    { id:"fintech", label:"Fintech & Payments",           icon:"💳", kws:["fintech","payment","payments","banking","trading","quant","blockchain","crypto","digital finance","wealth","insurtech"] },
+    { id:"product", label:"Product & Operations",         icon:"🧩", kws:["product","operations","program manager","project manager","business","strategy","consulting","ops","product manager","growth","go-to-market"] }
+  ];
+  var CAT_CURRENT = "all";
+  function categorize(x) {
+    // manual override wins (if user picked a specific category)
+    if (x.category && x.category !== "auto" && x.category !== "all") {
+      if (CATEGORIES.some(function (c){ return c.id === x.category; })) return x.category;
+    }
+    var text = ((x.role||"") + " " + (x.jobdesc||"")).toLowerCase() + " ";
+    // Fintech is most specific -> check first so "Fintech SWE" lands in Fintech
+    var order = ["fintech","data","tech","product"];
+    for (var i=0;i<order.length;i++) {
+      var cat = CATEGORIES.filter(function (c){ return c.id===order[i]; })[0];
+      if (cat && cat.kws.some(function (k){ return text.indexOf(k)>=0; })) return cat.id;
+    }
+    return "tech"; // sensible default for internships
+  }
+  function catLabel(id) { var c=CATEGORIES.filter(function (k){ return k.id===id; })[0]; return c?c.label:id; }
+  function catIcon(id) { var c=CATEGORIES.filter(function (k){ return k.id===id; })[0]; return c?c.icon:""; }
 
   // avatar gradient palette (deterministic per company)
   var AV_GRADS = [
@@ -110,6 +137,9 @@
   function fillStatusSelects() {
     $("f_status").innerHTML = STATUSES.map(function (s){ return '<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>'; }).join("");
     $("statusFilter").insertAdjacentHTML("beforeend", STATUSES.map(function (s){ return '<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>'; }).join(""));
+    // category select: Auto + the four real categories
+    $("f_category").innerHTML = '<option value="auto">Auto-detect</option>' +
+      CATEGORIES.filter(function (c){ return c.id!=="all"; }).map(function (c){ return '<option value="'+c.id+'">'+esc(c.icon+" "+c.label)+'</option>'; }).join("");
   }
 
   // ---------- metrics ----------
@@ -170,6 +200,7 @@
     var sort = $("sortBy").value;
     var rows = data.filter(function (x) {
       if (!matchesFilter(x, f)) return false;
+      if (CAT_CURRENT !== "all" && categorize(x) !== CAT_CURRENT) return false; // category tab filter
       if (q) { var hay=[x.company,x.role,x.location,x.term,x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
         if (hay.indexOf(q)===-1) return false; }
       return true;
@@ -183,10 +214,24 @@
     return rows;
   }
 
+  // ---------- category tab bar ----------
+  function renderCatTabs() {
+    var html = CATEGORIES.map(function (c) {
+      var n = (c.id==="all") ? data.length : data.filter(function (x){ return categorize(x)===c.id; }).length;
+      return '<button class="cat-tab'+(CAT_CURRENT===c.id?' active':'')+'" data-cat="'+c.id+'">' +
+        '<span>'+c.icon+'</span>'+esc(c.label)+'<span class="cnt">'+n+'</span></button>';
+    }).join("");
+    ["catTabs","catTabsApps"].forEach(function (id){ var el=$(id); if (el) el.innerHTML = html; });
+    document.querySelectorAll(".cat-tab").forEach(function (b){
+      b.onclick = function () { CAT_CURRENT = b.getAttribute("data-cat"); render(); };
+    });
+  }
+
   // ---------- main render ----------
   function render() {
     renderSummary("summary");
     renderSyncBadge();
+    renderCatTabs();
     if (tab === "analytics") renderAnalytics();
     if (tab === "compare") renderCompareInline();
 
@@ -194,7 +239,7 @@
     if (!data.length) { targets.forEach(function (t){ renderEmpty(t); }); return; }
     var rows = filtered();
     targets.forEach(function (t) {
-      if (!rows.length) { $(t).innerHTML = '<div class="empty-note">No applications match your filters.</div>'; return; }
+      if (!rows.length) { $(t).innerHTML = '<div class="empty-note">No applications in <b>'+esc(catLabel(CAT_CURRENT))+'</b> matching your filters.</div>'; return; }
       if (view === "board") renderBoard(rows, t); else renderFeed(rows, t);
     });
     wireCards();
@@ -217,6 +262,8 @@
   function renderFeed(rows, into) {
     var html = rows.map(function (x) {
       var tags = [];
+      var cid = categorize(x);
+      tags.push('<span class="cat-badge">'+catIcon(cid)+' '+esc(catLabel(cid))+(x.category&&x.category!=="auto"?"":"")+'</span>');
       if (x.location) tags.push('<span class="chiptag loc">📍 '+esc(x.location)+'</span>');
       if (x.comp) tags.push('<span class="chiptag pay">💰 '+esc(x.comp)+'</span>');
       if (x.term) tags.push('<span class="chiptag">🗓 '+esc(x.term)+'</span>');
