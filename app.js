@@ -24,12 +24,39 @@
     "Rejected": "Rejected", "Withdrawn": "Withdrawn"
   };
 
-  var FIELDS = ["company","role","location","status","category","jobdesc","url","appliedDate","deadline","followup",
+  var FIELDS = ["company","role","location","status","industry","industryOther","jobdesc","url","appliedDate","deadline","followup",
     "oaDate","interviewDates","stageNotes","comp","hours","offerDeadline","priority","prosCons",
     "referral","docs","nextAction"];
   // Availability dates are handled explicitly (custom input IDs, not the f_ convention).
 
-  // ---------- Categories ----------
+  // ---------- Industries ----------
+  var INDUSTRIES = [
+    "Technology & Software",
+    "Fintech & Financial Services",
+    "Banking & Capital Markets",
+    "Cybersecurity",
+    "Artificial Intelligence & Data Science",
+    "E-Commerce & Retail Tech",
+    "Management Consulting",
+    "Telecommunications",
+    "Government & Public Sector",
+    "Healthcare & HealthTech",
+    "Logistics & Supply Chain",
+    "Gaming & Entertainment",
+    "Education & EdTech",
+    "Semiconductors & Hardware",
+    "Media, Advertising & Marketing",
+    "Real Estate & PropTech",
+    "Energy & CleanTech",
+    "Others"
+  ];
+  // Resolve the display value: custom text when "Others" is chosen, else the selected industry.
+  function industryOf(x) {
+    if (x.industry === "Others") return x.industryOther || "Others";
+    return x.industry || "";
+  }
+
+  // ---------- Categories (legacy auto-classifier, retained for data migration only) ----------
   // id, label, and keyword signals used to auto-classify by role title / JD.
   var CATEGORIES = [
     { id:"all",     label:"All Jobs",                     icon:"🗂️" },
@@ -276,9 +303,14 @@
   function fillStatusSelects() {
     $("f_status").innerHTML = STATUSES.map(function (s){ return '<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>'; }).join("");
     $("statusFilter").insertAdjacentHTML("beforeend", STATUSES.map(function (s){ return '<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>'; }).join(""));
-    // category select: Auto + the four real categories
-    $("f_category").innerHTML = '<option value="auto">Auto-detect</option>' +
-      CATEGORIES.filter(function (c){ return c.id!=="all"; }).map(function (c){ return '<option value="'+c.id+'">'+esc(c.icon+" "+c.label)+'</option>'; }).join("");
+    // industry select
+    $("f_industry").innerHTML = '<option value="">Select industry...</option>' +
+      INDUSTRIES.map(function (i){ return '<option value="'+esc(i)+'">'+esc(i)+'</option>'; }).join("");
+  }
+  // Toggle the custom-industry text field when "Others" is selected.
+  function toggleIndustryOther() {
+    var wrap = $("industryOtherWrap");
+    if (wrap) wrap.style.display = ($("f_industry").value === "Others") ? "" : "none";
   }
 
   // ---------- metrics ----------
@@ -526,8 +558,8 @@
   function renderFeed(rows, into) {
     var html = rows.map(function (x) {
       var tags = [];
-      var cid = categorize(x);
-      tags.push('<span class="cat-badge">'+catIcon(cid)+' '+esc(catLabel(cid))+(x.category&&x.category!=="auto"?"":"")+'</span>');
+      var ind = industryOf(x);
+      if (ind) tags.push('<span class="cat-badge">🏢 '+esc(ind)+'</span>');
       if (x.location) tags.push('<span class="chiptag loc">📍 '+esc(x.location)+'</span>');
       if (x.comp) tags.push('<span class="chiptag pay">💰 '+esc(x.comp)+'</span>');
       var avail = availabilityLabel(x); if (avail) tags.push('<span class="chiptag">🗓 '+esc(avail)+'</span>');
@@ -634,6 +666,7 @@
     $("appStartDate").value = item.startDate || "";
     $("appEndDate").value = item.endDate || "";
     if (!id) $("f_status").value = "Applied";
+    toggleIndustryOther();   // show/hide custom industry input to match loaded value
     $("f_id").value = id || "";
     $("modalBg").classList.add("show");
     setTimeout(function (){ $("f_company").focus(); }, 80);
@@ -656,11 +689,11 @@
     if (data.length && !confirm("Load sample data? This adds example applications.")) return;
     var t=new Date(); function d(o){ var x=new Date(t); x.setDate(x.getDate()+o); return x.toISOString().slice(0,10); }
     var sample = [
-      { company:"Stripe", role:"Software Engineering Intern", term:"Summer 2027", location:"Singapore / Hybrid", comp:"$2,400/mo", status:"Interview", appliedDate:d(-21), deadline:d(-10), interviewDates:d(3), stageNotes:"Passed OA; tech round scheduled.", nextAction:"Prep system design", url:"https://stripe.com/jobs", jobdesc:"Build backend APIs in Python and Go, work with cloud, databases and distributed systems." },
-      { company:"Razer", role:"Data Analytics Intern", term:"Off-Peak", location:"Singapore / On-site", comp:"$1,500/mo", status:"Applied", appliedDate:d(-16), deadline:d(4), followup:d(-16), nextAction:"Follow up with recruiter", docs:"Data_Analytics_v3.pdf", jobdesc:"SQL, dashboards, Tableau, reporting and business intelligence." },
-      { company:"Endowus", role:"Fintech SWE Intern", term:"Winter 2026", location:"Remote", comp:"$2,000/mo", status:"Online Assessment / Test", appliedDate:d(-7), deadline:d(1), oaDate:d(2), nextAction:"Complete HackerRank test", referral:"Alex Lim (LinkedIn)" },
-      { company:"Apple", role:"iOS Engineering Intern", term:"Summer 2027", location:"Hybrid", comp:"$3,000/mo", status:"Offer Received", appliedDate:d(-40), hours:"Full-time, 12 weeks", offerDeadline:d(9), priority:"High", prosCons:"Pros: brand, pay. Cons: relocation.", bookmarked:true, nextAction:"Decide by offer deadline" },
-      { company:"Grab", role:"Backend Intern", term:"Summer 2027", location:"Singapore / On-site", status:"Rejected", appliedDate:d(-30), stageNotes:"Rejected after final round." }
+      { company:"Stripe", role:"Software Engineering Intern", industry:"Fintech & Financial Services", location:"Hybrid", comp:"$2,400/month", status:"Interview", appliedDate:d(-21), deadline:d(-10), interviewDates:d(3), stageNotes:"Passed OA; tech round scheduled.", nextAction:"Prep system design", url:"https://stripe.com/jobs", jobdesc:"Build backend APIs in Python and Go, work with cloud, databases and distributed systems.", startDate:"2027-05-10", endDate:"2027-08-06" },
+      { company:"Razer", role:"Data Analytics Intern", industry:"Gaming & Entertainment", location:"On-site", comp:"$1,500/month", status:"Applied", appliedDate:d(-16), deadline:d(4), followup:d(-16), nextAction:"Follow up with recruiter", docs:"Data_Analytics_v3.pdf", jobdesc:"SQL, dashboards, Tableau, reporting and business intelligence." },
+      { company:"Endowus", role:"Fintech SWE Intern", industry:"Fintech & Financial Services", location:"Remote", comp:"$2,000/month", status:"Online Assessment / Test", appliedDate:d(-7), deadline:d(1), oaDate:d(2), nextAction:"Complete HackerRank test", referral:"Alex Lim (LinkedIn)" },
+      { company:"Apple", role:"iOS Engineering Intern", industry:"Technology & Software", location:"Hybrid", comp:"$3,000/month", status:"Offer Received", appliedDate:d(-40), hours:"Full-time, 12 weeks", offerDeadline:d(9), priority:"High", prosCons:"Pros: brand, pay. Cons: relocation.", bookmarked:true, nextAction:"Decide by offer deadline" },
+      { company:"Grab", role:"Backend Intern", industry:"Logistics & Supply Chain", location:"On-site", comp:"$2,200/month", status:"Rejected", appliedDate:d(-30), stageNotes:"Rejected after final round." }
     ];
     sample.forEach(function (s){ s.id=uid(); s._updated=Date.now()-Math.floor(Math.random()*1e6); });
     data = data.concat(sample); save(); closeMore(); render(); showToast("Sample data loaded");
@@ -684,7 +717,7 @@
     var cols = [
       { h:"Company Name", f:function (x){ return x.company; } },
       { h:"Job Title", f:function (x){ return x.role; } },
-      { h:"Category", f:function (x){ return catLabel(categorize(x)); } },
+      { h:"Industry", f:function (x){ return industryOf(x); } },
       { h:"Status", f:function (x){ return x.status; } },
       { h:"Date Applied", f:function (x){ return x.appliedDate; } },
       { h:"Deadline", f:function (x){ return x.deadline; } },
@@ -905,7 +938,9 @@
   function autoProsCons(x) {
     var pros=[],cons=[]; var loc=(x.location||"").toLowerCase();
     if (loc.indexOf("remote")>=0) pros.push("Remote-friendly");
+    if (loc.indexOf("hybrid")>=0) pros.push("Hybrid work");
     if (loc.indexOf("on-site")>=0||loc.indexOf("onsite")>=0) cons.push("On-site required");
+    if (loc.indexOf("overseas")>=0||loc.indexOf("relocation")>=0) cons.push("Requires relocation");
     if (x.comp) pros.push("Pays "+x.comp); else cons.push("Compensation not noted");
     if (x.priority==="High") pros.push("Marked High priority"); if (x.priority==="Low") cons.push("Marked Low priority");
     if (x.hours) pros.push(x.hours);
@@ -1038,6 +1073,7 @@
   fillStatusSelects();
   $("kbdHint").textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
   $("fab").onclick = function (){ openModal(null); };
+  $("f_industry").onchange = toggleIndustryOther;   // reveal custom input when "Others" chosen
   $("closeModal").onclick = closeModal; $("cancelBtn").onclick = closeModal; $("saveBtn").onclick = saveForm;
   $("modalBg").addEventListener("click", function (e){ if (e.target===$("modalBg")) closeModal(); });
   $("closeStatus").onclick = closeStatus;

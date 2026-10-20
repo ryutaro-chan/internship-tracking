@@ -10,7 +10,7 @@
 <meta property="og:title" content="JobTrackr" />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Crect width='1200' height='630' fill='%23F8FAFC'/%3E%3Ccircle cx='600' cy='300' r='150' fill='%23D1E9FF'/%3E%3Ccircle cx='600' cy='300' r='62' fill='none' stroke='%231E293B' stroke-width='18'/%3E%3Cline x1='600' y1='192' x2='600' y2='238' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Cline x1='600' y1='362' x2='600' y2='408' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Cline x1='492' y1='300' x2='538' y2='300' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Cline x1='662' y1='300' x2='708' y2='300' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Ctext x='600' y='520' font-family='-apple-system,Segoe UI,Roboto,sans-serif' font-size='72' font-weight='800' fill='%231E293B' text-anchor='middle'%3EJobTrackr%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="styles.css?v=20261020f" />
+<link rel="stylesheet" href="styles.css?v=20261020g" />
 </head>
 <body>
 <div class="app" id="app">
@@ -135,32 +135,41 @@
         <div class="form-grid">
           <div class="field full"><label>Company *</label><input id="f_company" required placeholder="Stripe" /></div>
           <div class="field full"><label>Role *</label><input id="f_role" required placeholder="Software Engineer" /></div>
-          <div class="field"><label>Availability Start</label><input type="date" id="appStartDate" /></div>
-          <div class="field"><label>Availability End</label><input type="date" id="appEndDate" /></div>
-          <div class="field"><label>Location</label><input id="f_location" placeholder="Singapore / Hybrid" /></div>
-          <div class="field"><label>Compensation</label><input id="f_comp" placeholder="$1,500/mo" /></div>
+          <div class="field"><label>Availability Start Date</label><input type="date" id="appStartDate" class="date-dmy" data-format="DD/MM/YYYY" /></div>
+          <div class="field"><label>Availability End Date</label><input type="date" id="appEndDate" class="date-dmy" data-format="DD/MM/YYYY" /></div>
+          <div class="field"><label>Location / Work Type</label>
+            <select id="f_location">
+              <option value="">Select Location / Work Type...</option>
+              <option>On-site</option>
+              <option>Hybrid</option>
+              <option>Remote</option>
+              <option>Overseas / Relocation</option>
+            </select>
+          </div>
+          <div class="field"><label>Salary</label><input id="f_comp" placeholder="$1,500/month" /></div>
           <div class="field"><label>Status</label><select id="f_status"></select></div>
-          <div class="field full"><label>Category</label><select id="f_category"></select></div>
+          <div class="field"><label>Industry</label><select id="f_industry"></select></div>
+          <div class="field full" id="industryOtherWrap" style="display:none"><label>Custom Industry</label><input id="f_industryOther" placeholder="Enter your industry" /></div>
         </div>
-        <div class="field full"><label>Job Description</label><textarea id="f_jobdesc" placeholder="Paste job description or requirements..."></textarea></div>
+        <div class="field full"><label>Job Description</label><textarea id="f_jobdesc"></textarea></div>
         <div class="field full"><label>Portal URL</label><input id="f_url" type="url" placeholder="https://..." /></div>
 
         <div class="section-title">Dates</div>
         <div class="form-grid">
-          <div class="field"><label>Applied</label><input id="f_appliedDate" type="date" /></div>
-          <div class="field"><label>Deadline</label><input id="f_deadline" type="date" /></div>
-          <div class="field full"><label>Follow-up</label><input id="f_followup" type="date" /></div>
+          <div class="field"><label>Applied</label><input id="f_appliedDate" type="date" class="date-dmy" data-format="DD/MM/YYYY" /></div>
+          <div class="field"><label>Deadline</label><input id="f_deadline" type="date" class="date-dmy" data-format="DD/MM/YYYY" /></div>
+          <div class="field full"><label>Follow-up</label><input id="f_followup" type="date" class="date-dmy" data-format="DD/MM/YYYY" /></div>
         </div>
         <div class="section-title">Interview</div>
         <div class="form-grid">
-          <div class="field"><label>Online Assessment / Test</label><input id="f_oaDate" type="date" /></div>
-          <div class="field"><label>Interview</label><input id="f_interviewDates" type="date" /></div>
+          <div class="field"><label>Online Assessment / Test</label><input id="f_oaDate" type="date" class="date-dmy" data-format="DD/MM/YYYY" /></div>
+          <div class="field"><label>Interview</label><input id="f_interviewDates" type="date" class="date-dmy" data-format="DD/MM/YYYY" /></div>
           <div class="field full"><label>Notes</label><textarea id="f_stageNotes" placeholder="Stage notes..."></textarea></div>
         </div>
         <div class="section-title">Offer</div>
         <div class="form-grid">
           <div class="field"><label>Hours</label><input id="f_hours" placeholder="Full-time, 12 weeks" /></div>
-          <div class="field"><label>Decide By</label><input id="f_offerDeadline" type="date" /></div>
+          <div class="field"><label>Decide By</label><input id="f_offerDeadline" type="date" class="date-dmy" data-format="DD/MM/YYYY" /></div>
           <div class="field"><label>Priority</label><select id="f_priority"><option value="">—</option><option>High</option><option>Medium</option><option>Low</option></select></div>
           <div class="field full"><label>Notes</label><textarea id="f_prosCons" placeholder="Pros, cons, thoughts..."></textarea></div>
         </div>
@@ -206,6 +215,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=20261020f" defer></script>
+<script src="app.js?v=20261020g" defer></script>
 </body>
 </html>
