@@ -611,13 +611,21 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
 .cal-nav button:hover { border-color: var(--accent); color: var(--accent-strong); }
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
 .cal-dow { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--faint); text-transform: uppercase; letter-spacing: .04em; padding-bottom: 4px; }
-.cal-cell { position: relative; aspect-ratio: 1 / 1; border-radius: 9px; display: flex; align-items: flex-start; justify-content: flex-end;
+.cal-cell { position: relative; min-height: 48px; border-radius: 9px; display: flex; flex-direction: column; align-items: stretch;
   padding: 5px 6px; font-size: 12px; font-weight: 600; color: var(--text-2); background: var(--surface-2); border: 1px solid transparent;
-  transition: background 0.2s ease, box-shadow 0.2s ease; }
-.cal-cell.empty { background: transparent; }
+  transition: background 0.2s ease, box-shadow 0.2s ease; overflow: hidden; }
+.cal-cell .cal-daynum { align-self: flex-end; line-height: 1; }
+.cal-cell.empty { background: transparent; min-height: 0; }
 /* clickable date cells — signal interactivity */
 .cal-cell.clickable { cursor: pointer; }
 .cal-cell.clickable:hover { background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--border-2); }
+
+/* Saved-note event badge shown inside the date cell (Apple Calendar style) */
+.calendar-event-pill { background: #e0f2fe; color: #0369a1; border-radius: 6px; padding: 3px 6px;
+  font-size: 0.72rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 4px; cursor: pointer; display: block; max-width: 100%;
+  transition: background 0.15s ease, box-shadow 0.15s ease; }
+.calendar-event-pill:hover { background: #bae6fd; box-shadow: 0 1px 3px rgba(3,105,161,.2); }
 
 /* ===== Apple-style date popover ===== */
 .cal-popover { position: fixed; width: 280px; z-index: 1000;
@@ -643,7 +651,7 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
 .cal-cell.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 .cal-cell.has-amber { background: var(--s-amber-bg); color: var(--s-amber); }
 .cal-cell.has-red   { background: var(--s-rose-bg);  color: var(--s-rose); }
-.cal-cell .ddot { position: absolute; left: 6px; bottom: 6px; display: flex; gap: 3px; }
+.cal-cell .ddot { display: flex; gap: 3px; margin-top: 3px; flex-wrap: wrap; }
 .cal-cell .ddot i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
 .cal-cell .ddot i.amber { background: var(--s-amber); }
 .cal-cell .ddot i.red { background: var(--s-rose); }

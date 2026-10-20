@@ -447,15 +447,22 @@
       var dls = items.filter(function (it){ return it.ev.type==="deadline"; });
       var sevs = dls.map(function (it){ return deadlineSeverity(it.x.deadline); });
       if (sevs.indexOf("red")>=0) cls += " has-red"; else if (sevs.indexOf("amber")>=0) cls += " has-amber";
+      // Application-event dots (deadline / OA / interview) stay as small dots.
       var dots = "";
-      if (items.length || hasNote) {
+      if (items.length) {
         var dotHTML = items.slice(0,4).map(function (it){
           return '<i class="'+it.ev.cls+'" title="'+esc(it.ev.label+": "+(it.x.company||"")+" — "+(it.x.role||""))+'"></i>';
         }).join("");
-        if (hasNote) dotHTML += '<i class="ev-note" title="'+esc(notes[dkey])+'"></i>';
         dots = '<div class="ddot">' + dotHTML + '</div>';
       }
-      cells += '<div class="'+cls+'" data-date="'+dkey+'">'+day+dots+'</div>';
+      // A saved note renders as a visible, truncated text pill inside the cell.
+      var notePill = "";
+      if (hasNote) {
+        var full7 = notes[dkey];
+        var short = full7.length > 16 ? full7.slice(0, 15).trim() + "…" : full7;
+        notePill = '<div class="calendar-event-pill" data-note-pill="'+dkey+'" title="'+esc(full7)+'">'+esc(short)+'</div>';
+      }
+      cells += '<div class="'+cls+'" data-date="'+dkey+'"><span class="cal-daynum">'+day+'</span>'+dots+notePill+'</div>';
     }
 
     var legend = full
@@ -507,6 +514,14 @@
         cell.onclick = function (e) {
           e.stopPropagation();
           openDayPopover(cell.getAttribute("data-date"), cell, targetId, full);
+        };
+      });
+      // Clicking a note pill re-opens the popover with that note pre-filled for editing.
+      el.querySelectorAll("[data-note-pill]").forEach(function (pill) {
+        pill.onclick = function (e) {
+          e.stopPropagation();
+          var cell = pill.closest(".cal-cell");
+          openDayPopover(pill.getAttribute("data-note-pill"), cell || pill, targetId, full);
         };
       });
     }
