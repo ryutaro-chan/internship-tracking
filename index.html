@@ -188,6 +188,50 @@
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='%2364748b' stroke-width='1.3'/></svg>");
     background-repeat: no-repeat; background-position: right 10px center; }
   @media (max-width: 560px){ .form-grid{ grid-template-columns: 1fr; } }
+
+  /* ---------- Compare modal ---------- */
+  .modal-wide { left: 50%; right: auto; top: 50%; transform: translate(-50%, -50%) scale(.98);
+    height: auto; max-height: 90vh; max-width: 1000px; width: calc(100% - 48px); border-radius: var(--radius-lg);
+    border: 1px solid var(--border); transition: transform .18s ease, opacity .18s ease; opacity: 0; }
+  .modal-bg.show .modal-wide { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  .cmp-hint { font-size: 12px; color: var(--muted); }
+  .cmp-study { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .cmp-study label { font-size: 12.5px; color: var(--text-2); font-weight: 600; }
+  .cmp-study input { flex: 1; min-width: 200px; font-family: inherit; font-size: 14px; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); padding: 8px 11px; outline: none; }
+  .cmp-study input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.15); }
+  .cmp-pickwrap { margin-bottom: 20px; }
+  .cmp-pickwrap .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+  .cmp-picks { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cmp-chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 20px; cursor: pointer;
+    border: 1px solid var(--border-2); background: var(--surface); font-size: 13px; color: var(--text-2); user-select: none; transition: .12s; }
+  .cmp-chip:hover { border-color: var(--accent); }
+  .cmp-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .cmp-chip .c { font-size: 11px; opacity: .7; }
+
+  .cmp-grid { display: grid; gap: 14px; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); overflow-x: auto; padding-bottom: 6px; }
+  .cmp-col { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); overflow: hidden; display: flex; flex-direction: column; }
+  .cmp-col.best { border-color: var(--c-green); box-shadow: 0 0 0 2px rgba(16,185,129,.18); }
+  .cmp-col-head { padding: 14px 15px; border-bottom: 1px solid var(--border); }
+  .cmp-col-head .cco { font-weight: 700; font-size: 15px; }
+  .cmp-col-head .crl { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .cmp-badge-best { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 700; color: var(--c-green);
+    background: rgba(16,185,129,.14); padding: 2px 9px; border-radius: 20px; }
+  .fit { padding: 14px 15px; border-bottom: 1px solid var(--border); }
+  .fit .score { font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+  .fit .bar { height: 7px; border-radius: 4px; background: var(--surface-3); margin-top: 8px; overflow: hidden; }
+  .fit .bar > span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--c-green)); }
+  .fit .matched { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .fit .kw { font-size: 11px; background: rgba(14,165,233,.12); color: var(--accent-strong); border-radius: 4px; padding: 1px 7px; }
+  .cmp-rows { padding: 6px 15px 14px; }
+  .cmp-row { padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .cmp-row:last-child { border-bottom: none; }
+  .cmp-row .k { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--faint); }
+  .cmp-row .v { font-size: 13px; color: var(--text); margin-top: 2px; white-space: pre-wrap; }
+  .cmp-row.pro .v { color: var(--c-green); }
+  .cmp-row.con .v { color: var(--c-red); }
+  .cmp-empty { text-align: center; color: var(--muted); padding: 40px 10px; }
 </style>
 </head>
 <body>
@@ -222,6 +266,7 @@
       <option value="company">Company (A–Z)</option>
     </select>
     <span style="flex:1"></span>
+    <button class="btn" id="compareBtn">⚖ Compare</button>
     <button class="btn" id="exportBtn">⬇ Export</button>
     <button class="btn" id="importBtn">⬆ Import</button>
     <input type="file" id="importFile" accept="application/json" style="display:none" />
@@ -251,19 +296,20 @@
           <div class="field"><label>Location & Work Type</label><input id="f_location" placeholder="e.g. Singapore / Hybrid" /></div>
           <div class="field full"><label>Application Status</label><select id="f_status"></select></div>
         </div>
+        <div class="field full"><label>Job Description</label><textarea id="f_jobdesc" placeholder="Paste the role's responsibilities, requirements, tech stack… (used for the Fit comparison)"></textarea></div>
+        <div class="field full"><label>Portal URL</label><input id="f_url" type="url" placeholder="https://…" /></div>
+
         <div class="section-title">Important Dates</div>
         <div class="form-grid">
           <div class="field"><label>Application Date</label><input id="f_appliedDate" type="date" /></div>
           <div class="field"><label>Application Deadline</label><input id="f_deadline" type="date" /></div>
-          <div class="field full"><label>Job Description / Portal URL</label><input id="f_url" type="url" placeholder="https://…" /></div>
           <div class="field"><label>Last Updated / Follow-up Date</label><input id="f_followup" type="date" /></div>
         </div>
-        <div class="section-title">Process & Interview Tracking</div>
+        <div class="section-title">Interview Tracking</div>
         <div class="form-grid">
           <div class="field"><label>Online Assessment / Test Date</label><input id="f_oaDate" type="date" /></div>
-          <div class="field"><label>Interview Date(s)</label><input id="f_interviewDates" placeholder="e.g. Oct 22, Nov 3" /></div>
-          <div class="field full"><label>Interviewer Name / Title</label><input id="f_interviewer" placeholder="e.g. Jane Tan, Eng Manager" /></div>
-          <div class="field full"><label>Current Stage Notes</label><textarea id="f_stageNotes" placeholder="e.g. Completed HackerRank test on Oct 15; waiting for results"></textarea></div>
+          <div class="field"><label>Interview Date</label><input id="f_interviewDates" type="date" /></div>
+          <div class="field full"><label>Notes</label><textarea id="f_stageNotes" placeholder="e.g. Completed HackerRank test on Oct 15; waiting for results"></textarea></div>
         </div>
         <div class="section-title">Offer & Decision</div>
         <div class="form-grid">
@@ -271,9 +317,9 @@
           <div class="field"><label>Work Hours & Duration</label><input id="f_hours" placeholder="e.g. Full-time, 12 weeks" /></div>
           <div class="field"><label>Offer Deadline / Decision Date</label><input id="f_offerDeadline" type="date" /></div>
           <div class="field"><label>Priority Rating</label><select id="f_priority"><option value="">—</option><option>High</option><option>Medium</option><option>Low</option></select></div>
-          <div class="field full"><label>Pros & Cons</label><textarea id="f_prosCons" placeholder="Pros: …   Cons: …"></textarea></div>
+          <div class="field full"><label>Notes</label><textarea id="f_prosCons" placeholder="Advantages, disadvantages, thoughts about this offer…"></textarea></div>
         </div>
-        <div class="section-title">Extras & Action Items</div>
+        <div class="section-title">Follow Up</div>
         <div class="form-grid">
           <div class="field full"><label>Referral / Contact Person</label><input id="f_referral" placeholder="Name + email / LinkedIn" /></div>
           <div class="field full"><label>Resume / Cover Letter Version Used</label><input id="f_docs" placeholder="e.g. Software_Engineer_v2.pdf" /></div>
@@ -284,6 +330,22 @@
     <div class="modal-foot">
       <button class="btn" id="cancelBtn" type="button">Cancel</button>
       <button class="btn btn-primary" id="saveBtn" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Compare modal (centered, wide) -->
+<div class="modal-bg" id="compareBg">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h2>⚖ Compare Roles — Best Fit</h2>
+      <button class="icon-btn" id="closeCompare">✕</button>
+    </div>
+    <div class="modal-body" id="compareBody"></div>
+    <div class="modal-foot">
+      <span class="cmp-hint" id="cmpHint"></span>
+      <span style="flex:1"></span>
+      <button class="btn" id="cmpCloseBtn" type="button">Close</button>
     </div>
   </div>
 </div>
@@ -333,9 +395,11 @@
     slate:  { bg:"rgba(148,163,184,.18)", fg:"#64748b" }
   };
 
-  var FIELDS = ["company","role","term","location","status","appliedDate","deadline","url","followup",
-    "oaDate","interviewDates","interviewer","stageNotes","comp","hours","offerDeadline","priority","prosCons",
+  var FIELDS = ["company","role","term","location","status","jobdesc","url","appliedDate","deadline","followup",
+    "oaDate","interviewDates","stageNotes","comp","hours","offerDeadline","priority","prosCons",
     "referral","docs","nextAction"];
+
+  var STUDY_KEY = "catchtheoffer.study";
 
   var data = load();
   var editingId = null;
@@ -597,6 +661,160 @@
     r.readAsText(file);
   }
 
+  // ================= COMPARE / BEST-FIT ENGINE =================
+  // Weighted keyword dictionaries per field of study. Matching a role's
+  // job description + title against the student's major yields a fit score.
+  var MAJOR_KEYWORDS = {
+    "computer science": ["software","engineer","developer","programming","python","java","c++","javascript","typescript","algorithm","data structure","backend","frontend","full stack","api","cloud","aws","git","web","mobile","system design","distributed","database","sql","linux","devops","react","node"],
+    "software engineering": ["software","engineer","developer","sdlc","agile","testing","ci/cd","api","microservices","backend","frontend","full stack","git","code review","architecture","cloud","docker","kubernetes"],
+    "data science": ["data","machine learning","ml","ai","python","pandas","numpy","statistics","model","analytics","sql","visualization","tableau","power bi","regression","classification","deep learning","tensorflow","pytorch","big data","spark"],
+    "data analytics": ["data","analytics","sql","excel","tableau","power bi","dashboard","reporting","statistics","visualization","etl","business intelligence","insights","python","metrics","kpi"],
+    "information systems": ["information systems","it","erp","sap","business process","database","sql","systems analysis","requirements","project management","integration","crm"],
+    "business": ["business","strategy","operations","marketing","finance","consulting","analysis","stakeholder","project management","market research","sales","product","growth"],
+    "finance": ["finance","financial","investment","banking","equity","trading","valuation","accounting","modelling","risk","portfolio","fintech","markets","excel","analyst"],
+    "economics": ["economics","econometrics","research","policy","data","statistics","market","analysis","forecasting","modelling","quantitative"],
+    "marketing": ["marketing","brand","campaign","social media","content","seo","digital","growth","analytics","advertising","crm","market research","copywriting"],
+    "electrical engineering": ["electrical","electronics","circuit","embedded","firmware","hardware","signal","pcb","fpga","vlsi","microcontroller","iot","power"],
+    "mechanical engineering": ["mechanical","cad","solidworks","manufacturing","design","thermodynamics","robotics","automation","fea","prototyping"],
+    "design": ["design","ui","ux","figma","prototype","user research","wireframe","visual","interaction","product design","usability"],
+    "accounting": ["accounting","audit","tax","financial reporting","ledger","compliance","gaap","ifrs","bookkeeping","reconciliation"]
+  };
+  function studyField() { try { return localStorage.getItem(STUDY_KEY) || ""; } catch (e) { return ""; } }
+  function setStudyField(v) { try { localStorage.setItem(STUDY_KEY, v); } catch (e) {} }
+
+  function keywordsForStudy(study) {
+    var s = (study||"").toLowerCase().trim();
+    if (!s) return [];
+    if (MAJOR_KEYWORDS[s]) return MAJOR_KEYWORDS[s];
+    // partial match: find the dictionary whose name overlaps the input
+    var best = null, bestLen = 0;
+    Object.keys(MAJOR_KEYWORDS).forEach(function (k) {
+      if (s.indexOf(k) >= 0 || k.indexOf(s) >= 0) { if (k.length > bestLen) { best = k; bestLen = k.length; } }
+    });
+    if (best) return MAJOR_KEYWORDS[best];
+    // fallback: use the raw words the student typed as keywords
+    return s.split(/[^a-z+]+/).filter(function (w){ return w.length > 2; });
+  }
+
+  // compute fit: % of distinct study keywords found in role text + matched list
+  function computeFit(x, kws) {
+    var text = ((x.role||"") + " " + (x.jobdesc||"") + " " + (x.term||"") + " " + (x.location||"")).toLowerCase();
+    if (!kws.length) return { score: null, matched: [] };
+    var matched = [];
+    kws.forEach(function (k){ if (text.indexOf(k) >= 0 && matched.indexOf(k) < 0) matched.push(k); });
+    var score = Math.round(matched.length / kws.length * 100);
+    // small boost if the job description is substantial (more signal to trust)
+    if ((x.jobdesc||"").length > 120 && score > 0) score = Math.min(100, score + 5);
+    return { score: score, matched: matched };
+  }
+
+  // auto pros/cons from structured fields + the Notes text
+  function autoProsCons(x) {
+    var pros = [], cons = [];
+    var loc = (x.location||"").toLowerCase();
+    if (loc.indexOf("remote") >= 0) pros.push("Remote-friendly");
+    if (loc.indexOf("on-site") >= 0 || loc.indexOf("onsite") >= 0) cons.push("On-site required");
+    if (x.comp) pros.push("Pays " + x.comp);
+    else cons.push("Compensation not noted");
+    if (x.priority === "High") pros.push("Marked High priority");
+    if (x.priority === "Low") cons.push("Marked Low priority");
+    if (x.hours) pros.push(x.hours);
+    if (x.status === "Offer Received") pros.push("Offer already in hand");
+    if (x.status === "Rejected") cons.push("Already rejected");
+    if (x.status === "Withdrawn") cons.push("Already withdrawn");
+    if (x.deadline) { var du = daysUntil(x.deadline); if (du !== null && du >= 0 && du <= 7) cons.push("Deadline in " + du + "d — act fast"); }
+    return { pros: pros, cons: cons };
+  }
+
+  var cmpSelected = [];
+  function openCompare() {
+    cmpSelected = [];
+    $("compareBg").classList.add("show");
+    renderCompare();
+  }
+  function closeCompare() { $("compareBg").classList.remove("show"); }
+
+  function renderCompare() {
+    var study = studyField();
+    var picker =
+      '<div class="cmp-study">' +
+        '<label>🎓 I am studying</label>' +
+        '<input id="cmpStudy" placeholder="e.g. Computer Science, Data Analytics, Finance…" value="'+esc(study)+'" />' +
+      '</div>';
+
+    if (!data.length) {
+      $("compareBody").innerHTML = picker + '<div class="cmp-empty">Add some applications first, then come back to compare them.</div>';
+      bindStudy();
+      return;
+    }
+
+    var chips = data.map(function (x) {
+      var on = cmpSelected.indexOf(x.id) >= 0;
+      return '<span class="cmp-chip'+(on?' on':'')+'" data-pick="'+x.id+'">'+esc(x.company||"—")+' <span class="c">'+esc(x.role||"")+'</span></span>';
+    }).join("");
+    var pick = '<div class="cmp-pickwrap"><div class="lbl">Select roles to compare (2 or more)</div><div class="cmp-picks">'+chips+'</div></div>';
+
+    var body;
+    if (cmpSelected.length < 2) {
+      body = '<div class="cmp-empty">Pick at least two roles above to see them side by side.</div>';
+      $("cmpHint").textContent = "";
+    } else {
+      var kws = keywordsForStudy(study);
+      var cols = cmpSelected.map(function (id){ return data.find(function (x){ return x.id===id; }); }).filter(Boolean);
+      var fits = cols.map(function (x){ return computeFit(x, kws); });
+      var maxScore = -1; fits.forEach(function (f){ if (f.score !== null && f.score > maxScore) maxScore = f.score; });
+
+      var colsHTML = cols.map(function (x, i) {
+        var f = fits[i];
+        var isBest = f.score !== null && f.score === maxScore && maxScore > 0;
+        var pc = autoProsCons(x);
+        var scoreBlock = (f.score === null)
+          ? '<div class="fit"><div class="k" style="font-size:11px;color:var(--faint)">Enter your field of study above to see a fit score.</div></div>'
+          : '<div class="fit"><div class="score">'+f.score+'<span style="font-size:14px;color:var(--muted)">% fit</span></div>' +
+            '<div class="bar"><span style="width:'+f.score+'%"></span></div>' +
+            (f.matched.length ? '<div class="matched">'+f.matched.slice(0,8).map(function (m){ return '<span class="kw">'+esc(m)+'</span>'; }).join("")+'</div>'
+                              : '<div class="k" style="margin-top:8px;color:var(--faint)">No study keywords found in this JD</div>') +
+            '</div>';
+        function rowsFrom(list, cls){ return list.map(function (t){ return '<div class="cmp-row '+cls+'"><div class="v">'+(cls==="pro"?"✔ ":"✘ ")+esc(t)+'</div></div>'; }).join(""); }
+        return '<div class="cmp-col'+(isBest?' best':'')+'">' +
+          '<div class="cmp-col-head"><div class="cco">'+esc(x.company||"—")+'</div><div class="crl">'+esc(x.role||"")+'</div>' +
+            (isBest?'<span class="cmp-badge-best">★ Best fit for you</span>':'') + '</div>' +
+          scoreBlock +
+          '<div class="cmp-rows">' +
+            cmpRow("Status", pillHTML(x.status)) +
+            cmpRow("Term", esc(x.term||"—")) +
+            cmpRow("Location", esc(x.location||"—")) +
+            cmpRow("Compensation", esc(x.comp||"—")) +
+            cmpRow("Hours & Duration", esc(x.hours||"—")) +
+            cmpRow("Priority", esc(x.priority||"—")) +
+            '<div class="cmp-row"><div class="k">Advantages</div>'+(pc.pros.length?rowsFrom(pc.pros,"pro"):'<div class="v">—</div>')+'</div>' +
+            '<div class="cmp-row"><div class="k">Disadvantages</div>'+(pc.cons.length?rowsFrom(pc.cons,"con"):'<div class="v">—</div>')+'</div>' +
+            (x.prosCons?cmpRow("Your Notes", esc(x.prosCons)):"") +
+          '</div></div>';
+      }).join("");
+      body = '<div class="cmp-grid">'+colsHTML+'</div>';
+      var bestCol = cols[fits.map(function (f){ return f.score; }).indexOf(maxScore)];
+      $("cmpHint").textContent = (maxScore > 0 && bestCol) ? ("Best match: " + bestCol.company + " (" + maxScore + "% fit for " + (study||"your field") + ")") : "";
+    }
+
+    $("compareBody").innerHTML = picker + pick + body;
+    bindStudy();
+    Array.prototype.forEach.call($("compareBody").querySelectorAll("[data-pick]"), function (chip) {
+      chip.onclick = function () {
+        var id = chip.getAttribute("data-pick");
+        var idx = cmpSelected.indexOf(id);
+        if (idx >= 0) cmpSelected.splice(idx, 1); else cmpSelected.push(id);
+        renderCompare();
+      };
+    });
+  }
+  function cmpRow(k, v) { return '<div class="cmp-row"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
+  function bindStudy() {
+    var el = $("cmpStudy"); if (!el) return;
+    el.oninput = function () { setStudyField(el.value); };
+    el.onchange = function () { setStudyField(el.value); renderCompare(); setTimeout(function(){ var e=$("cmpStudy"); if(e) e.focus(); },0); };
+  }
+
   // ---------- wire up ----------
   fillStatusSelects();
   $("addBtn").onclick = function (){ openModal(null); };
@@ -604,9 +822,13 @@
   $("cancelBtn").onclick = closeModal;
   $("saveBtn").onclick = saveForm;
   $("modalBg").addEventListener("click", function (e){ if (e.target===$("modalBg")) closeModal(); });
+  $("compareBtn").onclick = openCompare;
+  $("closeCompare").onclick = closeCompare;
+  $("cmpCloseBtn").onclick = closeCompare;
+  $("compareBg").addEventListener("click", function (e){ if (e.target===$("compareBg")) closeCompare(); });
   document.addEventListener("keydown", function (e) {
     if ((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="k") { e.preventDefault(); $("search").focus(); return; }
-    if (e.key==="Escape") closeModal();
+    if (e.key==="Escape") { closeModal(); closeCompare(); }
     if (e.key==="Enter" && (e.metaKey||e.ctrlKey) && $("modalBg").classList.contains("show")) saveForm();
   });
   $("search").oninput = render;
