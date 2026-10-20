@@ -1579,7 +1579,7 @@
     if (cmpSelected.length < 2) { while (cmpSelected.length < 2) cmpSelected.push(""); }
     var slots = cmpSelected.slice(0, cmpShowThird ? 3 : 2);
     function optionList(selectedId) {
-      return '<option value="">Select an applied role…</option>' +
+      return '<option value="">Select a role…</option>' +
         data.map(function (x) {
           var pay = stipendValue(x.comp); var payStr = (pay!=null&&pay>=0) ? " ($"+Math.round(pay).toLocaleString()+"/mo)" : "";
           return '<option value="'+x.id+'"'+(selectedId===x.id?" selected":"")+'>'+esc((x.company||"—")+" — "+(x.role||"Role")+payStr)+'</option>';
@@ -1587,7 +1587,7 @@
     }
     var selHTML = slots.map(function (id, i) {
       return '<div class="cmp-field"><label>Select Applied Role #'+(i+1)+'</label>' +
-        '<select id="compareRoleSelect'+(i+1)+'" class="compare-select" data-slot="'+i+'">'+optionList(id)+'</select></div>';
+        '<select id="compareRoleSelect'+(i+1)+'" class="compare-select" data-slot="'+i+'" data-empty="'+(id?"false":"true")+'">'+optionList(id)+'</select></div>';
     }).join("");
     var addBtn = (!cmpShowThird) ? '<button type="button" class="cmp-add-role" id="cmpAddRole">+ Add Role to Compare</button>' : '';
     var pick = '<div class="cmp-pickwrap"><div class="lbl">Compare your applied roles</div>' +

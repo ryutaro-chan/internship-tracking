@@ -413,6 +413,8 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 /* native date inputs: keep them from forcing intrinsic width and clip the spinner nicely */
 .field input[type="date"] { -webkit-appearance: none; appearance: none; }
 .field input:focus, .field select:focus, .field textarea:focus { background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,119,237,.15); }
+/* Standardised light placeholder text for every form input/textarea */
+.field input::placeholder, .field textarea::placeholder { color: var(--faint); opacity: 1; }
 .field textarea { resize: vertical; min-height: 50px; }
 /* Date fields: the browser's own DD/MM/YYYY mask is uppercased and shown in
    light gray while the field is empty (so it reads as a placeholder, not input),
@@ -463,6 +465,10 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M2 4l3 3 3-3' fill='none' stroke='%2364748b' stroke-width='1.3'/></svg>");
   background-repeat: no-repeat; background-position: right 11px center; }
 .ctl-wide:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,119,237,.15); }
+/* Light placeholder text while the select is still on its empty/"Select…" option
+   — standardises placeholder styling with the rest of the app. */
+.ctl-wide:has(option[value=""]:checked) { color: var(--faint); }
+.ctl-wide::placeholder { color: var(--faint); opacity: 1; }   /* the free-text "Type your major" input */
 .rel-tag { display: inline-block; margin-top: 10px; font-size: 11.5px; font-weight: 700; color: var(--s-green);
   background: var(--s-green-bg); border: 1px solid rgba(16,185,129,.35); border-radius: 20px; padding: 3px 10px; }
 .align-tags { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; }
@@ -522,6 +528,8 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   background-repeat: no-repeat; background-position: right 13px center; }
 .compare-select:hover { border-color: var(--brand-blue); }
 .compare-select:focus { border-color: var(--brand-blue); box-shadow: 0 0 0 3px rgba(0,119,237,.15); }
+/* Light placeholder text while no role is chosen (matches the app-wide standard) */
+.compare-select[data-empty="true"] { color: var(--faint); font-weight: 500; }
 .cmp-add-role { margin-top: 12px; display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 14px; border-radius: 10px; border: 1px dashed var(--border-2);
   background: var(--surface); color: var(--accent-strong); font-size: 13px; font-weight: 700;
