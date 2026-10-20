@@ -140,8 +140,6 @@ body {
 .search input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--text);
   font-family: inherit; font-size: 15px; padding: 11px 0; }
 .search input::placeholder { color: var(--faint); }
-.kbd { font-size: 10.5px; font-weight: 600; color: var(--muted); background: var(--surface-2);
-  border: 1px solid var(--border-2); border-radius: 6px; padding: 2px 6px; white-space: nowrap; }
 
 .filters { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
 .filters::-webkit-scrollbar { display: none; }
@@ -574,11 +572,11 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
   body.is-desktop .field.full { grid-column: 1 / -1; }
 
   /* ⌘K hint only meaningful on desktop — keep visible */
-  body.is-desktop .kbd { display: inline-block; }
+
 }
 
 /* Hide the ⌘K hint on touch/mobile where there's no keyboard shortcut */
-body.is-mobile-ios .kbd { display: none; }
+
 
 /* ===================================================================
    DEADLINE CALENDAR + DESKTOP BOTTOM-NAV SAFETY NET

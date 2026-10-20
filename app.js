@@ -1080,9 +1080,6 @@
     var b = document.body;
     b.classList.toggle("is-desktop", desktop);
     b.classList.toggle("is-mobile-ios", !desktop);
-    // ⌘K only meaningful with a physical keyboard
-    var hint = $("kbdHint");
-    if (hint) hint.textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
   }
 
   // ---------- more menu ----------
@@ -1091,7 +1088,6 @@
 
   // ---------- wire up ----------
   fillStatusSelects();
-  $("kbdHint").textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
   $("fab").onclick = function (){ openModal(null); };
   $("f_industry").onchange = function (){ toggleIndustryOther(); refreshSelectPlaceholders(); };   // reveal custom input when "Others" chosen
   $("f_location").onchange = refreshSelectPlaceholders;
@@ -1120,10 +1116,9 @@
   $("importFile").onchange = function (e){ if (e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
   $("sampleBtn").onclick = loadSample;
 
-  // Minimal, standard editor behaviours only (no shortcuts feature):
-  // ⌘K/Ctrl+K focuses search, Esc closes dialogs, ⌘/Ctrl+Enter saves the open form.
+  // Minimal, standard editor behaviours only: Esc closes dialogs,
+  // ⌘/Ctrl+Enter saves the open form.
   document.addEventListener("keydown", function (e) {
-    if ((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="k") { e.preventDefault(); $("search").focus(); return; }
     if (e.key==="Escape") { closeModal(); closeStatus(); closeMore(); return; }
     if (e.key==="Enter" && (e.metaKey||e.ctrlKey) && $("modalBg").classList.contains("show")) { saveForm(); return; }
   });
