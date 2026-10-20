@@ -693,15 +693,19 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
   border-radius: 12px; padding: 11px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 8px; transition: background .15s; }
 .ev-ics:hover { background: rgba(14,165,233,.18); }
 
-/* Salary insights by industry (Analytics) */
-.salary-chart { display: flex; flex-direction: column; gap: 10px; }
-.sal-row { display: flex; align-items: center; gap: 10px; }
-.sal-name { flex: 0 0 120px; font-size: 12px; font-weight: 600; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sal-bar { flex: 1; height: 14px; background: var(--surface-3); border-radius: 8px; overflow: hidden; }
-.sal-bar > span { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--accent), var(--s-green)); }
-.sal-val { flex: 0 0 auto; font-size: 12.5px; font-weight: 700; color: var(--text); min-width: 64px; text-align: right; }
-.sal-val .sal-n { color: var(--faint); font-weight: 500; margin-left: 3px; }
-.sal-foot { margin-top: 12px; font-size: 11.5px; color: var(--muted); }
+/* Section subtitle (e.g. under "Average Monthly Pay by Industry") */
+.section-sub { font-size: 12.5px; color: var(--muted); margin: -4px 2px 12px; line-height: 1.45; }
+
+/* Monthly pay by industry (Analytics) — clean vertical list */
+.salary-chart { display: flex; flex-direction: column; gap: 14px; background: #ffffff; border-radius: 16px;
+  padding: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+.sal-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.sal-left { flex: 1 1 auto; min-width: 0; }   /* name + bar stack; allow shrink */
+.sal-name { font-size: 13px; font-weight: 600; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sal-bar { flex-grow: 1; height: 8px; border-radius: 4px; background: #f1f5f9; overflow: hidden; margin-top: 4px; }
+.sal-bar > span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, #0284c7, #38bdf8); transition: width 0.3s ease; }
+.sal-val { flex: 0 0 auto; font-size: 0.9rem; font-weight: 600; color: #0f172a; white-space: nowrap; padding-right: 2px; text-align: right; }
+.sal-val .sal-n { color: var(--faint); font-weight: 500; margin-left: 4px; }
 /* Today: a subtle accent-tinted fill with the day number badged, instead of a
    prominent border (which read like a hover/selection state). */
 .cal-cell.today { background: rgba(14,165,233,.08); }

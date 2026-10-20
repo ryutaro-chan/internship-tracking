@@ -377,24 +377,27 @@
     data.forEach(function (x) {
       var v = stipendValue(x.comp);
       if (v == null || v < 0) return;
-      var ind = industryOf(x) || "Unspecified";
+      var ind = industryOf(x) || "General / Uncategorized";
       sums[ind] = (sums[ind]||0) + v; counts[ind] = (counts[ind]||0) + 1;
     });
     var rows = Object.keys(sums).map(function (ind) {
       return { industry: ind, avg: Math.round(sums[ind]/counts[ind]), n: counts[ind] };
     }).sort(function (a,b){ return b.avg - a.avg; });
 
-    if (!rows.length) { el.innerHTML = '<div class="empty-note" style="padding:24px 10px">Add a salary to some applications to see industry stipend comparisons.</div>'; return; }
+    if (!rows.length) { el.innerHTML = '<div class="empty-note" style="padding:24px 10px">Add a monthly pay / salary to some applications to see the comparison by industry.</div>'; return; }
     var max = rows[0].avg || 1;
     el.innerHTML = '<div class="salary-chart">' + rows.map(function (r) {
       var pct = Math.max(6, Math.round(r.avg / max * 100));
+      var payText = "$" + r.avg.toLocaleString() + " / month";
+      var roleText = r.n + " role" + (r.n===1 ? "" : "s");
       return '<div class="sal-row">' +
-        '<div class="sal-name" title="'+esc(r.industry)+'">'+esc(r.industry)+'</div>' +
-        '<div class="sal-bar"><span style="width:'+pct+'%"></span></div>' +
-        '<div class="sal-val">$'+r.avg.toLocaleString()+'<span class="sal-n">·'+r.n+'</span></div>' +
+        '<div class="sal-left">' +
+          '<div class="sal-name" title="'+esc(r.industry)+'">'+esc(r.industry)+'</div>' +
+          '<div class="sal-bar"><span style="width:'+pct+'%"></span></div>' +
+        '</div>' +
+        '<div class="sal-val">'+esc(payText)+'<span class="sal-n">· '+roleText+'</span></div>' +
       '</div>';
-    }).join("") + '</div>' +
-    '<div class="sal-foot">Average monthly stipend across your tracked roles, by industry.</div>';
+    }).join("") + '</div>';
   }
 
   // ---------- Deadline Calendar ----------
