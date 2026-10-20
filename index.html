@@ -6,11 +6,11 @@
 <title>JobTrackr — Organize the hunt. Catch the offer.</title>
 <meta name="description" content="JobTrackr — track your internship and job applications." />
 <!-- Clean circular emblem favicon: pastel-blue circle with a slate crosshair 'o' -->
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23D1E9FF'/%3E%3Ccircle cx='32' cy='32' r='13' fill='none' stroke='%231E293B' stroke-width='4'/%3E%3Cline x1='32' y1='9' x2='32' y2='19' stroke='%231E293B' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='32' y1='45' x2='32' y2='55' stroke='%231E293B' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='9' y1='32' x2='19' y2='32' stroke='%231E293B' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='45' y1='32' x2='55' y2='32' stroke='%231E293B' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23fdf6d8'/%3E%3Cpath d='M22 15l-2 7' stroke='%233b82f6' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M31 14l1 7' stroke='%233b82f6' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='26' cy='34' r='13' fill='none' stroke='%231E293B' stroke-width='5'/%3E%3Cpath d='M36 44l10 11' stroke='%233b82f6' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E" />
 <meta property="og:title" content="JobTrackr" />
 <meta property="og:type" content="website" />
-<meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Crect width='1200' height='630' fill='%23F8FAFC'/%3E%3Ccircle cx='600' cy='300' r='150' fill='%23D1E9FF'/%3E%3Ccircle cx='600' cy='300' r='62' fill='none' stroke='%231E293B' stroke-width='18'/%3E%3Cline x1='600' y1='192' x2='600' y2='238' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Cline x1='600' y1='362' x2='600' y2='408' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Cline x1='492' y1='300' x2='538' y2='300' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Cline x1='662' y1='300' x2='708' y2='300' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Ctext x='600' y='520' font-family='-apple-system,Segoe UI,Roboto,sans-serif' font-size='72' font-weight='800' fill='%231E293B' text-anchor='middle'%3EJobTrackr%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="styles.css?v=btnfix-1792512225743" />
+<meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Crect width='1200' height='630' fill='%23fdf6d8'/%3E%3Cpath d='M470 250l-14 46' stroke='%233b82f6' stroke-width='22' stroke-linecap='round'/%3E%3Cpath d='M532 242l6 46' stroke='%233b82f6' stroke-width='22' stroke-linecap='round'/%3E%3Ccircle cx='500' cy='360' r='78' fill='none' stroke='%231E293B' stroke-width='30'/%3E%3Cpath d='M558 418l56 60' stroke='%233b82f6' stroke-width='34' stroke-linecap='round'/%3E%3Ctext x='640' y='390' font-family='-apple-system,Segoe UI,Roboto,sans-serif' font-size='96' font-weight='800' fill='%231E293B' text-anchor='start'%3EJobTrackr%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css?v=logo-1792512438249" />
 </head>
 <body>
 <div class="app" id="app">
@@ -20,7 +20,20 @@
     <div class="top">
       <div class="brand">
         <span class="logo-emblem">
-          <h1 class="wordmark">J<span class="logo-crosshair">o</span>bTrackr<span class="logo-star" aria-hidden="true">★</span></h1>
+          <h1 class="wordmark" aria-label="JobTrackr">
+            <span class="wm-job">J</span><span class="logo-lens" aria-hidden="true">
+              <svg viewBox="0 0 22 24" width="1em" height="1em" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- sparkles above the lens -->
+                <path d="M8.6 2.6l-0.8 2.6" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12.6 2.1l0.3 2.7" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
+                <!-- magnifying-glass lens (the 'o') -->
+                <circle cx="10" cy="12.4" r="6.2" stroke="#1E293B" stroke-width="2.8"/>
+                <!-- lens highlight -->
+                <path d="M7.4 10.2a3 3 0 0 1 2.6-1.8" stroke="#93c5fd" stroke-width="1.7" stroke-linecap="round"/>
+                <!-- handle -->
+                <path d="M14.6 16.9l4.4 4.8" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+              </svg></span><span class="wm-job">b</span><span class="wm-trackr">Trackr</span>
+          </h1>
         </span>
         <div class="tagline" id="appbarSub">Organize the hunt. Catch the offer.</div>
       </div>
@@ -240,6 +253,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=btnfix-1792512225743" defer></script>
+<script src="app.js?v=logo-1792512438249" defer></script>
 </body>
 </html>
