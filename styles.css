@@ -627,27 +627,56 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
   transition: background 0.15s ease, box-shadow 0.15s ease; }
 .calendar-event-pill:hover { background: #bae6fd; box-shadow: 0 1px 3px rgba(3,105,161,.2); }
 
-/* ===== Apple-style date popover ===== */
-.cal-popover { position: fixed; width: 280px; z-index: 1000;
-  background: #ffffff; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.12);
-  border: 1px solid rgba(15,23,42,.06); padding: 1rem;
-  animation: calPopIn .14s ease; }
-@keyframes calPopIn { from { opacity: 0; transform: translateY(4px) scale(.98); } to { opacity: 1; transform: none; } }
-.cal-pop-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.cal-pop-date { font-size: 14px; font-weight: 800; color: var(--text); }
-.cal-pop-close { border: none; background: var(--surface-2); color: var(--muted); width: 26px; height: 26px; border-radius: 50%; cursor: pointer; font-size: 12px; }
-.cal-pop-close:hover { background: var(--surface-3); color: var(--text); }
-.cal-pop-events { margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
-.cal-pop-ev { font-size: 12px; color: var(--text-2); background: var(--surface-2); border-radius: 8px; padding: 5px 9px; }
-.cal-pop-label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 6px; }
-.cal-pop-text { width: 100%; min-height: 72px; resize: vertical; font-family: inherit; font-size: 14px; color: var(--text);
-  background: var(--surface-2); border: 1px solid var(--border-2); border-radius: 10px; padding: 9px 11px; outline: none; }
-.cal-pop-text:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.15); }
-.cal-pop-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
-.cal-pop-del { border: 1px solid var(--border-2); background: #fff; color: var(--s-rose); border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
-.cal-pop-del:hover { background: var(--s-rose-bg); border-color: rgba(225,29,72,.35); }
-.cal-pop-save { border: none; background: var(--accent-strong); color: #fff; border-radius: 10px; padding: 8px 18px; font-size: 13px; font-weight: 700; cursor: pointer; }
-.cal-pop-save:hover { background: var(--accent); }
+/* ===== iOS Calendar-style event editor card ===== */
+.cal-event-card {
+  position: fixed; z-index: 1000; max-width: 380px; width: 100%;
+  background: #1c1c1e; color: #ffffff; border-radius: 24px; padding: 1.25rem;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  animation: calPopIn .16s ease;
+}
+@keyframes calPopIn { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
+
+/* Header: close ✕ · Event/Reminder toggle · save ✓ */
+.ev-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.ev-circle { background: #2c2c2e; color: #ffffff; width: 32px; height: 32px; border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; flex: 0 0 auto; transition: background .15s; }
+.ev-circle:hover { background: #3a3a3c; }
+.ev-save { color: #30d158; font-weight: 700; }
+.ev-seg { background: #2c2c2e; border-radius: 20px; padding: 2px; display: flex; flex: 1; max-width: 220px; margin: 0 auto; }
+.ev-seg-btn { flex: 1; border: none; background: transparent; color: #a1a1a6; font-family: inherit; font-size: 13px; font-weight: 500;
+  padding: 6px 12px; border-radius: 16px; cursor: pointer; transition: background .15s, color .15s; }
+.ev-seg-btn.active { background: #3a3a3c; color: #fff; font-weight: 600; border-radius: 16px; }
+
+/* Inputs & grouped inset cards */
+.ev-input { width: 100%; background: #2c2c2e; border: none; border-radius: 12px; color: #ffffff;
+  padding: 10px 14px; font-family: inherit; font-size: 15px; outline: none; margin-bottom: 1rem; }
+.ev-input::placeholder, .ev-notes::placeholder { color: #8e8e93; }
+.ev-title { font-weight: 600; }
+
+.ev-group { background: #2c2c2e; border-radius: 12px; border: none; color: #ffffff; margin-bottom: 1rem; padding: 10px 14px; }
+.ev-section-title { font-size: 13px; font-weight: 600; color: #8e8e93; margin: 0 2px 8px; }
+
+/* Date & time group with vertical accent line */
+.ev-datetime { position: relative; padding-left: 20px; }
+.ev-datetime::before { content: ""; position: absolute; left: 10px; top: 12px; bottom: 12px; width: 3px; border-radius: 3px; background: #0a84ff; }
+.ev-dt-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 0; }
+.ev-dt-row + .ev-dt-row { border-top: 1px solid rgba(255,255,255,.08); }
+.ev-dt-label { font-size: 14px; color: #ffffff; }
+.ev-dt-input { background: transparent; border: none; color: #0a84ff; font-family: inherit; font-size: 14px; outline: none; color-scheme: dark; }
+
+/* Location group */
+.ev-loc-group { display: flex; align-items: center; gap: 8px; }
+.ev-loc-ico { font-size: 15px; flex: 0 0 auto; }
+.ev-loc { background: transparent; border: none; border-radius: 0; margin-bottom: 0; padding: 0; color: #fff; }
+
+/* Details notes */
+.ev-notes { width: 100%; min-height: 72px; resize: vertical; background: transparent; border: none; color: #ffffff;
+  font-family: inherit; font-size: 15px; outline: none; }
+
+.ev-delete { width: 100%; background: #2c2c2e; color: #ff453a; border: none; border-radius: 12px; padding: 11px;
+  font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 2px; transition: background .15s; }
+.ev-delete:hover { background: #3a3a3c; }
 .cal-cell.today { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 .cal-cell.has-amber { background: var(--s-amber-bg); color: var(--s-amber); }
 .cal-cell.has-red   { background: var(--s-rose-bg);  color: var(--s-rose); }

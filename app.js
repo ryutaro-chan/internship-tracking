@@ -383,13 +383,32 @@
     { field:"oaDate",         type:"oa",         cls:"ev-oa",        label:"Online Assessment", emoji:"📝" },
     { field:"interviewDates", type:"interview",  cls:"ev-interview", label:"Interview",        emoji:"🎤" }
   ];
-  // ---------- Calendar notes (localStorage, keyed by YYYY-MM-DD) ----------
+  // ---------- Calendar events/notes (localStorage, keyed by YYYY-MM-DD) ----------
+  // Stored value is an object { kind:"event"|"reminder", title, location, notes, startsAt, endsAt }.
+  // Legacy plain-string values are auto-upgraded on read.
   var CAL_NOTES_KEY = "jobtrackr.calnotes";
   function getCalNotes() { try { return JSON.parse(localStorage.getItem(CAL_NOTES_KEY)) || {}; } catch (e) { return {}; } }
-  function noteFor(dateStr) { return getCalNotes()[dateStr] || ""; }
-  function setNote(dateStr, text) {
+  // Normalize a stored value into the structured event object.
+  function eventFor(dateStr) {
+    var raw = getCalNotes()[dateStr];
+    if (!raw) return null;
+    if (typeof raw === "string") return { kind:"event", title:"", location:"", notes:raw, startsAt:"", endsAt:"" };
+    return { kind:raw.kind||"event", title:raw.title||"", location:raw.location||"", notes:raw.notes||"", startsAt:raw.startsAt||"", endsAt:raw.endsAt||"" };
+  }
+  // A short label for the cell pill (title first, else notes).
+  function eventLabel(dateStr) {
+    var e = eventFor(dateStr); if (!e) return "";
+    return (e.title && e.title.trim()) || (e.notes && e.notes.trim()) || "";
+  }
+  function setEvent(dateStr, obj) {
     var all = getCalNotes();
-    if (text && text.trim()) all[dateStr] = text.trim(); else delete all[dateStr];
+    var hasContent = obj && ((obj.title&&obj.title.trim()) || (obj.notes&&obj.notes.trim()) || (obj.location&&obj.location.trim()));
+    if (hasContent) all[dateStr] = {
+      kind: obj.kind==="reminder"?"reminder":"event",
+      title:(obj.title||"").trim(), location:(obj.location||"").trim(), notes:(obj.notes||"").trim(),
+      startsAt:obj.startsAt||"", endsAt:obj.endsAt||""
+    };
+    else delete all[dateStr];
     try { localStorage.setItem(CAL_NOTES_KEY, JSON.stringify(all)); } catch (e) {}
   }
   function dayKey(y, m, day) {
@@ -455,12 +474,12 @@
         }).join("");
         dots = '<div class="ddot">' + dotHTML + '</div>';
       }
-      // A saved note renders as a visible, truncated text pill inside the cell.
+      // A saved event/note renders as a visible, truncated text pill inside the cell.
       var notePill = "";
       if (hasNote) {
-        var full7 = notes[dkey];
-        var short = full7.length > 16 ? full7.slice(0, 15).trim() + "…" : full7;
-        notePill = '<div class="calendar-event-pill" data-note-pill="'+dkey+'" title="'+esc(full7)+'">'+esc(short)+'</div>';
+        var label = eventLabel(dkey);
+        var short = label.length > 16 ? label.slice(0, 15).trim() + "…" : label;
+        notePill = '<div class="calendar-event-pill" data-note-pill="'+dkey+'" title="'+esc(label)+'">'+esc(short)+'</div>';
       }
       cells += '<div class="'+cls+'" data-date="'+dkey+'"><span class="cal-daynum">'+day+'</span>'+dots+notePill+'</div>';
     }
@@ -540,40 +559,79 @@
 
   function openDayPopover(dateStr, cell, targetId, full) {
     closeDayPopover();
-    var existing = noteFor(dateStr);
-    // events on this day (read-only context in the popover)
-    var dayEvents = [];
-    data.forEach(function (x) {
-      CAL_EVENTS.forEach(function (ev) { if (x[ev.field] === dateStr) dayEvents.push(ev.emoji + " " + ev.label + " — " + (x.company||"") ); });
-    });
-    var evHTML = dayEvents.length ? '<div class="cal-pop-events">'+dayEvents.map(function (t){ return '<div class="cal-pop-ev">'+esc(t)+'</div>'; }).join("")+'</div>' : "";
+    var ev = eventFor(dateStr) || { kind:"event", title:"", location:"", notes:"", startsAt:"", endsAt:"" };
+    var when = prettyDate(dateStr);
 
     var pop = document.createElement("div");
-    pop.className = "cal-popover"; pop.id = "calPopover";
+    pop.className = "cal-event-card"; pop.id = "calPopover";
     pop.innerHTML =
-      '<div class="cal-pop-head"><div class="cal-pop-date">'+esc(prettyDate(dateStr))+'</div>' +
-        '<button class="cal-pop-close" id="calPopClose" title="Close">✕</button></div>' +
-      evHTML +
-      '<label class="cal-pop-label">Note / Reminder</label>' +
-      '<textarea class="cal-pop-text" id="calPopText" placeholder="e.g. Follow up with recruiter">'+esc(existing)+'</textarea>' +
-      '<div class="cal-pop-actions">' +
-        '<button class="cal-pop-del" id="calPopDel"'+(existing?"":' style="visibility:hidden"')+'>Delete</button>' +
-        '<button class="cal-pop-save" id="calPopSave">Save</button>' +
-      '</div>';
+      // Header: ✕ (left) · Event/Reminder toggle (center) · ✓ (right)
+      '<div class="ev-head">' +
+        '<button class="ev-circle" id="evClose" title="Close">✕</button>' +
+        '<div class="ev-seg" id="evSeg">' +
+          '<button type="button" class="ev-seg-btn'+(ev.kind!=="reminder"?" active":"")+'" data-kind="event">Event</button>' +
+          '<button type="button" class="ev-seg-btn'+(ev.kind==="reminder"?" active":"")+'" data-kind="reminder">Reminder</button>' +
+        '</div>' +
+        '<button class="ev-circle ev-save" id="evSave" title="Save">✓</button>' +
+      '</div>' +
+      // Title
+      '<input class="ev-input ev-title" id="evTitle" placeholder="Title or Describe Event" value="'+esc(ev.title)+'" />' +
+      // Date & time group with accent line
+      '<div class="ev-group ev-datetime">' +
+        '<div class="ev-dt-row"><span class="ev-dt-label">Starts</span>' +
+          '<input type="datetime-local" class="ev-dt-input" id="evStart" value="'+esc(ev.startsAt || (dateStr+"T09:00"))+'" /></div>' +
+        '<div class="ev-dt-row"><span class="ev-dt-label">Ends</span>' +
+          '<input type="datetime-local" class="ev-dt-input" id="evEnd" value="'+esc(ev.endsAt || (dateStr+"T10:00"))+'" /></div>' +
+      '</div>' +
+      // Location
+      '<div class="ev-section-title">Location</div>' +
+      '<div class="ev-group ev-loc-group">' +
+        '<span class="ev-loc-ico">📍</span>' +
+        '<input class="ev-input ev-loc" id="evLoc" placeholder="Location or Video Call" value="'+esc(ev.location)+'" />' +
+      '</div>' +
+      // Details
+      '<div class="ev-section-title">Details</div>' +
+      '<div class="ev-group">' +
+        '<textarea class="ev-notes" id="evNotes" placeholder="Notes">'+esc(ev.notes)+'</textarea>' +
+      '</div>' +
+      (eventLabel(dateStr) ? '<button class="ev-delete" id="evDelete">Delete</button>' : '');
     document.body.appendChild(pop);
 
     // position beside the clicked cell, kept within the viewport
     var r = cell.getBoundingClientRect();
-    var pw = 280, ph = pop.offsetHeight || 220, gap = 8;
+    var pw = 380, ph = pop.offsetHeight || 420, gap = 10;
     var left = r.right + gap; if (left + pw > window.innerWidth - 8) left = r.left - pw - gap;
     if (left < 8) left = Math.max(8, (window.innerWidth - pw) / 2);
     var top = r.top; if (top + ph > window.innerHeight - 8) top = Math.max(8, window.innerHeight - ph - 8);
+    if (top < 8) top = 8;
     pop.style.left = left + "px"; pop.style.top = top + "px";
 
-    var txt = $("calPopText"); txt.focus();
-    $("calPopClose").onclick = closeDayPopover;
-    $("calPopSave").onclick = function () { setNote(dateStr, txt.value); closeDayPopover(); renderCalendar(targetId, full); showToast(txt.value.trim() ? "Note saved" : "Note cleared"); };
-    $("calPopDel").onclick = function () { setNote(dateStr, ""); closeDayPopover(); renderCalendar(targetId, full); showToast("Note deleted"); };
+    var kind = ev.kind || "event";
+    pop.querySelectorAll("[data-kind]").forEach(function (b) {
+      b.onclick = function () {
+        kind = b.getAttribute("data-kind");
+        pop.querySelectorAll("[data-kind]").forEach(function (x){ x.classList.toggle("active", x===b); });
+      };
+    });
+
+    $("evTitle").focus();
+    $("evClose").onclick = closeDayPopover;
+    $("evSave").onclick = function () {
+      setEvent(dateStr, {
+        kind: kind,
+        title: $("evTitle").value,
+        location: $("evLoc").value,
+        notes: $("evNotes").value,
+        startsAt: $("evStart").value,
+        endsAt: $("evEnd").value
+      });
+      closeDayPopover();
+      renderCalendar(targetId, full);
+      showToast(eventLabel(dateStr) ? "Saved" : "Cleared");
+    };
+    var del = $("evDelete");
+    if (del) del.onclick = function () { setEvent(dateStr, {}); closeDayPopover(); renderCalendar(targetId, full); showToast("Deleted"); };
+
     setTimeout(function () {
       document.addEventListener("click", popoverOutside, true);
       document.addEventListener("keydown", popoverEsc, true);
