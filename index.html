@@ -31,6 +31,7 @@
       <div class="appbar-actions" style="display:flex; gap:8px;">
         <button class="btn-new-desktop" id="addDesktop">＋ New Application</button>
         <button class="icon-pill" id="compareBtn" title="Compare roles">⚖</button>
+        <button class="icon-pill" id="shortcutsBtn" title="Keyboard shortcuts (?)">⌨</button>
         <button class="icon-pill" id="moreBtn" title="Export / Import">⋯</button>
       </div>
     </div>
@@ -189,6 +190,28 @@
       <button class="btn" id="importBtn" style="width:100%; margin-bottom:10px;">⬆ Import data (JSON)</button>
       <input type="file" id="importFile" accept="application/json" style="display:none" />
       <button class="btn" id="sampleBtn" style="width:100%;">✨ Load sample data</button>
+    </div>
+  </div>
+</div>
+
+<!-- Keyboard shortcuts sheet -->
+<div class="modal-bg" id="shortcutsBg">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head"><h2>⌨ Keyboard Shortcuts</h2><button class="icon-btn" id="closeShortcuts">✕</button></div>
+    <div class="sheet-body">
+      <ul class="shortcut-list">
+        <li><span>Focus search</span><kbd class="sc-key" id="sc-k">⌘K</kbd></li>
+        <li><span>New application</span><kbd class="sc-key">N</kbd></li>
+        <li><span>Load demo data</span><kbd class="sc-key">D</kbd></li>
+        <li><span>Save (in form)</span><kbd class="sc-key" id="sc-enter">⌘↵</kbd></li>
+        <li><span>Go to Dashboard</span><kbd class="sc-key">1</kbd></li>
+        <li><span>Go to Applications</span><kbd class="sc-key">2</kbd></li>
+        <li><span>Go to Analytics</span><kbd class="sc-key">3</kbd></li>
+        <li><span>Go to Compare</span><kbd class="sc-key">4</kbd></li>
+        <li><span>Show this help</span><kbd class="sc-key">?</kbd></li>
+        <li><span>Close dialog</span><kbd class="sc-key">Esc</kbd></li>
+      </ul>
     </div>
   </div>
 </div>

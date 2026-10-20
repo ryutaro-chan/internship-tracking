@@ -523,3 +523,32 @@ body.is-mobile-ios .kbd { display: none; }
 .cal-upcoming .u-row .u-when.norm { background: var(--surface-2); color: var(--muted); }
 .cal-upcoming .u-row .u-co { font-weight: 600; }
 .cal-upcoming .u-row .u-rl { color: var(--muted); font-size: 12px; }
+
+/* ===================================================================
+   PROGRESS STEPPER + KEYBOARD SHORTCUTS
+   =================================================================== */
+
+/* 4-stage progress stepper inside feed cards */
+.stepper { display: flex; align-items: center; margin: 12px 0 2px; padding-top: 12px; border-top: 1px solid var(--border); }
+.stepper .step { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 0 0 auto; }
+.stepper .step-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--surface-3);
+  border: 2px solid var(--border-2); transition: background .2s, border-color .2s; }
+.stepper .step-label { font-size: 10px; font-weight: 600; color: var(--faint); white-space: nowrap; }
+.stepper .step-line { flex: 1 1 auto; height: 2px; background: var(--border-2); margin: 0 6px; margin-bottom: 16px; border-radius: 2px; }
+.stepper .step-line.done { background: var(--accent); }
+/* completed stages */
+.stepper .step.done .step-dot { background: var(--accent); border-color: var(--accent); }
+.stepper .step.done .step-label { color: var(--muted); }
+/* current stage — pulsing accent */
+.stepper .step.current .step-dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px rgba(14,165,233,.18); }
+.stepper .step.current .step-label { color: var(--accent-strong); font-weight: 700; }
+/* inactive (Rejected / Withdrawn) — everything muted */
+.stepper.inactive { opacity: .5; }
+
+/* Keyboard shortcuts list */
+.shortcut-list { list-style: none; margin: 0; padding: 0; }
+.shortcut-list li { display: flex; align-items: center; justify-content: space-between; padding: 11px 2px; border-bottom: 1px solid var(--border); font-size: 14px; }
+.shortcut-list li:last-child { border-bottom: none; }
+.shortcut-list li span { color: var(--text-2); }
+.sc-key { font-family: inherit; font-size: 12px; font-weight: 700; color: var(--text-2); background: var(--surface-2);
+  border: 1px solid var(--border-2); border-bottom-width: 2px; border-radius: 7px; padding: 4px 9px; min-width: 32px; text-align: center; }

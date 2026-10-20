@@ -126,8 +126,42 @@
     if (du <= 14) return '<span class="countdown">⏳ '+du+'d left</span>';
     return '<span class="chiptag">⏳ '+fmtDate(x.deadline)+'</span>';
   }
+  // 4-stage progress stepper: Applied -> Test -> Interview -> Offer.
+  // Returns HTML highlighting stages completed/reached for the current status.
+  var STEP_STAGES = ["Applied", "Test", "Interview", "Offer"];
+  function statusStepIndex(status) {
+    switch (status) {
+      case "Applied": return 0;
+      case "Online Assessment / Test": return 1;
+      case "Interview": return 2;
+      case "Offer Received": return 3;
+      case "Rejected":
+      case "Withdrawn": return -1;   // terminal / inactive
+      default: return 0;
+    }
+  }
+  function progressStepper(x) {
+    var idx = statusStepIndex(x.status);
+    var inactive = idx < 0;              // Rejected / Withdrawn
+    var cls = "stepper" + (inactive ? " inactive" : "");
+    var dots = STEP_STAGES.map(function (label, i) {
+      var state = "";
+      if (!inactive) {
+        if (i < idx) state = " done";
+        else if (i === idx) state = " current";
+      }
+      var line = i < STEP_STAGES.length - 1
+        ? '<span class="step-line' + (!inactive && i < idx ? " done" : "") + '"></span>'
+        : "";
+      return '<span class="step' + state + '"><span class="step-dot"></span>' +
+        '<span class="step-label">' + label + '</span></span>' + line;
+    }).join("");
+    return '<div class="' + cls + '">' + dots + '</div>';
+  }
+
+  // Stale if still "Applied" or "Online Assessment / Test" with no update in 14+ days.
   function followUpDue(x) {
-    if (x.status !== "Applied") return false;
+    if (x.status !== "Applied" && x.status !== "Online Assessment / Test") return false;
     var since = daysSince(x.followup || x.appliedDate);
     return since !== null && since >= 14;
   }
@@ -425,6 +459,7 @@
           '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
         '</div>' +
         (tags.length?'<div class="tags">'+tags.join("")+'</div>':'') +
+        progressStepper(x) +
         '<div class="foot">' +
           '<button class="qbtn" data-status="'+x.id+'">🔄 Status</button>' +
           '<button class="qbtn" data-mail="'+x.id+'">✉️ Follow-up</button>' +
@@ -918,6 +953,10 @@
   function openMore() { renderSyncBadge(); $("moreBg").classList.add("show"); }
   function closeMore() { $("moreBg").classList.remove("show"); }
 
+  // ---------- keyboard shortcuts modal ----------
+  function openShortcuts() { $("shortcutsBg").classList.add("show"); }
+  function closeShortcuts() { $("shortcutsBg").classList.remove("show"); }
+
   // ---------- wire up ----------
   fillStatusSelects();
   $("kbdHint").textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
@@ -929,16 +968,43 @@
   $("moreBtn").onclick = openMore; $("closeMore").onclick = closeMore;
   $("moreBg").addEventListener("click", function (e){ if (e.target===$("moreBg")) closeMore(); });
   $("compareBtn").onclick = function (){ switchTab("compare"); };
+  $("shortcutsBtn").onclick = openShortcuts;
+  $("closeShortcuts").onclick = closeShortcuts;
+  $("shortcutsBg").addEventListener("click", function (e){ if (e.target===$("shortcutsBg")) closeShortcuts(); });
   $("exportBtn").onclick = exportData;
   $("exportCsvBtn").onclick = exportCsv;
   $("importBtn").onclick = function (){ $("importFile").click(); };
   $("importFile").onchange = function (e){ if (e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
   $("sampleBtn").onclick = loadSample;
 
+  // platform-aware shortcut labels in the shortcuts modal
+  var isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+  if ($("sc-k")) $("sc-k").textContent = isMac ? "⌘K" : "Ctrl K";
+  if ($("sc-enter")) $("sc-enter").textContent = isMac ? "⌘↵" : "Ctrl ↵";
+
+  function anyModalOpen() {
+    return ["modalBg","statusBg","moreBg","shortcutsBg"].some(function (id){ return $(id).classList.contains("show"); });
+  }
+  function typingInField(e) {
+    var t = e.target && e.target.tagName;
+    return t === "INPUT" || t === "TEXTAREA" || t === "SELECT";
+  }
   document.addEventListener("keydown", function (e) {
     if ((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="k") { e.preventDefault(); $("search").focus(); return; }
-    if (e.key==="Escape") { closeModal(); closeStatus(); closeMore(); }
-    if (e.key==="Enter" && (e.metaKey||e.ctrlKey) && $("modalBg").classList.contains("show")) saveForm();
+    if (e.key==="Escape") { closeModal(); closeStatus(); closeMore(); closeShortcuts(); return; }
+    if (e.key==="Enter" && (e.metaKey||e.ctrlKey) && $("modalBg").classList.contains("show")) { saveForm(); return; }
+
+    // Single-key shortcuts — ignore while typing or when a dialog is open.
+    if (e.metaKey || e.ctrlKey || e.altKey || typingInField(e)) return;
+    if (e.key === "?") { e.preventDefault(); if (anyModalOpen()) return; openShortcuts(); return; }
+    if (anyModalOpen()) return;
+    var k = e.key.toLowerCase();
+    if (k === "n") { e.preventDefault(); openModal(null); }
+    else if (k === "d") { e.preventDefault(); loadSample(); }
+    else if (e.key === "1") switchTab("dashboard");
+    else if (e.key === "2") switchTab("applications");
+    else if (e.key === "3") switchTab("analytics");
+    else if (e.key === "4") switchTab("compare");
   });
   $("search").oninput = render;
   $("statusFilter").onchange = render;
