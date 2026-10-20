@@ -59,26 +59,35 @@
   @media (max-width: 860px){ .kpis{ grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 440px){ .kpis{ grid-template-columns: 1fr; } }
   .kpi {
-    background: var(--surface);
+    background:
+      radial-gradient(120% 120% at 100% 0%, var(--glow, transparent), transparent 55%),
+      var(--surface);
     border: 1px solid var(--border); border-radius: var(--radius-lg);
-    padding: 16px 18px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+    padding: 20px 20px 18px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+    transition: transform .12s ease, box-shadow .15s ease;
   }
-  .kpi::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent-col, var(--muted)); opacity:.9; }
-  .kpi .label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-  .kpi .num { font-size: 32px; font-weight: 800; letter-spacing: -.02em; color: var(--accent-col, var(--text)); margin-top: 6px; line-height: 1; }
-  .kpi .sub { font-size: 12px; color: var(--faint); margin-top: 8px; }
+  .kpi:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(15,23,42,.06), 0 14px 32px rgba(15,23,42,.10); }
+  .kpi::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background: var(--accent-col, var(--muted)); }
+  .kpi .icon { position: absolute; top: 16px; right: 16px; width: 34px; height: 34px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+    background: var(--glow, var(--surface-2)); color: var(--accent-col, var(--muted)); }
+  .kpi .label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .kpi .num { font-size: 40px; font-weight: 800; letter-spacing: -.03em; color: var(--accent-col, var(--text)); margin-top: 8px; line-height: 1; }
+  .kpi .sub { font-size: 12px; color: var(--faint); margin-top: 10px; }
   .kpi .sub b { color: var(--text-2); font-weight: 600; }
 
   /* ---------- Toolbar ---------- */
   .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
-  .search { flex: 1 1 260px; min-width: 220px; position: relative; display: flex; align-items: center; gap: 2px;
+  .search { flex: 1 1 320px; min-width: 300px; position: relative; display: flex; align-items: center;
     background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius);
     padding: 0 10px; transition: border-color .15s, box-shadow .15s; }
   .search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.15); }
-  .search .ico { opacity: .55; font-size: 13px; margin-right: 6px; flex: 0 0 auto; }
+  .search .ico { opacity: .55; font-size: 13px; margin-right: 8px; flex: 0 0 auto; }
   .search input { flex: 1 1 auto; min-width: 0; background: transparent; border: none; outline: none; color: var(--text);
     font-family: inherit; font-size: 14px; padding: 9px 0; }
   .search input::placeholder { color: var(--faint); }
+  .kbd { flex: 0 0 auto; margin-left: 10px; font-family: inherit; font-size: 11px; font-weight: 600; color: var(--muted);
+    background: var(--surface-2); border: 1px solid var(--border-2); border-radius: 6px; padding: 3px 7px; white-space: nowrap; }
 
   .ctl { font-family: inherit; font-size: 13.5px; color: var(--text-2);
     background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius);
@@ -125,6 +134,13 @@
   .nowrap { white-space: nowrap; }
   .flag { color: var(--c-amber); font-size: 11.5px; font-weight: 600; }
   .flag.past { color: var(--faint); font-weight: 400; }
+  .followup-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;
+    color: #b45309; background: rgba(245,158,11,.15); border: 1px solid rgba(245,158,11,.35);
+    border-radius: 20px; padding: 2px 9px; white-space: nowrap; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: #fff; font-size: 13px; font-weight: 500; padding: 10px 18px; border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(15,23,42,.25); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 90; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   a.link { color: var(--accent); text-decoration: none; }
   a.link:hover { text-decoration: underline; }
   .row-actions { opacity: 0; transition: opacity .12s; white-space: nowrap; text-align: right; }
@@ -148,6 +164,9 @@
   .bcard .bco { font-weight: 600; font-size: 13.5px; }
   .bcard .brl { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
   .bcard .bmeta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .bcard-mail { font-family: inherit; font-size: 11.5px; color: var(--accent-strong); background: rgba(14,165,233,.1);
+    border: 1px solid transparent; border-radius: 6px; padding: 4px 9px; cursor: pointer; transition: .12s; }
+  .bcard-mail:hover { background: rgba(14,165,233,.18); border-color: rgba(14,165,233,.3); }
   .col-empty { color: var(--faint); font-size: 12px; text-align: center; padding: 14px 6px; border: 1px dashed var(--border-2); border-radius: var(--radius); }
 
   /* ---------- Empty state ---------- */
@@ -248,7 +267,8 @@
   <div class="toolbar">
     <div class="search">
       <span class="ico">🔍</span>
-      <input id="search" placeholder="Search Company, Role, Location…" />
+      <input id="search" placeholder="Search company, role, location…" />
+      <span class="kbd" id="kbdHint">⌘K</span>
     </div>
     <div class="seg" id="viewSeg">
       <button data-view="table" class="active">▤ Table</button>
@@ -350,6 +370,8 @@
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 (function () {
   "use strict";
@@ -381,18 +403,18 @@
 
   // soft-fill pill colors for light surfaces
   var PILL = {
-    // Applied — soft sky blue
-    sky:    { bg:"rgba(56,189,248,.16)",  fg:"#0369a1" },
-    // Online Assessment / Awaiting Reply — soft lavender purple
-    violet: { bg:"rgba(139,92,246,.15)",  fg:"#6d28d9" },
-    // Interview / Interviewed — soft warm amber
-    amber:  { bg:"rgba(245,158,11,.18)",  fg:"#b45309" },
-    // Offer Received — bright emerald victory badge
-    green:  { bg:"rgba(16,185,129,.20)",  fg:"#047857" },
-    // Rejected — low-contrast subtle rose
-    red:    { bg:"rgba(244,63,94,.12)",   fg:"#be123c" },
-    // Withdrawn — muted low-contrast gray
-    slate:  { bg:"rgba(148,163,184,.18)", fg:"#64748b" }
+    // Applied — Sky Blue #0284C7
+    sky:    { bg:"rgba(2,132,199,.12)",   fg:"#0284c7" },
+    // Online Assessment / Awaiting Reply — Lavender / Purple #9333EA
+    violet: { bg:"rgba(147,51,234,.12)",  fg:"#9333ea" },
+    // Interview / Interviewed — Amber Yellow #D97706
+    amber:  { bg:"rgba(217,119,6,.14)",   fg:"#d97706" },
+    // Offer Received — Neon Green #10B981
+    green:  { bg:"rgba(16,185,129,.16)",  fg:"#059669" },
+    // Rejected — Dark Slate Gray #64748B
+    red:    { bg:"rgba(100,116,139,.15)", fg:"#64748b" },
+    // Withdrawn — Dark Slate Gray #64748B
+    slate:  { bg:"rgba(100,116,139,.15)", fg:"#64748b" }
   };
 
   var FIELDS = ["company","role","term","location","status","jobdesc","url","appliedDate","deadline","followup",
@@ -436,6 +458,51 @@
     if (du===0) return '<span class="flag">today!</span>';
     if (du<=7 && live) return '<span class="flag">'+du+'d left</span>'; return ""; }
 
+  // 14-day follow-up rule: Applied for >14 days with no status progression
+  function daysSince(d) { if (!d) return null; var t=new Date(); t.setHours(0,0,0,0); return Math.round((t - new Date(d+"T00:00:00"))/86400000); }
+  function followUpDue(x) {
+    if (x.status !== "Applied") return false;
+    // reference date: last follow-up date if set, else application date
+    var ref = x.followup || x.appliedDate;
+    var since = daysSince(ref);
+    return since !== null && since >= 14;
+  }
+  function followUpBadge(x) { return followUpDue(x) ? '<span class="followup-badge" title="Applied 14+ days ago — time to follow up">⚠️ Follow-up Due</span>' : ""; }
+
+  // ---------- Copy follow-up email ----------
+  function followUpEmail(x) {
+    var name = (x.referral && x.referral.split(/[,(]/)[0].trim()) || "there";
+    var role = x.role || "the internship role";
+    var company = x.company ? " at " + x.company : "";
+    var applied = x.appliedDate ? " on " + fmtDate(x.appliedDate) : " recently";
+    return "Hi " + name + ",\n\n" +
+      "I hope you're doing well. I'm writing to follow up on my application for the " + role + " position" + company +
+      ", which I submitted" + applied + ".\n\n" +
+      "I remain very enthusiastic about the opportunity and would welcome the chance to contribute. " +
+      "I'd be grateful for any update you can share on the status of my application, and I'm happy to provide any additional information you may need.\n\n" +
+      "Thank you for your time and consideration.\n\n" +
+      "Best regards,\n[Your Name]";
+  }
+  function copyFollowUp(id) {
+    var x = data.find(function (v){ return v.id===id; }); if (!x) return;
+    var text = followUpEmail(x);
+    function done(){ showToast("✉️ Follow-up email copied to clipboard"); }
+    function fallback() {
+      var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand("copy"); done(); } catch(e){ showToast("Copy failed — please copy manually"); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
+  }
+  var toastTimer;
+  function showToast(msg) {
+    var t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function (){ t.classList.remove("show"); }, 2200);
+  }
+
   function fillStatusSelects() {
     $("f_status").innerHTML = STATUSES.map(function (s){ return '<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>'; }).join("");
     var extra = STATUSES.map(function (s){ return '<option value="'+esc(s.name)+'">'+esc(s.name)+'</option>'; }).join("");
@@ -454,13 +521,14 @@
     var offerRate = total ? Math.round(offers/total*1000)/10 : 0;
 
     $("kpis").innerHTML =
-      kpi("Total Applied", total, "var(--c-total)", (interviewing? interviewing+" active interview"+(interviewing===1?"":"s") : "across all stages")) +
-      kpi("Awaiting Reply", pending, "var(--c-amber)", (respRate+"% response rate")) +
-      kpi("Offers", offers, "var(--c-green)", (offerRate+"% offer rate")) +
-      kpi("Rejected", rejected, "var(--c-red)", (total? Math.round(rejected/total*100)+"% of applications" : "—"));
+      kpi("Total Applied", total, "#0284c7", "rgba(2,132,199,.12)", "📋", (interviewing? interviewing+" active interview"+(interviewing===1?"":"s") : "across all stages")) +
+      kpi("Awaiting Reply", pending, "#d97706", "rgba(217,119,6,.14)", "⏳", (respRate+"% response rate")) +
+      kpi("Offers", offers, "#059669", "rgba(16,185,129,.16)", "🎉", (offerRate+"% offer rate")) +
+      kpi("Rejected", rejected, "#64748b", "rgba(100,116,139,.15)", "📁", (total? Math.round(rejected/total*100)+"% of applications" : "—"));
   }
-  function kpi(label, num, color, sub) {
-    return '<div class="kpi" style="--accent-col:'+color+'">' +
+  function kpi(label, num, color, glow, icon, sub) {
+    return '<div class="kpi" style="--accent-col:'+color+'; --glow:'+glow+'">' +
+      '<div class="icon">'+icon+'</div>' +
       '<div class="label">'+esc(label)+'</div><div class="num">'+num+'</div><div class="sub">'+esc(sub)+'</div></div>';
   }
 
@@ -519,15 +587,17 @@
   function renderTable(rows) {
     var head = "<tr><th>Company / Role</th><th>Status</th><th>Term</th><th>Location</th><th>Applied</th><th>Deadline</th><th>Next Action</th><th></th></tr>";
     var body = rows.map(function (x) {
+      var fu = followUpBadge(x);
       return '<tr data-open="'+x.id+'">' +
         '<td><div class="co">'+esc(x.company||"—")+'</div><div class="rl">'+esc(x.role||"")+'</div></td>' +
-        '<td>'+pillHTML(x.status)+'</td>' +
+        '<td>'+pillHTML(x.status)+(fu?'<div style="margin-top:6px">'+fu+'</div>':'')+'</td>' +
         '<td class="sub2 nowrap">'+esc(x.term||"")+'</td>' +
         '<td class="sub2">'+esc(x.location||"")+'</td>' +
         '<td class="sub2 nowrap">'+esc(fmtDate(x.appliedDate))+'</td>' +
         '<td class="sub2 nowrap">'+(x.deadline?esc(fmtDate(x.deadline))+" "+deadlineFlag(x.deadline,x.status):"")+'</td>' +
         '<td class="sub2">'+esc(x.nextAction||"")+'</td>' +
-        '<td class="row-actions"><button class="icon-btn" data-edit="'+x.id+'" title="Edit">\u270E</button>' +
+        '<td class="row-actions"><button class="icon-btn" data-mail="'+x.id+'" title="Copy follow-up email">\u2709</button>' +
+          '<button class="icon-btn" data-edit="'+x.id+'" title="Edit">\u270E</button>' +
           '<button class="icon-btn del" data-del="'+x.id+'" title="Delete">\uD83D\uDDD1</button></td></tr>';
     }).join("");
     $("view").innerHTML = '<div class="card-surface"><div class="table-wrap"><table><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div></div>';
@@ -541,9 +611,13 @@
         if (x.term) bits.push('<span class="tag">'+esc(x.term)+'</span>');
         if (x.deadline) bits.push('<span class="sub2 nowrap">\u23F3 '+esc(fmtDate(x.deadline))+' '+deadlineFlag(x.deadline,x.status)+'</span>');
         else if (x.location) bits.push('<span class="sub2">'+esc(x.location)+'</span>');
+        var fu = followUpBadge(x);
         return '<div class="bcard" draggable="true" data-id="'+x.id+'" data-open="'+x.id+'">' +
           '<div class="bco">'+esc(x.company||"—")+'</div><div class="brl">'+esc(x.role||"")+'</div>' +
-          (bits.length?'<div class="bmeta">'+bits.join("")+'</div>':'') + '</div>';
+          (bits.length?'<div class="bmeta">'+bits.join("")+'</div>':'') +
+          (fu?'<div class="bmeta">'+fu+'</div>':'') +
+          '<div class="bmeta"><button class="bcard-mail" data-mail="'+x.id+'">\u2709 Copy follow-up</button></div>' +
+          '</div>';
       }).join("");
       return '<div class="col" data-status="'+esc(s.name)+'">' +
         '<div class="col-head">'+swatch(s.name)+esc(s.name)+'<span class="count">'+items.length+'</span></div>' +
@@ -576,12 +650,15 @@
     var v = $("view");
     Array.prototype.forEach.call(v.querySelectorAll("[data-open]"), function (el) {
       el.addEventListener("click", function (e) {
-        if (e.target.closest("[data-edit],[data-del]")) return;
+        if (e.target.closest("[data-edit],[data-del],[data-mail]")) return;
         openModal(el.getAttribute("data-open"));
       });
     });
     Array.prototype.forEach.call(v.querySelectorAll("[data-edit]"), function (b) {
       b.addEventListener("click", function (e){ e.stopPropagation(); openModal(b.getAttribute("data-edit")); });
+    });
+    Array.prototype.forEach.call(v.querySelectorAll("[data-mail]"), function (b) {
+      b.addEventListener("click", function (e){ e.stopPropagation(); copyFollowUp(b.getAttribute("data-mail")); });
     });
     Array.prototype.forEach.call(v.querySelectorAll("[data-del]"), function (b) {
       b.addEventListener("click", function (e) {
@@ -817,6 +894,7 @@
 
   // ---------- wire up ----------
   fillStatusSelects();
+  $("kbdHint").textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
   $("addBtn").onclick = function (){ openModal(null); };
   $("closeModal").onclick = closeModal;
   $("cancelBtn").onclick = closeModal;
