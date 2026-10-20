@@ -67,7 +67,11 @@ body {
   background: var(--glass-bg); -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur));
   border-bottom: 1px solid var(--border); }
 .appbar .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.appbar .brand { display: flex; align-items: center; }
+.appbar .brand { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+/* Brand tagline: subtle, muted, responsive — sits just below the emblem */
+.appbar .tagline { color: var(--faint); font-weight: 500; letter-spacing: .01em;
+  font-size: clamp(11px, 3.2vw, 13px); margin-left: 4px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
 /* ---- Light-mode circular emblem wordmark ---- */
 .logo-emblem {
