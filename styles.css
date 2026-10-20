@@ -43,15 +43,16 @@ body {
     radial-gradient(640px 380px at 88% -2%, rgba(147,51,234,.14), transparent 62%),
     var(--bg);
   -webkit-font-smoothing: antialiased; min-height: 100vh;
+  overflow-x: hidden;   /* guard against any child forcing a sideways scroll on mobile */
 }
 
 /* ============ Mobile frame ============ */
 .app {
-  max-width: 460px; margin: 0 auto; height: 100vh; position: relative;
+  max-width: 460px; width: 100%; margin: 0 auto; height: 100vh; position: relative;
   background: var(--app-bg);
   box-shadow: 0 0 0 1px rgba(15,23,42,.04), 0 30px 80px rgba(15,23,42,.18);
   display: flex; flex-direction: column;
-  overflow-y: auto; -webkit-overflow-scrolling: touch;   /* whole app scrolls; header scrolls up naturally */
+  overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;   /* whole app scrolls vertically; never sideways */
 }
 @media (min-width: 520px) {
   body { padding: 20px 0 20px; }
@@ -188,9 +189,14 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .section-head { display: flex; align-items: center; justify-content: space-between; }
 .section-head .section-label { margin-bottom: 10px; }
 
-/* sub-header control bar: Feed/Board on the left, quick actions on the right */
-.subbar { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 12px; gap: 10px; }
-.subbar-actions { display: flex; align-items: center; gap: 8px; }
+/* sub-header control bar: Feed/Board on the left, quick actions on the right.
+   On mobile it wraps — the view segment takes a full row, quick actions flow
+   onto the next row — so nothing is forced off-screen on narrow phones. */
+.subbar { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 100%;
+  margin-top: 12px; gap: 10px; flex-wrap: wrap; }
+.subbar .seg { flex: 1 1 100%; display: flex; }
+.subbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%; }
+.subbar-actions .quick-pill { flex: 1 1 auto; justify-content: center; }
 .quick-pill { border: 1px solid var(--border-2); background: var(--surface); color: var(--text-2);
   font-family: inherit; font-size: 13px; font-weight: 600; border-radius: 20px; padding: 7px 13px; cursor: pointer;
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: background .15s, border-color .15s, color .15s, box-shadow .15s; }
@@ -699,7 +705,11 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
   /* Horizontal filter bar */
   body.is-desktop .filters { overflow: visible; margin-top: 0; }
   body.is-desktop .seg { margin-top: 0; }
-  body.is-desktop .subbar { margin-top: 0; }
+  body.is-desktop .subbar { margin-top: 0; flex-wrap: nowrap; }
+  /* desktop: keep the view segment + quick actions on one row (undo mobile full-width wrap) */
+  body.is-desktop .subbar .seg { flex: 0 0 auto; }
+  body.is-desktop .subbar-actions { width: auto; flex-wrap: nowrap; }
+  body.is-desktop .subbar-actions .quick-pill { flex: 0 0 auto; }
 
   /* A desktop toolbar row that lays filters + view toggle side by side */
   body.is-desktop #tab-dashboard > .section-label,
