@@ -721,6 +721,17 @@
   // IHLS is derived from the institution catalog (keeps dropdown + data in sync)
   var IHLS = Object.keys(INSTITUTIONS);
 
+  // Explicit institution -> official course/diploma titles mapping.
+  // Derived from INSTITUTIONS so the exact titles stay in sync with the
+  // scoring catalog. Used to dynamically populate the Course dropdown.
+  var ihlCoursesMap = (function buildMap() {
+    var map = {};
+    IHLS.forEach(function (ihl) {
+      map[ihl] = INSTITUTIONS[ihl].map(function (c) { return c.name; });
+    });
+    return map;
+  })();
+
   function coursesForIhl(ihl) { return INSTITUTIONS[ihl] || []; }
   function courseDef(ihl, name) {
     var list = coursesForIhl(ihl);
@@ -769,22 +780,31 @@
     return { pros:pros, cons:cons };
   }
   var cmpSelected = [];
+  // Build the <option> list for the Course dropdown from ihlCoursesMap.
+  function courseOptionsHTML(ihl, selected) {
+    if (!ihl) return '<option value="" disabled selected>Select an institution first…</option>';
+    var courses = ihlCoursesMap[ihl] || [];
+    var html = '<option value="" disabled' + (selected ? "" : " selected") + '>Select course / major…</option>';
+    html += courses.map(function (name) {
+      return '<option value="' + esc(name) + '"' + (selected === name ? " selected" : "") + ">" + esc(name) + "</option>";
+    }).join("");
+    return html;
+  }
+  // Clear the live Course <select> and repopulate it for the chosen institution.
+  function populateCourseDropdown(ihl, selected) {
+    var sel = $("cmpCourse");
+    if (!sel) return;
+    sel.innerHTML = "";              // reset / clear existing options
+    sel.disabled = !ihl;
+    sel.innerHTML = courseOptionsHTML(ihl, selected);
+  }
   function studyPicker() {
     var st = getStudy();
     var ihlOpts = '<option value="">Select institution…</option>' +
       IHLS.map(function (i){ return '<option'+(st.ihl===i?' selected':'')+'>'+esc(i)+'</option>'; }).join("");
-    // Course options are populated dynamically based on the selected institution
-    var courses = coursesForIhl(st.ihl);
-    var courseOpts, courseDisabled = st.ihl ? "" : " disabled";
-    if (!st.ihl) {
-      courseOpts = '<option value="">Select an institution first…</option>';
-    } else {
-      courseOpts = '<option value="">Select course / major…</option>' +
-        courses.map(function (c){ return '<option'+(st.course===c.name?' selected':'')+'>'+esc(c.name)+'</option>'; }).join("");
-    }
     return '<div class="cmp-study cmp-study-2">' +
       '<div class="cmp-field"><label>🏫 Institution / University (IHL)</label><select id="cmpIhl" class="ctl-wide">'+ihlOpts+'</select></div>' +
-      '<div class="cmp-field"><label>🎓 Course / Major</label><select id="cmpCourse" class="ctl-wide"'+courseDisabled+'>'+courseOpts+'</select></div>' +
+      '<div class="cmp-field"><label>🎓 Course / Major</label><select id="cmpCourse" class="ctl-wide"'+(st.ihl?"":" disabled")+'>'+courseOptionsHTML(st.ihl, st.course)+'</select></div>' +
       '</div>';
   }
   function renderCompareInline() {
@@ -825,8 +845,22 @@
   function cmpRow(k,v){ return '<div class="cmp-row"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>'; }
   function bindStudy() {
     var ihl=$("cmpIhl"), course=$("cmpCourse");
-    if (ihl) ihl.onchange=function (){ var st=getStudy(); st.ihl=ihl.value; st.course=""; setStudy(st); renderCompareInline(); }; // reset course when institution changes
-    if (course) course.onchange=function (){ var st=getStudy(); st.course=course.value; setStudy(st); renderCompareInline(); };
+    if (ihl) ihl.addEventListener("change", function () {
+      // On institution change: clear + dynamically repopulate the course dropdown,
+      // reset the selected course, persist, then re-render the comparison.
+      var st = getStudy();
+      st.ihl = ihl.value;
+      st.course = "";
+      setStudy(st);
+      populateCourseDropdown(ihl.value, "");   // clear & regenerate options from ihlCoursesMap
+      renderCompareInline();
+    });
+    if (course) course.addEventListener("change", function () {
+      var st = getStudy();
+      st.course = course.value;
+      setStudy(st);
+      renderCompareInline();
+    });
   }
 
   // ---------- tabs ----------
