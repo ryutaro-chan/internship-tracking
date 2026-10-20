@@ -392,6 +392,24 @@
     { field:"oaDate",         type:"oa",         cls:"ev-oa",        label:"Online Assessment", emoji:"📝" },
     { field:"interviewDates", type:"interview",  cls:"ev-interview", label:"Interview",        emoji:"🎤" }
   ];
+  // ---------- Calendar notes (localStorage, keyed by YYYY-MM-DD) ----------
+  var CAL_NOTES_KEY = "jobtrackr.calnotes";
+  function getCalNotes() { try { return JSON.parse(localStorage.getItem(CAL_NOTES_KEY)) || {}; } catch (e) { return {}; } }
+  function noteFor(dateStr) { return getCalNotes()[dateStr] || ""; }
+  function setNote(dateStr, text) {
+    var all = getCalNotes();
+    if (text && text.trim()) all[dateStr] = text.trim(); else delete all[dateStr];
+    try { localStorage.setItem(CAL_NOTES_KEY, JSON.stringify(all)); } catch (e) {}
+  }
+  function dayKey(y, m, day) {
+    return y + "-" + String(m+1).padStart(2,"0") + "-" + String(day).padStart(2,"0");
+  }
+  function prettyDate(dateStr) {
+    var p = dateStr.split("-"); if (p.length!==3) return dateStr;
+    var d = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+    return d.toLocaleDateString(undefined, { month:"long", day:"numeric", year:"numeric" });
+  }
+
   // Collect all calendar events for a given year/month -> { day: [ {x, meta} ] }
   function eventsForMonth(y, m) {
     var byDay = {};
@@ -425,9 +443,13 @@
     var dows = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(function (d){ return '<div class="cal-dow">'+d+'</div>'; }).join("");
     var cells = "";
     for (var i=0;i<startDow;i++) cells += '<div class="cal-cell empty"></div>';
+    var notes = getCalNotes();
     for (var day=1; day<=daysInMonth; day++) {
       var items = byDay[day] || [];
+      var dkey = dayKey(y, m, day);
+      var hasNote = !!notes[dkey];
       var cls = "cal-cell";
+      if (full) cls += " clickable";                 // only the full Calendar view is interactive
       var isToday = (y===today.getFullYear() && m===today.getMonth() && day===today.getDate());
       if (isToday) cls += " today";
       // deadline urgency tints the cell (kept from before)
@@ -435,12 +457,14 @@
       var sevs = dls.map(function (it){ return deadlineSeverity(it.x.deadline); });
       if (sevs.indexOf("red")>=0) cls += " has-red"; else if (sevs.indexOf("amber")>=0) cls += " has-amber";
       var dots = "";
-      if (items.length) {
-        dots = '<div class="ddot">' + items.slice(0,4).map(function (it){
+      if (items.length || hasNote) {
+        var dotHTML = items.slice(0,4).map(function (it){
           return '<i class="'+it.ev.cls+'" title="'+esc(it.ev.label+": "+(it.x.company||"")+" — "+(it.x.role||""))+'"></i>';
-        }).join("") + '</div>';
+        }).join("");
+        if (hasNote) dotHTML += '<i class="ev-note" title="'+esc(notes[dkey])+'"></i>';
+        dots = '<div class="ddot">' + dotHTML + '</div>';
       }
-      cells += '<div class="'+cls+'">'+day+dots+'</div>';
+      cells += '<div class="'+cls+'" data-date="'+dkey+'">'+day+dots+'</div>';
     }
 
     var legend = full
@@ -485,6 +509,69 @@
         renderCalendar(targetId, full);
       };
     });
+
+    // Apple-style: clicking a date cell opens a note popover beside it.
+    if (full) {
+      el.querySelectorAll(".cal-cell.clickable[data-date]").forEach(function (cell) {
+        cell.onclick = function (e) {
+          e.stopPropagation();
+          openDayPopover(cell.getAttribute("data-date"), cell, targetId, full);
+        };
+      });
+    }
+  }
+
+  // ---------- Apple-style date popover ----------
+  function closeDayPopover() {
+    var p = $("calPopover"); if (p) p.parentNode.removeChild(p);
+    document.removeEventListener("click", popoverOutside, true);
+    document.removeEventListener("keydown", popoverEsc, true);
+  }
+  function popoverOutside(e) {
+    var p = $("calPopover"); if (p && !p.contains(e.target) && !(e.target.closest && e.target.closest(".cal-cell"))) closeDayPopover();
+  }
+  function popoverEsc(e) { if (e.key === "Escape") closeDayPopover(); }
+
+  function openDayPopover(dateStr, cell, targetId, full) {
+    closeDayPopover();
+    var existing = noteFor(dateStr);
+    // events on this day (read-only context in the popover)
+    var dayEvents = [];
+    data.forEach(function (x) {
+      CAL_EVENTS.forEach(function (ev) { if (x[ev.field] === dateStr) dayEvents.push(ev.emoji + " " + ev.label + " — " + (x.company||"") ); });
+    });
+    var evHTML = dayEvents.length ? '<div class="cal-pop-events">'+dayEvents.map(function (t){ return '<div class="cal-pop-ev">'+esc(t)+'</div>'; }).join("")+'</div>' : "";
+
+    var pop = document.createElement("div");
+    pop.className = "cal-popover"; pop.id = "calPopover";
+    pop.innerHTML =
+      '<div class="cal-pop-head"><div class="cal-pop-date">'+esc(prettyDate(dateStr))+'</div>' +
+        '<button class="cal-pop-close" id="calPopClose" title="Close">✕</button></div>' +
+      evHTML +
+      '<label class="cal-pop-label">Note / Reminder</label>' +
+      '<textarea class="cal-pop-text" id="calPopText" placeholder="e.g. Follow up with recruiter">'+esc(existing)+'</textarea>' +
+      '<div class="cal-pop-actions">' +
+        '<button class="cal-pop-del" id="calPopDel"'+(existing?"":' style="visibility:hidden"')+'>Delete</button>' +
+        '<button class="cal-pop-save" id="calPopSave">Save</button>' +
+      '</div>';
+    document.body.appendChild(pop);
+
+    // position beside the clicked cell, kept within the viewport
+    var r = cell.getBoundingClientRect();
+    var pw = 280, ph = pop.offsetHeight || 220, gap = 8;
+    var left = r.right + gap; if (left + pw > window.innerWidth - 8) left = r.left - pw - gap;
+    if (left < 8) left = Math.max(8, (window.innerWidth - pw) / 2);
+    var top = r.top; if (top + ph > window.innerHeight - 8) top = Math.max(8, window.innerHeight - ph - 8);
+    pop.style.left = left + "px"; pop.style.top = top + "px";
+
+    var txt = $("calPopText"); txt.focus();
+    $("calPopClose").onclick = closeDayPopover;
+    $("calPopSave").onclick = function () { setNote(dateStr, txt.value); closeDayPopover(); renderCalendar(targetId, full); showToast(txt.value.trim() ? "Note saved" : "Note cleared"); };
+    $("calPopDel").onclick = function () { setNote(dateStr, ""); closeDayPopover(); renderCalendar(targetId, full); showToast("Note deleted"); };
+    setTimeout(function () {
+      document.addEventListener("click", popoverOutside, true);
+      document.addEventListener("keydown", popoverEsc, true);
+    }, 0);
   }
 
   // ---------- filtering ----------
