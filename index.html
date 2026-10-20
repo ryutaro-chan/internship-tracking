@@ -79,8 +79,6 @@
   .search input { flex: 1 1 auto; min-width: 0; background: transparent; border: none; outline: none; color: var(--text);
     font-family: inherit; font-size: 14px; padding: 9px 0; }
   .search input::placeholder { color: var(--faint); }
-  .kbd { flex: 0 0 auto; margin-left: 8px; font-family: inherit; font-size: 11px; color: var(--muted); background: var(--surface-2);
-    border: 1px solid var(--border-2); border-radius: 5px; padding: 2px 6px; white-space: nowrap; }
 
   .ctl { font-family: inherit; font-size: 13.5px; color: var(--text-2);
     background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius);
@@ -206,8 +204,7 @@
   <div class="toolbar">
     <div class="search">
       <span class="ico">🔍</span>
-      <input id="search" placeholder="Search…" />
-      <span class="kbd" id="kbdHint">⌘K</span>
+      <input id="search" placeholder="Search Company, Role, Location…" />
     </div>
     <div class="seg" id="viewSeg">
       <button data-view="table" class="active">▤ Table</button>
@@ -596,7 +593,6 @@
 
   // ---------- wire up ----------
   fillStatusSelects();
-  $("kbdHint").textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
   $("addBtn").onclick = function (){ openModal(null); };
   $("closeModal").onclick = closeModal;
   $("cancelBtn").onclick = closeModal;
