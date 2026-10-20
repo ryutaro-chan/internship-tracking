@@ -78,6 +78,7 @@
   ];
   var STATUS_TAB_CURRENT = "all";
   var favOnly = false;   // "★ Favorites" quick filter (bookmarked only)
+  var hideArchived = false;   // "🗄 Hide Archived" — hide Rejected & Withdrawn from the feed
   function statusTabDef(id) { for (var i=0;i<STATUS_TABS.length;i++) if (STATUS_TABS[i].id===id) return STATUS_TABS[i]; return STATUS_TABS[0]; }
   function matchesStatusTab(x, id) {
     var t = statusTabDef(id);
@@ -365,7 +366,35 @@
 
   function renderAnalytics() {
     renderSummary("summary2");
+    renderSalaryInsights();
     renderCalendar("calendar", true);   // interactive: allow clicking dates to add/edit notes here too
+  }
+
+  // Average monthly stipend per industry -> horizontal bar comparison.
+  function renderSalaryInsights() {
+    var el = $("salaryInsights"); if (!el) return;
+    var sums = {}, counts = {};
+    data.forEach(function (x) {
+      var v = stipendValue(x.comp);
+      if (v == null || v < 0) return;
+      var ind = industryOf(x) || "Unspecified";
+      sums[ind] = (sums[ind]||0) + v; counts[ind] = (counts[ind]||0) + 1;
+    });
+    var rows = Object.keys(sums).map(function (ind) {
+      return { industry: ind, avg: Math.round(sums[ind]/counts[ind]), n: counts[ind] };
+    }).sort(function (a,b){ return b.avg - a.avg; });
+
+    if (!rows.length) { el.innerHTML = '<div class="empty-note" style="padding:24px 10px">Add a salary to some applications to see industry stipend comparisons.</div>'; return; }
+    var max = rows[0].avg || 1;
+    el.innerHTML = '<div class="salary-chart">' + rows.map(function (r) {
+      var pct = Math.max(6, Math.round(r.avg / max * 100));
+      return '<div class="sal-row">' +
+        '<div class="sal-name" title="'+esc(r.industry)+'">'+esc(r.industry)+'</div>' +
+        '<div class="sal-bar"><span style="width:'+pct+'%"></span></div>' +
+        '<div class="sal-val">$'+r.avg.toLocaleString()+'<span class="sal-n">·'+r.n+'</span></div>' +
+      '</div>';
+    }).join("") + '</div>' +
+    '<div class="sal-foot">Average monthly stipend across your tracked roles, by industry.</div>';
   }
 
   // ---------- Deadline Calendar ----------
@@ -555,6 +584,38 @@
   }
   function popoverEsc(e) { if (e.key === "Escape") closeDayPopover(); }
 
+  // Generate & download an .ics calendar file for native calendar apps.
+  function icsDate(dtLocal) {
+    // "2026-10-20T14:00" -> "20261020T140000" (floating local time)
+    if (!dtLocal) return "";
+    var clean = dtLocal.replace(/[-:]/g, "");
+    if (clean.indexOf("T") < 0) clean += "T090000";
+    else if (clean.length === 13) clean += "00";      // add seconds
+    return clean;
+  }
+  function icsEscape(s) { return String(s||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n"); }
+  function downloadICS(ev) {
+    var uid = (Date.now().toString(36)+Math.random().toString(36).slice(2,8)) + "@jobtrackr";
+    var stamp = new Date().toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
+    var lines = [
+      "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//JobTrackr//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      "UID:" + uid,
+      "DTSTAMP:" + stamp,
+      "DTSTART:" + icsDate(ev.startsAt),
+      "DTEND:" + icsDate(ev.endsAt || ev.startsAt),
+      "SUMMARY:" + icsEscape(ev.title)
+    ];
+    if (ev.location) lines.push("LOCATION:" + icsEscape(ev.location));
+    if (ev.notes) lines.push("DESCRIPTION:" + icsEscape(ev.notes));
+    lines.push("END:VEVENT","END:VCALENDAR");
+    var blob = new Blob([lines.join("\r\n")], { type: "text/calendar;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (ev.title ? ev.title.replace(/[^a-z0-9]+/gi,"_").slice(0,40) : "jobtrackr-event") + ".ics";
+    a.click(); URL.revokeObjectURL(a.href);
+  }
+
   function openDayPopover(dateStr, cell, targetId, full) {
     closeDayPopover();
     var ev = eventFor(dateStr) || { kind:"event", title:"", location:"", notes:"", startsAt:"", endsAt:"" };
@@ -592,6 +653,7 @@
       '<div class="ev-group">' +
         '<textarea class="ev-notes" id="evNotes" placeholder="Notes">'+esc(ev.notes)+'</textarea>' +
       '</div>' +
+      '<button class="ev-ics" id="evIcs">📅 Add to Apple / Google Calendar</button>' +
       (eventLabel(dateStr) ? '<button class="ev-delete" id="evDelete">Delete</button>' : '');
     document.body.appendChild(pop);
 
@@ -627,6 +689,16 @@
       renderCalendar(targetId, full);
       showToast(eventLabel(dateStr) ? "Saved" : "Cleared");
     };
+    $("evIcs").onclick = function () {
+      downloadICS({
+        title: $("evTitle").value || "JobTrackr event",
+        location: $("evLoc").value,
+        notes: $("evNotes").value,
+        startsAt: $("evStart").value || (dateStr + "T09:00"),
+        endsAt: $("evEnd").value || (dateStr + "T10:00")
+      });
+      showToast("📅 Calendar file downloaded");
+    };
     var del = $("evDelete");
     if (del) del.onclick = function () { setEvent(dateStr, {}); closeDayPopover(); renderCalendar(targetId, full); showToast("Deleted"); };
 
@@ -651,6 +723,7 @@
       if (!matchesFilter(x, f)) return false;
       if (!matchesStatusTab(x, STATUS_TAB_CURRENT)) return false; // status filter tab
       if (favOnly && !x.bookmarked) return false;                 // ★ Favorites quick filter
+      if (hideArchived && (x.status==="Rejected"||x.status==="Withdrawn")) return false; // 🗄 hide archived
       if (q) { var hay=[x.company,x.role,x.location,x.term,availabilityLabel(x),x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
         if (hay.indexOf(q)===-1) return false; }
       return true;
@@ -1488,6 +1561,11 @@
   $("favToggle").onclick = function () {
     favOnly = !favOnly;
     $("favToggle").classList.toggle("active", favOnly);
+    render();
+  };
+  $("archiveToggle").onclick = function () {
+    hideArchived = !hideArchived;
+    $("archiveToggle").classList.toggle("active", hideArchived);
     render();
   };
   $("importBtn").onclick = function (){ $("importFile").click(); };

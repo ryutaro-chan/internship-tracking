@@ -10,7 +10,7 @@
 <meta property="og:title" content="JobTrackr" />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 630'%3E%3Crect width='1200' height='630' fill='%23F8FAFC'/%3E%3Ccircle cx='600' cy='300' r='150' fill='%23D1E9FF'/%3E%3Ccircle cx='600' cy='300' r='62' fill='none' stroke='%231E293B' stroke-width='18'/%3E%3Cline x1='600' y1='192' x2='600' y2='238' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Cline x1='600' y1='362' x2='600' y2='408' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Cline x1='492' y1='300' x2='538' y2='300' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Cline x1='662' y1='300' x2='708' y2='300' stroke='%231E293B' stroke-width='18' stroke-linecap='round'/%3E%3Ctext x='600' y='520' font-family='-apple-system,Segoe UI,Roboto,sans-serif' font-size='72' font-weight='800' fill='%231E293B' text-anchor='middle'%3EJobTrackr%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="styles.css?v=legend-1792507326331" />
+<link rel="stylesheet" href="styles.css?v=feats-1792507946205" />
 </head>
 <body>
 <div class="app" id="app">
@@ -68,6 +68,7 @@
       </div>
       <div class="subbar-actions">
         <button class="quick-pill" id="favToggle" title="Show only starred applications">★ Favorites</button>
+        <button class="quick-pill" id="archiveToggle" title="Hide rejected & withdrawn applications">🗄 Hide Archived</button>
         <button class="quick-pill" id="exportCsvQuick" title="Download your pipeline as CSV">📥 Export CSV</button>
       </div>
     </div>
@@ -94,6 +95,8 @@
     <section id="tab-analytics" class="hidden">
       <div class="section-label">Overview</div>
       <div class="summary" id="summary2"></div>
+      <div class="section-label">💰 Average Stipend by Industry</div>
+      <div class="cal-card" id="salaryInsights"></div>
       <div class="section-label">📅 Deadline Calendar</div>
       <div class="cal-card" id="calendar"></div>
     </section>
@@ -202,8 +205,8 @@
     <div class="sheet-body">
       <div class="section-label" style="margin-top:0" id="syncBadge"></div>
       <button class="btn" id="exportCsvBtn" style="width:100%; margin-bottom:10px;">📊 Export to CSV (spreadsheet)</button>
-      <button class="btn" id="exportBtn" style="width:100%; margin-bottom:10px;">⬇ Export data (JSON)</button>
-      <button class="btn" id="importBtn" style="width:100%; margin-bottom:10px;">⬆ Import data (JSON)</button>
+      <button class="btn" id="exportBtn" style="width:100%; margin-bottom:10px;">⬇ Backup Data (JSON)</button>
+      <button class="btn" id="importBtn" style="width:100%; margin-bottom:10px;">⬆ Import Data</button>
       <input type="file" id="importFile" accept="application/json" style="display:none" />
       <button class="btn" id="sampleBtn" style="width:100%;">✨ Load sample data</button>
     </div>
@@ -212,6 +215,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=legend-1792507326331" defer></script>
+<script src="app.js?v=feats-1792507946205" defer></script>
 </body>
 </html>
