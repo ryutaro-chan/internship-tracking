@@ -1,8 +1,17 @@
-# 🎯 Internship Tracker
+# 🎯 CatchTheOffer
 
-A single-file web app to track internship applications — the companies you've applied to, what you're still waiting to hear back on, deadlines, interview stages, offers, and follow-up actions.
+Track every internship application — the companies you've applied to, what
+you're still waiting to hear back on, deadlines, interview stages, offers, and
+follow-up actions — in a clean, adaptive web dashboard **plus** a Python CLI for
+command-line analytics.
 
-**No install, no server, no build step.** Everything lives in one `index.html` file and your data is saved in your browser (localStorage).
+- **Web app** (`index.html` + `styles.css` + `app.js`): a responsive dashboard
+  that renders as a full desktop layout on wide screens and a mobile iOS-style
+  app on phones/tablets. No server or build step — data is saved in your
+  browser (localStorage) and exportable as JSON/CSV.
+- **Python CLI** (`tracker_cli.py` + `generate_sample_data.py`): analyze your
+  JSON exports from the terminal — status distribution, conversion metrics,
+  upcoming deadlines, and CSV reports.
 
 ## Live app
 
@@ -12,32 +21,93 @@ If GitHub Pages is enabled for this repo, open:
 https://ryutaro-chan.github.io/internship-tracking/
 ```
 
-Otherwise, just download `index.html` and double-click it.
+Otherwise, download the three web files and open `index.html` in a browser.
 
-## Features
+## Web features
 
-- **9-stage status pipeline**: To Apply → Applied → OA / Assessment → HR Screen → Round 1 → Final → Offer → Rejected → Withdrawn (color-coded).
-- **"Awaiting reply only" filter** — instantly see the roles you've applied to but haven't heard back on.
-- **Deadline alerts** — cards highlight and show a countdown when a deadline is within 7 days.
-- **Follow-up date tracking** — remember to chase recruiters after 2–3 weeks.
-- **Full application detail** captured across 5 sections:
-  1. Core info — company, role, target term, location & work type, status
-  2. Logistics & dates — applied date, deadline, posting URL, follow-up date
-  3. Process & interviews — OA/test date, interview dates, interviewer, stage notes
-  4. Offer & decision — compensation, hours & duration, offer deadline, priority, pros/cons
-  5. Extras & actions — referral/contact, resume/cover-letter version, next action item
-- **Search** across company, role, location, and notes.
-- **Sort** by last updated, deadline, applied date, or company.
-- **Dashboard stats** — total, awaiting reply, offers, rejected.
-- **Export / Import** your data as JSON for backup or moving between devices.
+- **6-stage status pipeline**: Applied → Online Assessment → Interview → Offer
+  Received → Rejected → Withdrawn (soft glowing color pills).
+- **Category tabs** — All Jobs · Tech & Software Engineering · Data Analytics &
+  AI · Fintech & Payments · Product & Operations (auto-classified by role).
+- **Feed & Kanban board** views with drag-and-drop status changes.
+- **KPI dashboard** with a response-rate ring, plus an **Analytics** tab with a
+  deadline calendar and status breakdown.
+- **Compare Roles** — pick your Singapore institution (IHL) and course, and get
+  course-aware "best fit" scoring with alignment tags.
+- **Company logos** fetched dynamically (Clearbit → Google favicon → initials).
+- **Sort** by last updated, deadline, date applied, **stipend (high→low)**, or
+  company.
+- **Export/Import JSON** and **Export to CSV**, follow-up email generator, and
+  bookmarking.
 
-## Usage
+## Python CLI
 
-1. Open the app (live link above, or open `index.html` locally).
-2. Click **＋ Add Application** and fill in whatever you know — only Company and Role are required.
-3. Use the filters and the **Awaiting reply only** checkbox to focus on what needs attention.
-4. Click **⬇ Export** regularly to back up your data.
+The web app is fully client-side; these scripts are a standard-library-only
+companion (**Python 3.8+**, no `pip install` needed) for analyzing the JSON you
+export from the app.
+
+### Quick start
+
+```bash
+# 1. Generate realistic mock data to experiment with
+python generate_sample_data.py --count 20 --seed 42
+
+# 2. Summarize your job search (auto-detects the newest catchtheoffer-*.json)
+python tracker_cli.py --summary
+```
+
+### `tracker_cli.py` — analytics & reporting
+
+Loads a CatchTheOffer JSON export (via `--file`, or auto-detected from the
+current folder) and reports on it.
+
+```bash
+python tracker_cli.py --summary                 # full job-search summary
+python tracker_cli.py --summary --file my.json  # use a specific export
+python tracker_cli.py --deadlines --within 14   # deadlines in the next 14 days
+python tracker_cli.py --export-csv report.csv   # write a formatted CSV report
+python tracker_cli.py --json                    # machine-readable JSON summary
+```
+
+`--summary` prints totals, conversion metrics (response / interview / offer
+rates), a status-distribution bar chart, category breakdown, average monthly
+stipend, and upcoming deadlines. It's powered by the `InternshipAnalytics`
+class, which you can also import and use programmatically:
+
+```python
+from tracker_cli import InternshipAnalytics
+
+engine = InternshipAnalytics.from_file("catchtheoffer-2026-10-20.json")
+print(engine.conversion_metrics())
+print(engine.status_distribution())
+engine.export_csv("report.csv")
+```
+
+### `generate_sample_data.py` — mock data
+
+Creates a JSON file in the exact shape the web app imports, so you can populate
+the dashboard (**More ▸ Import data**) or feed `tracker_cli.py` for testing.
+
+```bash
+python generate_sample_data.py                      # 12 records -> catchtheoffer-sample.json
+python generate_sample_data.py --count 30           # 30 records
+python generate_sample_data.py --out demo.json --seed 7 --pretty
+```
+
+Each record includes a company, role, category, status, application date,
+deadline, monthly stipend, and stage-appropriate notes.
+
+### Typical workflow
+
+1. In the web app, go to **More ▸ Export data (JSON)** to download your
+   applications.
+2. Put the JSON next to these scripts (or pass it with `--file`).
+3. Run `python tracker_cli.py --summary` for a terminal dashboard, or
+   `--export-csv` to hand off a spreadsheet.
 
 ## Data & privacy
 
-All data is stored locally in your browser via `localStorage`. Nothing is sent to any server. Clearing your browser data (or using a different browser/device) will not carry your entries over — use **Export/Import** to move data.
+All web data is stored locally in your browser via `localStorage` — nothing is
+sent to any server (company logos are the one exception: they load from public
+logo services). Use **Export/Import** to back up or move data between devices,
+and the Python CLI to analyze those exports offline.
