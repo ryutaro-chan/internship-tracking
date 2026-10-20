@@ -368,11 +368,21 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
    light gray while the field is empty (so it reads as a placeholder, not input),
    then switches to normal dark text once a date is picked. */
 .field input.date-dmy { text-transform: uppercase; color: var(--text); }
-/* Empty state -> light-gray placeholder look on the native date-edit text */
-.field input.date-dmy[data-empty="true"]::-webkit-datetime-edit { color: var(--faint); }
+/* Empty state -> light-gray placeholder look (whole field + every segment),
+   so an empty date never looks like real entered input, even when focused. */
 .field input.date-dmy[data-empty="true"] { color: var(--faint); }
+.field input.date-dmy[data-empty="true"]::-webkit-datetime-edit,
+.field input.date-dmy[data-empty="true"]::-webkit-datetime-edit-text,
+.field input.date-dmy[data-empty="true"]::-webkit-datetime-edit-day-field,
+.field input.date-dmy[data-empty="true"]::-webkit-datetime-edit-month-field,
+.field input.date-dmy[data-empty="true"]::-webkit-datetime-edit-year-field { color: var(--faint); }
 /* Filled state -> normal dark text */
-.field input.date-dmy[data-empty="false"]::-webkit-datetime-edit { color: var(--text); }
+.field input.date-dmy[data-empty="false"] { color: var(--text); }
+.field input.date-dmy[data-empty="false"]::-webkit-datetime-edit,
+.field input.date-dmy[data-empty="false"]::-webkit-datetime-edit-text,
+.field input.date-dmy[data-empty="false"]::-webkit-datetime-edit-day-field,
+.field input.date-dmy[data-empty="false"]::-webkit-datetime-edit-month-field,
+.field input.date-dmy[data-empty="false"]::-webkit-datetime-edit-year-field { color: var(--text); }
 /* Keep the calendar picker icon at normal opacity regardless of state */
 .field input.date-dmy::-webkit-calendar-picker-indicator { opacity: .6; }
 /* Custom-industry input appears directly below the Industry select */
