@@ -50,6 +50,7 @@
     { id:"closed",     label:"Rejected / Withdrawn",     statuses:["Rejected","Withdrawn"] }
   ];
   var STATUS_TAB_CURRENT = "all";
+  var favOnly = false;   // "★ Favorites" quick filter (bookmarked only)
   function statusTabDef(id) { for (var i=0;i<STATUS_TABS.length;i++) if (STATUS_TABS[i].id===id) return STATUS_TABS[i]; return STATUS_TABS[0]; }
   function matchesStatusTab(x, id) {
     var t = statusTabDef(id);
@@ -417,6 +418,7 @@
     var rows = data.filter(function (x) {
       if (!matchesFilter(x, f)) return false;
       if (!matchesStatusTab(x, STATUS_TAB_CURRENT)) return false; // status filter tab
+      if (favOnly && !x.bookmarked) return false;                 // ★ Favorites quick filter
       if (q) { var hay=[x.company,x.role,x.location,x.term,availabilityLabel(x),x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
         if (hay.indexOf(q)===-1) return false; }
       return true;
@@ -1008,6 +1010,12 @@
   $("shortcutsBg").addEventListener("click", function (e){ if (e.target===$("shortcutsBg")) closeShortcuts(); });
   $("exportBtn").onclick = exportData;
   $("exportCsvBtn").onclick = exportCsv;
+  $("exportCsvQuick").onclick = exportCsv;
+  $("favToggle").onclick = function () {
+    favOnly = !favOnly;
+    $("favToggle").classList.toggle("active", favOnly);
+    render();
+  };
   $("importBtn").onclick = function (){ $("importFile").click(); };
   $("importFile").onchange = function (e){ if (e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
   $("sampleBtn").onclick = loadSample;
