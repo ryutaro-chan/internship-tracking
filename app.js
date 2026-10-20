@@ -324,7 +324,7 @@
         '<div class="vn">'+n+'</div></div>';
     }).join("");
     $("analytics").innerHTML = data.length ? html : '<div class="empty-note">No data yet — add applications to see your breakdown.</div>';
-    renderCalendar();
+    renderCalendar("calendar", false);
   }
 
   // ---------- Deadline Calendar ----------
@@ -336,70 +336,103 @@
     if (du <= 3) return "amber";     // within 3 days
     return "norm";
   }
-  function renderCalendar() {
-    var el = $("calendar"); if (!el) return;
+  // Event types shown on the calendar, each mapped from a stored field.
+  var CAL_EVENTS = [
+    { field:"deadline",       type:"deadline",  cls:"ev-deadline",  label:"Deadline",         emoji:"⏳" },
+    { field:"oaDate",         type:"oa",         cls:"ev-oa",        label:"Online Assessment", emoji:"📝" },
+    { field:"interviewDates", type:"interview",  cls:"ev-interview", label:"Interview",        emoji:"🎤" }
+  ];
+  // Collect all calendar events for a given year/month -> { day: [ {x, meta} ] }
+  function eventsForMonth(y, m) {
+    var byDay = {};
+    data.forEach(function (x) {
+      CAL_EVENTS.forEach(function (ev) {
+        var val = x[ev.field];
+        if (!val) return;
+        var p = String(val).split("-"); if (p.length !== 3) return; // only ISO date values
+        if (parseInt(p[0],10)===y && parseInt(p[1],10)-1===m) {
+          var day = parseInt(p[2],10);
+          (byDay[day] = byDay[day] || []).push({ x: x, ev: ev });
+        }
+      });
+    });
+    return byDay;
+  }
+
+  // Renders the monthly calendar into `targetId`. When `full` is true (the
+  // dedicated Calendar view) it maps deadlines + OA + interview dates with a
+  // full legend; otherwise (Analytics widget) it stays deadline-focused.
+  function renderCalendar(targetId, full) {
+    var el = $(targetId || "calendar"); if (!el) return;
     var y = calMonth.y, m = calMonth.m;
     var first = new Date(y, m, 1);
-    var startDow = first.getDay();           // 0=Sun
+    var startDow = first.getDay();
     var daysInMonth = new Date(y, m+1, 0).getDate();
     var monthName = first.toLocaleString(undefined, { month:"long", year:"numeric" });
     var today = new Date(); today.setHours(0,0,0,0);
-
-    // group deadlines by day-of-month for this month
-    var byDay = {};
-    data.forEach(function (x) {
-      if (!x.deadline) return;
-      var p = x.deadline.split("-"); if (p.length!==3) return;
-      if (parseInt(p[0],10)===y && parseInt(p[1],10)-1===m) {
-        var day = parseInt(p[2],10);
-        (byDay[day] = byDay[day] || []).push(x);
-      }
-    });
+    var byDay = eventsForMonth(y, m);
 
     var dows = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(function (d){ return '<div class="cal-dow">'+d+'</div>'; }).join("");
     var cells = "";
     for (var i=0;i<startDow;i++) cells += '<div class="cal-cell empty"></div>';
     for (var day=1; day<=daysInMonth; day++) {
       var items = byDay[day] || [];
-      var sevs = items.map(function (it){ return deadlineSeverity(it.deadline); });
-      var hasRed = sevs.indexOf("red")>=0, hasAmber = sevs.indexOf("amber")>=0;
       var cls = "cal-cell";
       var isToday = (y===today.getFullYear() && m===today.getMonth() && day===today.getDate());
       if (isToday) cls += " today";
-      if (hasRed) cls += " has-red"; else if (hasAmber) cls += " has-amber";
+      // deadline urgency tints the cell (kept from before)
+      var dls = items.filter(function (it){ return it.ev.type==="deadline"; });
+      var sevs = dls.map(function (it){ return deadlineSeverity(it.x.deadline); });
+      if (sevs.indexOf("red")>=0) cls += " has-red"; else if (sevs.indexOf("amber")>=0) cls += " has-amber";
       var dots = "";
       if (items.length) {
-        dots = '<div class="ddot">' + items.slice(0,3).map(function (it){ var s=deadlineSeverity(it.deadline); return '<i class="'+(s||"norm")+'" title="'+esc((it.company||"")+" — "+(it.role||""))+'"></i>'; }).join("") + '</div>';
+        dots = '<div class="ddot">' + items.slice(0,4).map(function (it){
+          return '<i class="'+it.ev.cls+'" title="'+esc(it.ev.label+": "+(it.x.company||"")+" — "+(it.x.role||""))+'"></i>';
+        }).join("") + '</div>';
       }
       cells += '<div class="'+cls+'">'+day+dots+'</div>';
     }
 
-    // upcoming list (next 5 future-or-today deadlines across all months)
-    var upcoming = data.filter(function (x){ return x.deadline && daysUntil(x.deadline)!==null && daysUntil(x.deadline)>=0; })
-      .sort(function (a,b){ return a.deadline.localeCompare(b.deadline); }).slice(0,5);
-    var upHTML = upcoming.length ? '<div class="cal-upcoming">' + upcoming.map(function (x){
-      var du=daysUntil(x.deadline), sev=deadlineSeverity(x.deadline);
-      var when = du===0 ? "Today" : (du+"d");
-      return '<div class="u-row"><span class="u-when '+sev+'">'+when+'</span>' +
-        '<span class="u-co">'+esc(x.company||"—")+'</span><span class="u-rl">'+esc(x.role||"")+' · '+esc(fmtDate(x.deadline))+'</span></div>';
+    var legend = full
+      ? '<div class="cal-legend">' +
+          '<span><i class="ev-deadline"></i>Deadline</span>' +
+          '<span><i class="ev-oa"></i>Online Assessment</span>' +
+          '<span><i class="ev-interview"></i>Interview</span></div>'
+      : '<div class="cal-legend">' +
+          '<span><i style="background:var(--s-rose)"></i>Due today / passed</span>' +
+          '<span><i style="background:var(--s-amber)"></i>Within 3 days</span>' +
+          '<span><i class="ev-deadline"></i>Deadline</span></div>';
+
+    // upcoming list of all event types (next 6 future-or-today), soonest first
+    var upcoming = [];
+    data.forEach(function (x) {
+      CAL_EVENTS.forEach(function (ev) {
+        var val = x[ev.field]; if (!val || String(val).split("-").length!==3) return;
+        var du = daysUntil(val);
+        if (du !== null && du >= 0) upcoming.push({ x:x, ev:ev, date:val, du:du });
+      });
+    });
+    upcoming.sort(function (a,b){ return a.date.localeCompare(b.date); });
+    upcoming = upcoming.slice(0, 6);
+    var upHTML = (full && upcoming.length) ? '<div class="cal-upcoming">' + upcoming.map(function (u){
+      var when = u.du===0 ? "Today" : (u.du+"d");
+      return '<div class="u-row"><span class="u-when '+(u.du<=3?"red":"norm")+'">'+when+'</span>' +
+        '<span class="u-co"><i class="'+u.ev.cls+'" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px"></i>'+esc(u.x.company||"—")+'</span>' +
+        '<span class="u-rl">'+u.ev.emoji+' '+u.ev.label+' · '+esc(fmtDate(u.date))+'</span></div>';
     }).join("") + '</div>' : '';
 
     el.innerHTML =
       '<div class="cal-head"><div class="mo">'+esc(monthName)+'</div>' +
         '<div class="cal-nav"><button data-cal="prev">‹</button><button data-cal="today">•</button><button data-cal="next">›</button></div></div>' +
       '<div class="cal-grid">'+dows+cells+'</div>' +
-      '<div class="cal-legend">' +
-        '<span><i style="background:var(--s-rose)"></i>Due today / passed</span>' +
-        '<span><i style="background:var(--s-amber)"></i>Within 3 days</span>' +
-        '<span><i style="background:var(--accent)"></i>Upcoming</span></div>' +
-      upHTML;
+      legend + upHTML;
 
     el.querySelectorAll("[data-cal]").forEach(function (b){
       b.onclick = function () {
         var dir = b.getAttribute("data-cal");
         if (dir==="today") { var d=new Date(); calMonth={y:d.getFullYear(),m:d.getMonth()}; }
         else { calMonth.m += (dir==="next"?1:-1); if (calMonth.m>11){calMonth.m=0;calMonth.y++;} if (calMonth.m<0){calMonth.m=11;calMonth.y--;} }
-        renderCalendar();
+        renderCalendar(targetId, full);
       };
     });
   }
@@ -457,6 +490,17 @@
 
     var targets = (tab === "applications") ? ["viewApps"] : ["view"];
     if (!data.length) { targets.forEach(function (t){ renderEmpty(t); }); return; }
+
+    // Calendar view: show the monthly deadline/OA/interview calendar in the feed area.
+    // Status tabs + favorites filter don't apply to the calendar (it maps all dated events).
+    if (view === "calendar") {
+      targets.forEach(function (t) {
+        $(t).innerHTML = '<div class="cal-card" id="' + t + '__cal"></div>';
+        renderCalendar(t + "__cal", true);
+      });
+      return;
+    }
+
     var rows = filtered();
     targets.forEach(function (t) {
       if (!rows.length) { $(t).innerHTML = '<div class="empty-note">No applications in <b>'+esc(statusTabLabel(STATUS_TAB_CURRENT))+'</b> matching your filters.</div>'; return; }
@@ -1030,6 +1074,10 @@
       view = b.getAttribute("data-view");
       $("viewSeg").querySelectorAll("button").forEach(function (x){ x.classList.toggle("active", x===b); });
       $("app").classList.toggle("wide", view==="board" && !document.body.classList.contains("is-desktop"));
+      // status tabs + favorites are irrelevant in Calendar view — hide them there
+      var showFilters = (view !== "calendar");
+      ["catTabs","catTabsApps"].forEach(function (id){ var el=$(id); if (el) el.style.display = showFilters ? "" : "none"; });
+      var fav=$("favToggle"); if (fav) fav.style.display = showFilters ? "" : "none";
       render();
     };
   });

@@ -151,11 +151,13 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .quick-pill.active { background: var(--s-amber-bg); border-color: rgba(217,119,6,.4); color: var(--s-amber);
   box-shadow: 0 0 0 1px rgba(217,119,6,.2); }
 
-/* view switcher */
+/* view switcher — 3 equal tabs, smooth highlight */
 .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border-2); border-radius: 20px; padding: 3px; }
-.seg button { border: none; background: transparent; padding: 7px 16px; font-size: 13px; font-weight: 600; color: var(--muted);
-  cursor: pointer; border-radius: 16px; display: inline-flex; align-items: center; gap: 6px; transition: .15s; }
+.seg button { flex: 1 1 0; justify-content: center; border: none; background: transparent; padding: 7px 14px; font-size: 13px; font-weight: 600; color: var(--muted);
+  cursor: pointer; border-radius: 16px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease; }
 .seg button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+@media (max-width: 420px) { .seg button { padding: 7px 10px; font-size: 12.5px; } }
 
 /* ============ Summary cards ============ */
 .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
@@ -567,6 +569,11 @@ body.is-mobile-ios .kbd { display: none; }
 .cal-cell .ddot i.amber { background: var(--s-amber); }
 .cal-cell .ddot i.red { background: var(--s-rose); }
 .cal-cell .ddot i.norm { background: var(--accent); }
+/* Event-type colors (deadline / online assessment / interview) */
+i.ev-deadline  { background: var(--s-rose); }
+i.ev-oa        { background: var(--s-violet); }
+i.ev-interview { background: var(--s-amber); }
+.cal-legend i.ev-deadline, .cal-legend i.ev-oa, .cal-legend i.ev-interview { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .cal-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; font-size: 11.5px; color: var(--muted); }
 .cal-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .cal-legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
