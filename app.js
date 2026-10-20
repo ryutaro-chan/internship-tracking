@@ -788,6 +788,8 @@
     // Computing, Fintech & IT
     "Fintech": ["Fintech SWE Intern", "Blockchain Developer", "Quant Analyst", "Financial Tech Analyst", "Risk & Compliance Specialist"],
     "Computer Science": ["Software Engineer Intern", "Backend Engineer", "Full Stack Developer", "Algorithms Engineer", "Systems Analyst"],
+    "Computing Science": ["Software Engineer Intern", "Backend Engineer", "Full Stack Developer", "Algorithms Engineer", "Systems Analyst"],
+    "Computing": ["Software Engineer Intern", "Backend Engineer", "Full Stack Developer", "Data Analyst"],
     "Information Security": ["Cybersecurity Analyst", "Security Engineer", "SOC Analyst", "Penetration Tester", "Information Security Intern"],
     "Software Engineering": ["Software Engineering Intern", "Frontend Engineer", "DevOps Engineer", "QA Automation Engineer"],
     "Business Analytics": ["Business Analytics Intern", "Data Analyst", "BI Developer", "Product Analyst", "Operations Analyst"],
@@ -839,6 +841,14 @@
     "Pharmacy": ["Pharmaceutical Analyst", "Clinical Research Associate", "Pharmacy Associate"],
     "Pharmaceutical": ["Pharmaceutical Analyst", "Clinical Research Associate", "Process Engineer"],
     "Physiotherapy": ["Physiotherapist Intern", "Rehabilitation Associate", "Clinical Operations Executive"],
+    "Occupational Therapy": ["Occupational Therapist Intern", "Rehabilitation Associate", "Clinical Operations Executive"],
+    "Speech and Language Therapy": ["Speech Therapist Intern", "Clinical Associate", "Rehabilitation Associate"],
+    "Diagnostic Radiography": ["Radiographer Intern", "Medical Imaging Associate", "Clinical Operations Executive"],
+    "Radiation Therapy": ["Radiation Therapist Intern", "Clinical Associate", "Oncology Operations Executive"],
+    "Dietetics": ["Dietitian Intern", "Clinical Nutrition Associate", "Food & Health Analyst"],
+    "Aviation": ["Aviation Management Trainee", "Airport Operations Associate", "Airline Analyst"],
+    "Therapy": ["Allied Health Intern", "Rehabilitation Associate", "Clinical Operations Executive"],
+    "Radiography": ["Radiographer Intern", "Medical Imaging Associate", "Clinical Operations Executive"],
     "Life Sciences": ["Research Assistant", "Lab Analyst", "Biotech Associate"],
     "Chemistry": ["R&D Chemist", "Lab Analyst", "Quality Control Associate"],
     "Physics": ["Research Assistant", "R&D Engineer", "Data Analyst"],
@@ -855,14 +865,17 @@
   // Ordered most-specific -> general so a full official title resolves to the best key.
   var COURSE_KEY_ORDER = [
     "Fintech","Quantitative Finance","Information Security","Software Engineering","Computer Science in Interactive Media",
-    "Computer Science","Business Analytics","Data Science","Artificial Intelligence","Information and Communications Technology",
-    "Information Systems","Interactive Media","Accountancy","Economics","Supply Chain","Hospitality","Human Resource",
-    "Real Estate","Marketing","Animation","Digital Media","Communication","Architecture","Mechatronics","Robotics",
-    "Electronics","Electrical","Aerospace","Aircraft","Mechanical","Civil","Chemical","Biomedical","Materials",
-    "Environmental","Systems Engineering","Pharmaceutical","Pharmacy","Physiotherapy","Nursing","Life Sciences",
-    "Chemistry","Physics","Food","Law","Social Work","Psychology","Early Childhood","Public Safety","Building",
-    "Design","Art","Business","Finance","Engineering"
+    "Computer Science","Computing Science","Computing","Business Analytics","Data Science","Artificial Intelligence",
+    "Information and Communications Technology","Information Systems","Interactive Media","Accountancy","Economics",
+    "Supply Chain","Hospitality","Human Resource","Real Estate","Marketing","Animation","Digital Media","Communication",
+    "Architecture","Mechatronics","Robotics","Electronics","Electrical","Aerospace","Aircraft","Mechanical","Civil",
+    "Chemical","Biomedical","Materials","Environmental","Systems Engineering","Pharmaceutical","Pharmacy",
+    "Occupational Therapy","Speech and Language Therapy","Diagnostic Radiography","Radiation Therapy","Radiography",
+    "Therapy","Dietetics","Physiotherapy","Nursing","Aviation","Life Sciences","Chemistry","Physics","Food","Law",
+    "Social Work","Psychology","Early Childhood","Public Safety","Building","Design","Art","Business","Finance","Engineering"
   ];
+  // Generic roles when a course doesn't map to a specific domain (never blank).
+  var GENERIC_ROLES = ["Intern", "Management Associate Intern", "Operations Analyst", "Project Coordinator"];
   // Map a (possibly full official) course title to its suggested roles.
   function suggestedRolesFor(courseTitle) {
     if (!courseTitle || courseTitle === OTHER_COURSE) return { key:null, roles:[] };
@@ -871,7 +884,8 @@
       var key = COURSE_KEY_ORDER[i];
       if (t.indexOf(key.toLowerCase()) >= 0) return { key:key, roles: courseToRolesMap[key] || [] };
     }
-    return { key:null, roles:[] };
+    // fallback: still show general internship roles so there's always a suggestion
+    return { key:"Your Course", roles: GENERIC_ROLES };
   }
 
   // Complete, official undergraduate programme lists for the six Singapore
