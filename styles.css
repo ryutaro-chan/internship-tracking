@@ -385,6 +385,9 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .field input.date-dmy[data-empty="false"]::-webkit-datetime-edit-year-field { color: var(--text); }
 /* Keep the calendar picker icon at normal opacity regardless of state */
 .field input.date-dmy::-webkit-calendar-picker-indicator { opacity: .6; }
+/* Selects still on their empty "Select…" option look like gray placeholders */
+.field select[data-placeholder="true"] { color: var(--faint); }
+.field select[data-placeholder="false"] { color: var(--text); }
 /* Custom-industry input appears directly below the Industry select */
 #industryOtherWrap { margin-top: 4px; }
 .field select { -webkit-appearance: none; appearance: none; padding-right: 30px;

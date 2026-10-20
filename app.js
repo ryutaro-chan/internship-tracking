@@ -319,6 +319,14 @@
       el.setAttribute("data-empty", el.value ? "false" : "true");
     });
   }
+  // Gray out form selects that are still on their empty "Select…" option,
+  // so they read like placeholders rather than real selected values.
+  function refreshSelectPlaceholders() {
+    ["f_location","f_industry","f_priority"].forEach(function (id) {
+      var el = $(id); if (!el) return;
+      el.setAttribute("data-placeholder", el.value ? "false" : "true");
+    });
+  }
 
   // ---------- metrics ----------
   function metrics() {
@@ -672,8 +680,9 @@
     // availability date fields (custom IDs, not f_ convention)
     $("appStartDate").value = item.startDate || "";
     $("appEndDate").value = item.endDate || "";
-    if (!id) $("f_status").value = "Applied";
+    if (!id) { $("f_status").value = "Applied"; $("f_industry").value = ""; $("f_location").value = ""; }
     toggleIndustryOther();   // show/hide custom industry input to match loaded value
+    refreshSelectPlaceholders(); // gray out selects still on their "Select…" option
     refreshDatePlaceholders();  // show/hide the uppercase DD/MM/YYYY hint per field
     $("f_id").value = id || "";
     $("modalBg").classList.add("show");
@@ -1081,7 +1090,9 @@
   fillStatusSelects();
   $("kbdHint").textContent = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K";
   $("fab").onclick = function (){ openModal(null); };
-  $("f_industry").onchange = toggleIndustryOther;   // reveal custom input when "Others" chosen
+  $("f_industry").onchange = function (){ toggleIndustryOther(); refreshSelectPlaceholders(); };   // reveal custom input when "Others" chosen
+  $("f_location").onchange = refreshSelectPlaceholders;
+  $("f_priority").onchange = refreshSelectPlaceholders;
   // keep the uppercase date placeholder hint in sync as users pick/clear dates
   Array.prototype.forEach.call(document.querySelectorAll("input.date-dmy"), function (el) {
     el.addEventListener("input", function (){ el.setAttribute("data-empty", el.value ? "false" : "true"); });
