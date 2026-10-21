@@ -384,9 +384,14 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 
 /* ============ Board (Kanban) ============ */
 .board { display: flex; gap: 12px; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: thin; }
-.col { flex: 0 0 240px; background: rgba(255,255,255,.5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+.col { flex: 0 0 300px; background: rgba(255,255,255,.5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 10px; display: flex; flex-direction: column; min-height: 140px; }
 .col.drag-over { border-color: var(--accent); background: rgba(0,119,237,.08); }
+/* Board reuses the feed card (.fcard) — make it fit the column cleanly */
+.col .fcard { width: 100%; box-sizing: border-box; min-height: 100%; margin-bottom: 10px; cursor: grab; }
+.col .fcard:last-child { margin-bottom: 0; }
+.col .fcard:active { cursor: grabbing; }
+.col .fcard.dragging { opacity: .5; }
 .col-head { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); font-weight: 700; padding: 2px 4px 10px; }
 .col-head .count { margin-left: auto; background: var(--surface-3); border-radius: 20px; padding: 1px 8px; font-size: 11px; color: var(--muted); }
 .col-head .sw { width: 9px; height: 9px; border-radius: 3px; }

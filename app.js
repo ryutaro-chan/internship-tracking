@@ -297,8 +297,9 @@
     var du = daysUntil(x.deadline); if (du===null) return "";
     if (du < 0) return '<span class="countdown past">⏳ Deadline Passed</span>';
     if (du === 0) return '<span class="countdown urgent">⏳ Due Today</span>';
-    if (du <= 3) return '<span class="countdown urgent">⏳ '+du+'d Left</span>';
-    if (du <= 14) return '<span class="countdown">⏳ '+du+'d Left</span>';
+    var dayWord = du === 1 ? "day" : "days";
+    if (du <= 3) return '<span class="countdown urgent">⏳ Deadline in '+du+' '+dayWord+'</span>';
+    if (du <= 14) return '<span class="countdown">⏳ Deadline in '+du+' '+dayWord+'</span>';
     return '<span class="chiptag">⏳ '+fmtDate(x.deadline)+'</span>';
   }
   // 4-stage progress stepper: Applied -> Test -> Interview -> Offer.
@@ -1141,79 +1142,68 @@
     $("emptySample").onclick = loadSample;
   }
 
-  function renderFeed(rows, into) {
-    var html = rows.map(function (x) {
-      var isOffer = (x.status === "Offer Received");
-      // Badges: up to 3 concise left-aligned pills (Pay, Work Type, Urgency).
-      // Offer cards show no mid-card banner — the celebration lives on the green
-      // primary button, so content flows cleanly into the progress tracker.
-      // Archived styling (dimming + badge) applies ONLY while viewing the
-      // Archived tab — active-tab cards are always full opacity.
-      var archived = isArchived(x) && viewingArchivedTab();
-      var tags = [];
-      if (archived) tags.push('<span class="chiptag arch-badge">📦 Archived</span>');
-      if (isOffer) {
-        // Single centered status badge; all salary/perk detail lives in the modal.
-        tags.push('<span class="offer-badge">🎉 Offer Received!</span>');
-      } else {
-        // Fixed 3-badge order for active cards: 1) Pay  2) Work Arrangement  3) Urgency.
-        // Badge 1 — Salary (always shown; standardized fallback when unstated).
-        var payStr = formatSalary(x.comp);
-        tags.push('<span class="chiptag pay">💰 '+(payStr ? esc(payStr) : 'Unstated')+'</span>');
-        // Badge 2 — Work Arrangement (always one of On-site / Hybrid / Remote / Relocation).
-        tags.push('<span class="chiptag loc">📍 '+esc(normalizeLocation(x.location) || "On-site")+'</span>');
-        // Badge 3 — Urgency alert (only when a trigger applies; otherwise hidden).
-        var cd = countdownBadge(x);
-        if (cd) tags.push(cd);                                       // deadline trigger wins
-        else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
-      }
-      var rowCls = 'tags card-badges-container' + (isOffer ? ' offer-badge-row' : '') + (isOffer && archived ? ' offer-archived-row' : '');
-      var badgeRow = '<div class="'+rowCls+'">'+tags.join("")+'</div>';
-      return '<div class="fcard'+(archived?' archived':'')+(isOffer?' offer-card':'')+'" data-open="'+x.id+'">' +
-        '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
-          '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
-          '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
-        '</div>' +
-        // Offer Received: the celebratory banner conveys status, so skip the
-        // duplicate top-left pill. All other statuses keep their pill.
-        (isOffer ? '' : '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div>') +
-        badgeRow +
-        '<div class="fcard-bottom">' +
-        progressStepper(x) +
-        '<div class="foot">' +
-          (isOffer
-            ? '<button class="card-primary card-primary-offer" data-view-detail="'+x.id+'">View Offer Details</button>'
-            : '<button class="card-primary" data-view-detail="'+x.id+'">View Details</button>') +
-          '<div class="meatball-wrap">' +
-            '<button class="meatball-btn" data-meatball="'+x.id+'" aria-haspopup="true" aria-expanded="false" title="More actions">⋮</button>' +
-            '<div class="meatball-menu" data-menu="'+x.id+'" hidden>' +
-              '<button class="mb-item" data-status="'+x.id+'"><span class="mb-ic">🔄</span>Update Status</button>' +
-              '<button class="mb-item" data-edit="'+x.id+'"><span class="mb-ic">✏️</span>Edit Application</button>' +
-              '<button class="mb-item" data-mail="'+x.id+'"><span class="mb-ic">✉️</span>Email Recruiter / Contact</button>' +
-              '<button class="mb-item" data-export-card="'+x.id+'"><span class="mb-ic">📥</span>Export Application Card</button>' +
-              '<button class="mb-item" data-archive="'+x.id+'"><span class="mb-ic">📦</span>'+(archived?'Unarchive Application':'Archive Application')+'</button>' +
-              '<button class="mb-item danger" data-del="'+x.id+'"><span class="mb-ic">🗑️</span>Delete</button>' +
-            '</div>' +
+  // Single source of truth for an application card — shared by Feed AND Board,
+  // so both views have identical layout, badge rules, salary formatting and
+  // action buttons. `draggable` adds the DnD attributes used by the Board.
+  function createJobCardHTML(x, draggable) {
+    var isOffer = (x.status === "Offer Received");
+    // Badges: up to 3 concise left-aligned pills (Pay, Work Type, Urgency).
+    // Archived styling (dimming + badge) applies ONLY while viewing the Archived tab.
+    var archived = isArchived(x) && viewingArchivedTab();
+    var tags = [];
+    if (archived) tags.push('<span class="chiptag arch-badge">📦 Archived</span>');
+    if (isOffer) {
+      // Single centered status badge; all salary/perk detail lives in the modal.
+      tags.push('<span class="offer-badge">🎉 Offer Received!</span>');
+    } else {
+      // Fixed 3-badge order: 1) Pay (formatted, fallback 'Unstated')  2) Work  3) Urgency.
+      var payStr = formatSalary(x.comp);
+      tags.push('<span class="chiptag pay">💰 '+(payStr ? esc(payStr) : 'Unstated')+'</span>');
+      tags.push('<span class="chiptag loc">📍 '+esc(normalizeLocation(x.location) || "On-site")+'</span>');
+      var cd = countdownBadge(x);
+      if (cd) tags.push(cd);
+      else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
+    }
+    var rowCls = 'tags card-badges-container' + (isOffer ? ' offer-badge-row' : '') + (isOffer && archived ? ' offer-archived-row' : '');
+    var badgeRow = '<div class="'+rowCls+'">'+tags.join("")+'</div>';
+    var dragAttrs = draggable ? ' draggable="true" data-id="'+x.id+'"' : '';
+    return '<div class="fcard'+(archived?' archived':'')+(isOffer?' offer-card':'')+'" data-open="'+x.id+'"'+dragAttrs+'>' +
+      '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
+        '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
+        '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
+      '</div>' +
+      (isOffer ? '' : '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div>') +
+      badgeRow +
+      '<div class="fcard-bottom">' +
+      progressStepper(x) +
+      '<div class="foot">' +
+        (isOffer
+          ? '<button class="card-primary card-primary-offer" data-view-detail="'+x.id+'">View Offer Details</button>'
+          : '<button class="card-primary" data-view-detail="'+x.id+'">View Details</button>') +
+        '<div class="meatball-wrap">' +
+          '<button class="meatball-btn" data-meatball="'+x.id+'" aria-haspopup="true" aria-expanded="false" title="More actions">⋮</button>' +
+          '<div class="meatball-menu" data-menu="'+x.id+'" hidden>' +
+            '<button class="mb-item" data-status="'+x.id+'"><span class="mb-ic">🔄</span>Update Status</button>' +
+            '<button class="mb-item" data-edit="'+x.id+'"><span class="mb-ic">✏️</span>Edit Application</button>' +
+            '<button class="mb-item" data-mail="'+x.id+'"><span class="mb-ic">✉️</span>Email Recruiter / Contact</button>' +
+            '<button class="mb-item" data-export-card="'+x.id+'"><span class="mb-ic">📥</span>Export Application Card</button>' +
+            '<button class="mb-item" data-archive="'+x.id+'"><span class="mb-ic">📦</span>'+(archived?'Unarchive Application':'Archive Application')+'</button>' +
+            '<button class="mb-item danger" data-del="'+x.id+'"><span class="mb-ic">🗑️</span>Delete</button>' +
           '</div>' +
-        '</div></div></div>';
-    }).join("");
+        '</div>' +
+      '</div></div></div>';
+  }
+
+  function renderFeed(rows, into) {
+    var html = rows.map(function (x){ return createJobCardHTML(x, false); }).join("");
     $(into).innerHTML = '<div class="feed">'+html+'</div>';
   }
 
   function renderBoard(rows, into) {
     var cols = STATUSES.map(function (s) {
       var items = rows.filter(function (x){ return x.status===s.name; });
-      var cards = items.map(function (x) {
-        var bits = [];
-        if (x.comp) bits.push('<span class="chiptag pay">💰 '+esc(x.comp)+'</span>');
-        if (x.deadline) bits.push(countdownBadge(x));
-        if (followUpDue(x)) bits.push('<span class="fu-flag">⚠️</span>');
-        return '<div class="bcard" draggable="true" data-id="'+x.id+'" data-open="'+x.id+'">' +
-          '<div class="bh">'+avatar(x.company, companyDomain(x.company, x.url))+'<div><div class="bco">'+esc(x.company||"—")+'</div><div class="brl">'+esc(x.role||"")+'</div></div></div>' +
-          (bits.length?'<div class="bmeta">'+bits.join("")+'</div>':'') +
-          '<div class="bmeta"><button class="qbtn" data-mail="'+x.id+'">✉️</button></div>' +
-          '</div>';
-      }).join("");
+      // Board cards reuse the exact same generator as the feed (draggable).
+      var cards = items.map(function (x){ return createJobCardHTML(x, true); }).join("");
       return '<div class="col" data-status="'+esc(s.name)+'">' +
         '<div class="col-head">'+swDot(s.name)+esc(s.name)+'<span class="count">'+items.length+'</span></div>' +
         (items.length?cards:'<div class="col-empty">Drop here</div>') + '</div>';
@@ -1224,7 +1214,7 @@
 
   function wireDnd(into) {
     var root = $(into); var dragId = null;
-    Array.prototype.forEach.call(root.querySelectorAll(".bcard"), function (card) {
+    Array.prototype.forEach.call(root.querySelectorAll(".fcard[data-id]"), function (card) {
       card.addEventListener("dragstart", function (e){ dragId = card.getAttribute("data-id"); card.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; });
       card.addEventListener("dragend", function (){ card.classList.remove("dragging"); dragId=null; });
     });
