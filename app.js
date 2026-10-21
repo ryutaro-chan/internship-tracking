@@ -1839,8 +1839,8 @@
     function optionList(selectedId) {
       return '<option value="">Select a role…</option>' +
         data.map(function (x) {
-          var pay = stipendValue(x.comp); var payStr = (pay!=null&&pay>=0) ? " ($"+Math.round(pay).toLocaleString()+"/mo)" : "";
-          return '<option value="'+x.id+'"'+(selectedId===x.id?" selected":"")+'>'+esc((x.company||"—")+" — "+(x.role||"Role")+payStr)+'</option>';
+          // Show just "Company — Role" (no salary) in the dropdown.
+          return '<option value="'+x.id+'"'+(selectedId===x.id?" selected":"")+'>'+esc((x.company||"—")+" — "+(x.role||"Role"))+'</option>';
         }).join("");
     }
     var selHTML = slots.map(function (id, i) {
@@ -1870,22 +1870,20 @@
         var scoreBlock=(f.score===null)?'<div class="fit"><div class="k">Pick your university &amp; course above to see a fit score.</div></div>'
           :'<div class="fit"><div class="score">'+f.score+'<span style="font-size:14px;color:var(--muted)">% fit</span></div><div class="bar"><span style="width:'+f.score+'%"></span></div>'+
             tagHTML + '</div>';
-        // salary row — green-highlight the higher pay
+        // salary row — standardized currency formatting, green-highlight the higher pay
         var payHigh = payVals[i]>=0 && payVals[i]===maxPay && cols.length>1 && payVals.filter(function(p){return p===maxPay;}).length===1;
-        var payCell = x.comp
-          ? ('<span class="'+(payHigh?"cmp-win":"")+'">'+esc(x.comp)+'</span>'+(payHigh?' <span class="cmp-pay-badge">💰 Highest Pay</span>':''))
+        var payFmt = formatSalary(x.comp);
+        var payCell = payFmt
+          ? ('<span class="'+(payHigh?"cmp-win":"")+'">'+esc(payFmt)+'</span>'+(payHigh?' <span class="cmp-pay-badge">💰 Highest Pay</span>':''))
           : '—';
-        // work arrangement flag
-        var loc=(x.location||"").toLowerCase(); var workFlag="";
-        if (loc.indexOf("remote")>=0) workFlag=' <span class="cmp-flag good">remote</span>';
-        else if (loc.indexOf("hybrid")>=0) workFlag=' <span class="cmp-flag ok">hybrid</span>';
-        else if (loc.indexOf("on-site")>=0||loc.indexOf("onsite")>=0) workFlag=' <span class="cmp-flag warn">on-site</span>';
+        // work arrangement — single standardized label (no duplicate flag pill)
+        var workCell = x.location ? esc(normalizeLocation(x.location)) : '—';
         return '<div class="cmp-col'+(isBest?' best':'')+'">' +
           '<div class="cmp-col-head"><div class="cco">'+esc(x.company||"—")+'</div><div class="crl">'+esc(x.role||"")+'</div>'+(isBest?'<span class="cmp-badge-best">★ Best fit for you</span>':'')+'</div>'+
           scoreBlock +
           '<div class="cmp-rows">' +
             cmpRow("Salary", payCell) +
-            cmpRow("Work Arrangement", esc(x.location||"—")+workFlag) +
+            cmpRow("Work Arrangement", workCell) +
             cmpRow("Industry", esc(industryOf(x)||"—")) +
             cmpRow("Application Stage", pillHTML(x.status)) +
             cmpRow("Availability", esc(availabilityLabel(x)||"—")) +
