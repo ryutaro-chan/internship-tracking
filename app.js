@@ -26,7 +26,7 @@
   };
 
   var FIELDS = ["company","role","location","status","industry","industryOther","jobdesc","url","appliedDate","deadline","followup",
-    "oaDate","interviewDates","stageNotes","comp","hours","offerDeadline","priority","prosCons",
+    "oaDate","interviewDates","stageNotes","comp","hours","offerDeadline","priority","prosCons","equity","perks",
     "referral","docs","nextAction"];
   // Availability dates are handled explicitly (custom input IDs, not the f_ convention).
 
@@ -849,6 +849,29 @@
     if (!rows.length) return '<div class="d-none">No company details added yet.</div>';
     return '<div class="d-rows">' + rows.join("") + '</div>';
   }
+  // "🎉 Offer Details & Perks" — only shown for Offer Received apps, filled
+  // with the actual stored compensation/perk data (no empty placeholders).
+  function offerDetailsHTML(x) {
+    var rows = [];
+    function row(label, val) { if (val) rows.push('<div class="d-row"><span class="d-k">'+esc(label)+'</span><span class="d-v">'+val+'</span></div>'); }
+    var pay = formatSalary(x.comp);
+    row("Salary", pay);
+    row("Monthly Compensation", pay);
+    if (x.equity) row("Equity / Bonus", esc(x.equity));         // optional dedicated field
+    row("Commitment / Hours", esc(x.hours));
+    if (x.startDate || x.endDate) row("Start Date", esc(monthYear(x.startDate) || availabilityLabel(x)));
+    if (x.offerDeadline) row("Decide By", esc(fmtDate(x.offerDeadline)));
+    if (x.priority) row("Priority", esc(x.priority));
+    // Perks / highlights: dedicated field, else the pros/cons notes.
+    var perks = toBullets(x.perks || x.prosCons);
+    var perksHTML = perks.length
+      ? '<div class="d-offer-perks">'+perks.map(function (p){ return '<span class="d-perk">✨ '+esc(p)+'</span>'; }).join("")+'</div>'
+      : '';
+    if (!rows.length && !perksHTML) {
+      return '<div class="d-none">Open Edit to add your salary, perks and start date.</div>';
+    }
+    return (rows.length ? '<div class="d-rows">'+rows.join("")+'</div>' : '') + perksHTML;
+  }
   function renderDetail(id) {
     var x = data.find(function (v){ return v.id===id; }); if (!x) return;
     detailId = id;
@@ -884,6 +907,9 @@
         '<button class="d-tab" data-dtab="about">About Company</button>' +
       '</div>' +
       '<div class="d-pane" id="dPaneDesc">' +
+        (x.status === "Offer Received"
+          ? '<div class="d-card d-offer-card"><div class="d-title">🎉 Offer Details &amp; Perks</div>'+offerDetailsHTML(x)+'</div>'
+          : '') +
         '<div class="d-card">' +
           '<div class="d-title">Requirements</div>' +
           bulletList(reqItems) +
@@ -1000,7 +1026,7 @@
         if (cd) tags.push(cd);                                       // deadline trigger wins
         else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
       }
-      return '<div class="fcard'+(isArchived(x)?' archived':'')+'" data-open="'+x.id+'">' +
+      return '<div class="fcard'+(isArchived(x)?' archived':'')+(isOffer?' offer-card':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
           '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
@@ -1926,6 +1952,12 @@
     };
     // Esc closes the detail panel
     document.addEventListener("keydown", function (e){ if (e.key==="Escape" && detailId) closeDetail(); });
+    // Desktop modal: click on the dimmed backdrop (outside the card) closes it
+    var dv = $("detailView");
+    if (dv) dv.addEventListener("click", function (e){
+      if (!document.body.classList.contains("is-desktop")) return;
+      if (e.target === dv) closeDetail();       // clicked the backdrop, not the card
+    });
   })();
 
   // Adaptive layout: detect platform on load + react to viewport changes

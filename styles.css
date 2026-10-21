@@ -289,9 +289,18 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
 .chiptag.loc { }
 .chiptag.pay { background: var(--s-green-bg); color: var(--s-green); border-color: transparent; }
-/* Offer Received badges */
-.chiptag.offer-win { background: var(--s-green-bg); color: var(--s-green); border-color: transparent; font-weight: 600; }
-.chiptag.offer-due { background: var(--s-amber-bg); color: var(--s-amber); border-color: transparent; font-weight: 600; }
+/* Offer Received badges — vibrant emerald (win) + gold (decision due) */
+.chiptag.offer-win { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #15803d; border-color: transparent; font-weight: 700; }
+.chiptag.offer-due { background: linear-gradient(135deg, #fef9c3, #fde68a); color: #b45309; border-color: transparent; font-weight: 700; }
+/* Offer cards: pay badge pops as a vibrant emerald win */
+.offer-card .chiptag.pay { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #15803d; font-weight: 700; }
+
+/* ---- Celebratory 'Offer Received' card: emerald glow + soft tint ---- */
+.offer-card { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  border: 2px solid #22c55e; box-shadow: 0 8px 20px rgba(34, 197, 94, 0.12); }
+.offer-card:hover { box-shadow: 0 12px 28px rgba(34, 197, 94, 0.2); border-color: #16a34a; }
+/* the offer card's status pill reads as a confident emerald */
+.offer-card .status-pill-wrap .pill.green { box-shadow: 0 0 14px rgba(34,197,94,.25); }
 .countdown { display: inline-flex; align-items: center; gap: 5px;
   background: var(--s-amber-bg); color: var(--s-amber); border: 1px solid transparent; }
 .countdown.past { background: var(--surface-2); color: var(--faint); }
@@ -597,6 +606,32 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   .detail-view { max-width: 460px; left: 50%; right: auto; transform: translateX(calc(-50% + 100%)); margin: 0; }
   .detail-view.show { transform: translateX(-50%); }
 }
+/* Desktop: present the detail view as a centered modal card floating over a
+   dimmed, blurred backdrop (instead of a narrow phone-width slide-in). The
+   back/favourite bar + scrollable body are stacked into one 680px card. */
+@media (min-width: 768px) {
+  body.is-desktop .detail-view {
+    inset: 0; left: 0; right: 0; max-width: none; margin: 0;
+    background: rgba(15, 23, 42, 0.5);
+    -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 24px;
+    transform: none; opacity: 0; transition: opacity .2s ease, visibility .2s ease;
+  }
+  body.is-desktop .detail-view.show { transform: none; opacity: 1; }
+  /* The modal card: a rounded 680px panel holding the top bar + scroll body */
+  body.is-desktop .detail-view .detail-top,
+  body.is-desktop .detail-view .detail-scroll {
+    width: 90%; max-width: 680px; min-width: 320px; background: var(--surface);
+  }
+  body.is-desktop .detail-view .detail-top {
+    border-radius: 20px 20px 0 0; padding: 18px 2rem 0; }
+  body.is-desktop .detail-view .detail-scroll {
+    border-radius: 0 0 20px 20px; padding: 6px 2rem 2rem; max-height: 82vh;
+    box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.4); flex: 0 1 auto;
+  }
+  /* seam shadow belongs to the whole card, not the two halves */
+  body.is-desktop .detail-view .detail-top { box-shadow: 0 -0px 0 0 transparent; }
+}
 .detail-top { display: flex; align-items: center; justify-content: space-between;
   padding: calc(14px + env(safe-area-inset-top,0px)) 16px 10px; }
 .detail-icon, .detail-fav { width: 40px; height: 40px; border-radius: 12px; cursor: pointer;
@@ -630,6 +665,11 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 
 .d-pane { display: flex; flex-direction: column; gap: 14px; }
 .d-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px 16px 14px; box-shadow: var(--shadow-sm); }
+/* Highlighted offer-details card inside the detail modal */
+.d-offer-card { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); border: 1px solid #86efac; }
+.d-offer-card .d-title { color: #15803d; }
+.d-offer-perks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.d-perk { font-size: 12.5px; font-weight: 600; color: #15803d; background: #dcfce7; border-radius: 10px; padding: 4px 10px; }
 .d-title { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
 .d-bullets { list-style: none; margin: 0; padding: 0; }
 .d-bullets li { position: relative; padding-left: 22px; margin-bottom: 11px; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
