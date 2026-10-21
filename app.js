@@ -755,7 +755,7 @@
       if (!matchesFilter(x, f)) return false;
       if (!matchesStatusTab(x, STATUS_TAB_CURRENT)) return false; // status filter tab
       if (favOnly && !x.bookmarked) return false;                 // ★ Favorites quick filter
-      if (hideArchived && (x.archived || x.status==="Rejected" || x.status==="Withdrawn")) return false; // 🗄 hide archived
+      if (hideArchived && (isArchived(x) || x.status==="Rejected" || x.status==="Withdrawn")) return false; // 🗄 hide archived
       if (q) { var hay=[x.company,x.role,x.location,x.term,availabilityLabel(x),x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
         if (hay.indexOf(q)===-1) return false; }
       return true;
@@ -1010,7 +1010,9 @@
       // Badges: up to 3 concise left-aligned pills (Pay, Work Type, Urgency).
       // Offer cards show no mid-card banner — the celebration lives on the green
       // primary button, so content flows cleanly into the progress tracker.
+      var archived = isArchived(x);
       var tags = [];
+      if (archived) tags.push('<span class="chiptag arch-badge">📦 Archived</span>');
       if (isOffer) {
         // Single centered status badge; all salary/perk detail lives in the modal.
         tags.push('<span class="offer-badge">🎉 Offer Received!</span>');
@@ -1024,7 +1026,7 @@
         else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
       }
       var badgeRow = '<div class="tags card-badges-container'+(isOffer?' offer-badge-row':'')+'">'+tags.join("")+'</div>';
-      return '<div class="fcard'+(isArchived(x)?' archived':'')+(isOffer?' offer-card':'')+'" data-open="'+x.id+'">' +
+      return '<div class="fcard'+(archived?' archived':'')+(isOffer?' offer-card':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
           '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
@@ -1046,7 +1048,7 @@
               '<button class="mb-item" data-edit="'+x.id+'"><span class="mb-ic">✏️</span>Edit Application</button>' +
               '<button class="mb-item" data-mail="'+x.id+'"><span class="mb-ic">✉️</span>Email Recruiter / Contact</button>' +
               '<button class="mb-item" data-export-card="'+x.id+'"><span class="mb-ic">📥</span>Export Application Card</button>' +
-              '<button class="mb-item" data-archive="'+x.id+'"><span class="mb-ic">📦</span>'+(x.archived?'Unarchive':'Archive')+'</button>' +
+              '<button class="mb-item" data-archive="'+x.id+'"><span class="mb-ic">📦</span>'+(archived?'Unarchive Application':'Archive Application')+'</button>' +
               '<button class="mb-item danger" data-del="'+x.id+'"><span class="mb-ic">🗑️</span>Delete</button>' +
             '</div>' +
           '</div>' +
@@ -1137,7 +1139,15 @@
   }
 
   function toggleBookmark(id) { var x=data.find(function (v){ return v.id===id; }); if (!x) return; x.bookmarked=!x.bookmarked; x._updated=Date.now(); save(); render(); }
-  function toggleArchive(id) { var x=data.find(function (v){ return v.id===id; }); if (!x) return; x.archived=!x.archived; x._updated=Date.now(); save(); render(); showToast(x.archived?"Archived":"Unarchived"); }
+  function toggleArchive(id) {
+    var x = data.find(function (v){ return v.id===id; }); if (!x) return;
+    x.isArchived = !isArchived(x);   // canonical flag; flips current archived state
+    delete x.archived;               // drop the legacy key so there's one source of truth
+    x._updated = Date.now();
+    save();                          // persist to localStorage immediately
+    render();                        // re-render feed (respects Hide Archived toggle)
+    showToast(x.isArchived ? "Archived" : "Unarchived");
+  }
   // Export a single application card as a JSON file.
   function exportCard(id) {
     var x = data.find(function (v){ return v.id===id; }); if (!x) { showToast("Nothing to export"); return; }

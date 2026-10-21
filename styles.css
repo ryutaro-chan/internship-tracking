@@ -263,8 +263,13 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   transition: transform .16s, box-shadow .2s, border-color .2s; cursor: pointer;
   display: flex; flex-direction: column; }   /* column layout lets the footer pin to the bottom */
 .fcard:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: rgba(56,189,248,.35); }
-/* Archived cards render identically to the rest — uniform, standardised grid.
-   Archived visibility is controlled by the "Hide Archived" toggle, not dimming. */
+/* Archived cards: dimmed + desaturated so they read as inactive. The "📦 Archived"
+   badge labels them; the Hide Archived toggle controls whether they show at all. */
+.fcard.archived { opacity: 0.6; filter: grayscale(0.4); }
+.fcard.archived:hover { opacity: 1; filter: grayscale(0); }
+/* Archived badge pill */
+.chiptag.arch-badge { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;
+  font-size: 0.75rem; font-weight: 600; padding: 4px 8px; border-radius: 10px; }
 .fcard .head { display: flex; align-items: flex-start; gap: 12px; }
 .avatar { position: relative; flex: 0 0 auto; width: 48px; height: 48px; border-radius: 14px; overflow: hidden;
   display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #fff; box-shadow: var(--shadow-sm); }
