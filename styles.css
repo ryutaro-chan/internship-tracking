@@ -701,10 +701,12 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .d-none { color: var(--faint); font-size: 13px; }
 
 .d-rows { display: flex; flex-direction: column; }
-.d-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+/* Key/value detail rows: slate labels, bold dark values, clear dividers */
+.d-row { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
 .d-row:last-child { border-bottom: none; }
-.d-k { font-size: 12.5px; color: var(--muted); font-weight: 600; }
-.d-v { font-size: 13.5px; color: var(--text); font-weight: 600; text-align: right; }
+.d-k { font-size: 12.5px; color: #64748b; font-weight: 600; }
+.d-v { font-size: 13.5px; color: #0f172a; font-weight: 700; text-align: right; }
 .d-link { color: var(--accent-strong); font-weight: 700; text-decoration: none; }
 .d-link:hover { text-decoration: underline; }
 

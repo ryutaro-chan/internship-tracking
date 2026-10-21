@@ -155,6 +155,20 @@
 
   function fmtDate(d) { if (!d) return ""; var p=d.split("-"); if (p.length!==3) return d;
     var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]; return m[parseInt(p[1],10)-1]+" "+parseInt(p[2],10); }
+  // Standard "DD MMM YYYY" (e.g. "28 Oct 2026"). Accepts ISO YYYY-MM-DD or MM-DD;
+  // if the source has no year, defaults to the current calendar year.
+  function fmtDateFull(d) {
+    if (!d) return "";
+    var m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    var p = String(d).split("-");
+    var year, mon, day;
+    if (p.length === 3) { year = p[0]; mon = parseInt(p[1],10); day = parseInt(p[2],10); }
+    else if (p.length === 2) { year = new Date().getFullYear(); mon = parseInt(p[0],10); day = parseInt(p[1],10); }
+    else return d;
+    if (!mon || !day) return d;
+    var dd = (day < 10 ? "0" : "") + day;        // zero-pad the day -> "28" / "05"
+    return dd + " " + m[mon-1] + " " + year;
+  }
   // "May 2027 – Aug 2027" style from start/end ISO dates (falls back to legacy term text).
   function monthYear(d) { if (!d) return ""; var p=d.split("-"); if (p.length<2) return d;
     var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]; return m[parseInt(p[1],10)-1]+" "+p[0]; }
@@ -851,17 +865,22 @@
   }
   // "🎉 Offer Details & Perks" — only shown for Offer Received apps, filled
   // with the actual stored compensation/perk data (no empty placeholders).
+  // Capitalize time-unit words in a commitment string (e.g. "12 weeks" -> "12 Weeks").
+  function formatHours(h) {
+    if (!h) return "";
+    return String(h).replace(/\b(week|weeks|month|months|day|days|year|years|hour|hours)\b/gi,
+      function (w){ return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); });
+  }
   function offerDetailsHTML(x) {
     var rows = [];
     function row(label, val) { if (val) rows.push('<div class="d-row"><span class="d-k">'+esc(label)+'</span><span class="d-v">'+val+'</span></div>'); }
-    var pay = formatSalary(x.comp);
-    row("Salary", pay);
-    row("Monthly Compensation", pay);
+    // Single consolidated compensation row (no separate "Monthly Compensation").
+    row("Monthly Salary", formatSalary(x.comp));
     row("Work Location", esc(normalizeLocation(x.location)));
     if (x.equity) row("Equity / Bonus", esc(x.equity));         // optional dedicated field
-    row("Commitment / Hours", esc(x.hours));
+    row("Commitment / Hours", esc(formatHours(x.hours)));
     if (x.startDate || x.endDate) row("Start Date", esc(monthYear(x.startDate) || availabilityLabel(x)));
-    if (x.offerDeadline) row("Decision Deadline", esc(fmtDate(x.offerDeadline)));
+    if (x.offerDeadline) row("Decision Deadline", esc(fmtDateFull(x.offerDeadline)));
     if (x.priority) row("Priority", esc(x.priority));
     // Perks / highlights: only the dedicated perks field (no pros/cons notes).
     var perks = toBullets(x.perks);
