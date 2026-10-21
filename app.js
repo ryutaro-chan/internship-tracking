@@ -168,11 +168,20 @@
       if (x.status && LEGACY_MAP[x.status]) x.status = LEGACY_MAP[x.status];
       if (!statusValid(x.status)) x.status = "Applied";
       // One-time migration of the old demo seed: Grab "Backend Intern" shipped as
-      // Rejected with "Rejected after final round." — align it to the Offer state.
+      // Rejected with "Rejected after final round." — align it to a fully-populated
+      // Offer so the Offer Details / Benefits sections show real data, not placeholders.
       if (x.company === "Grab" && /backend intern/i.test(x.role||"") &&
           x.status === "Rejected" && /rejected after final round/i.test(x.stageNotes||"")) {
         x.status = "Offer Received";
         x.stageNotes = "🎉 Offer received! Review compensation and respond by deadline.";
+        if (!x.comp) x.comp = "$2,200/month";
+        if (!x.location) x.location = "On-site";
+        if (!x.hours) x.hours = "Full-time, 12 weeks";
+        if (!x.offerDeadline) { var dl=new Date(); dl.setDate(dl.getDate()+10); x.offerDeadline = dl.toISOString().slice(0,10); }
+        if (!x.priority) x.priority = "Medium";
+        if (!x.equity) x.equity = "Completion bonus";
+        if (!x.perks) x.perks = "Transport allowance; Team lunches; Mentorship";
+        if (!x.jobdesc) x.jobdesc = "Build and maintain backend services and APIs. Work with databases, cloud infrastructure and distributed systems.";
       }
       // General cleanup: if an app is NOT rejected/withdrawn but its notes still
       // contain rejection text, strip the stale sentences so nothing conflicts.
