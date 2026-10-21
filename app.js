@@ -1817,12 +1817,13 @@
         }).join("");
     }
     var selHTML = slots.map(function (id, i) {
-      return '<div class="cmp-field"><label>Select Applied Role #'+(i+1)+'</label>' +
-        '<select id="compareRoleSelect'+(i+1)+'" class="compare-select" data-slot="'+i+'" data-empty="'+(id?"false":"true")+'">'+optionList(id)+'</select></div>';
+      return '<div class="cmp-field"><label>💼 Select Applied Role #'+(i+1)+'</label>' +
+        '<select id="compareRoleSelect'+(i+1)+'" class="compare-select ctl-wide" data-slot="'+i+'" data-empty="'+(id?"false":"true")+'">'+optionList(id)+'</select></div>';
     }).join("");
     var addBtn = (!cmpShowThird) ? '<button type="button" class="cmp-add-role" id="cmpAddRole">+ Add Role to Compare</button>' : '';
+    // Wrap the role selectors in a card that matches the University / Course card.
     var pick = '<div class="cmp-pickwrap"><div class="lbl">Compare your applied roles</div>' +
-      '<div class="compare-selects">'+selHTML+'</div>'+addBtn+'</div>';
+      '<div class="compare-card-container"><div class="compare-selects">'+selHTML+'</div>'+addBtn+'</div></div>';
 
     // --- Resolve chosen applications ---
     var cols = slots.map(function (id){ return id ? data.find(function (x){ return x.id===id; }) : null; }).filter(Boolean);
