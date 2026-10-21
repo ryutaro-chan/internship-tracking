@@ -304,6 +304,9 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 /* Enlarged, centered 'Offer Received!' celebratory badge (offer cards).
    The row grows to fit the taller badge and centers it horizontally. */
 .fcard .tags.offer-badge-row, .offer-badge-row { justify-content: center; overflow: visible; min-height: 48px; }
+/* Archived + Offer: stack the 📦 Archived badge neatly above the banner */
+.offer-archived-row { flex-direction: column; gap: 8px; }
+.offer-archived-row .arch-badge { align-self: center; }
 .offer-badge { display: inline-flex; align-items: center; justify-content: center; text-align: center;
   width: 100%; max-width: 90%; margin: 12px auto;
   background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #15803d;

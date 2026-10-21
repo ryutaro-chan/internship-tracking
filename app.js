@@ -75,14 +75,18 @@
     { id:"test",       label:"Test / Online Assessment", statuses:["Online Assessment / Test"] },
     { id:"interview",  label:"Interviewing",             statuses:["Interview"] },
     { id:"offer",      label:"Offer Received",           statuses:["Offer Received"] },
-    { id:"closed",     label:"Rejected / Withdrawn",     statuses:["Rejected","Withdrawn"] }
+    { id:"closed",     label:"Rejected / Withdrawn",     statuses:["Rejected","Withdrawn"] },
+    { id:"archived",   label:"Archived",                 statuses:null, archived:true }
   ];
   var STATUS_TAB_CURRENT = "all";
+  // True only when the dedicated "Archived" tab is the active filter.
+  function viewingArchivedTab() { return STATUS_TAB_CURRENT === "archived"; }
   var favOnly = false;   // "★ Favorites" quick filter (bookmarked only)
   var hideArchived = false;   // "🗄 Hide Archived" — hide Rejected & Withdrawn from the feed
   function statusTabDef(id) { for (var i=0;i<STATUS_TABS.length;i++) if (STATUS_TABS[i].id===id) return STATUS_TABS[i]; return STATUS_TABS[0]; }
   function matchesStatusTab(x, id) {
     var t = statusTabDef(id);
+    if (t.archived) return isArchived(x);    // "Archived" tab -> only archived apps
     if (!t.statuses) return true;            // "all"
     return t.statuses.indexOf(x.status) >= 0;
   }
@@ -765,11 +769,14 @@
     var q = $("search").value.trim().toLowerCase();
     var f = $("statusFilter").value;
     var sort = $("sortBy").value;
+    var onArchivedTab = viewingArchivedTab();
     var rows = data.filter(function (x) {
       if (!matchesFilter(x, f)) return false;
       if (!matchesStatusTab(x, STATUS_TAB_CURRENT)) return false; // status filter tab
+      // Active tabs exclude archived apps entirely; only the Archived tab shows them.
+      if (!onArchivedTab && isArchived(x)) return false;
       if (favOnly && !x.bookmarked) return false;                 // ★ Favorites quick filter
-      if (hideArchived && (isArchived(x) || x.status==="Rejected" || x.status==="Withdrawn")) return false; // 🗄 hide archived
+      if (hideArchived && (x.status==="Rejected" || x.status==="Withdrawn")) return false; // 🗄 hide archived
       if (q) { var hay=[x.company,x.role,x.location,x.term,availabilityLabel(x),x.stageNotes,x.referral,x.nextAction,x.status].join(" ").toLowerCase();
         if (hay.indexOf(q)===-1) return false; }
       return true;
@@ -787,7 +794,10 @@
   // ---------- status filter tab bar ----------
   function renderCatTabs() {
     var html = STATUS_TABS.map(function (t) {
-      var n = (t.id==="all") ? data.length : data.filter(function (x){ return matchesStatusTab(x, t.id); }).length;
+      var n;
+      if (t.archived) n = data.filter(function (x){ return isArchived(x); }).length;          // Archived tab
+      else if (t.id==="all") n = data.filter(function (x){ return !isArchived(x); }).length;   // active-only count
+      else n = data.filter(function (x){ return matchesStatusTab(x, t.id) && !isArchived(x); }).length;
       return '<button class="cat-tab'+(STATUS_TAB_CURRENT===t.id?' active':'')+'" data-cat="'+t.id+'">' +
         esc(t.label)+'<span class="cnt">'+n+'</span></button>';
     }).join("");
@@ -1029,7 +1039,9 @@
       // Badges: up to 3 concise left-aligned pills (Pay, Work Type, Urgency).
       // Offer cards show no mid-card banner — the celebration lives on the green
       // primary button, so content flows cleanly into the progress tracker.
-      var archived = isArchived(x);
+      // Archived styling (dimming + badge) applies ONLY while viewing the
+      // Archived tab — active-tab cards are always full opacity.
+      var archived = isArchived(x) && viewingArchivedTab();
       var tags = [];
       if (archived) tags.push('<span class="chiptag arch-badge">📦 Archived</span>');
       if (isOffer) {
@@ -1044,7 +1056,8 @@
         if (cd) tags.push(cd);                                       // deadline trigger wins
         else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
       }
-      var badgeRow = '<div class="tags card-badges-container'+(isOffer?' offer-badge-row':'')+'">'+tags.join("")+'</div>';
+      var rowCls = 'tags card-badges-container' + (isOffer ? ' offer-badge-row' : '') + (isOffer && archived ? ' offer-archived-row' : '');
+      var badgeRow = '<div class="'+rowCls+'">'+tags.join("")+'</div>';
       return '<div class="fcard'+(archived?' archived':'')+(isOffer?' offer-card':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
