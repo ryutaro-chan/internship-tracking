@@ -969,13 +969,18 @@
         (tags.length?'<div class="tags">'+tags.join("")+'</div>':'') +
         progressStepper(x) +
         '<div class="foot">' +
-          '<button class="qbtn primary" data-view-detail="'+x.id+'">View details</button>' +
-          '<button class="qbtn" data-status="'+x.id+'">🔄 Status</button>' +
-          '<span class="spacer"></span>' +
-          '<button class="qbtn" data-mail="'+x.id+'" title="Copy follow-up email">✉️</button>' +
-          '<button class="qbtn" data-archive="'+x.id+'" title="'+(x.archived?'Unarchive':'Archive')+'">'+(x.archived?'📤':'🗄')+'</button>' +
-          '<button class="qbtn" data-edit="'+x.id+'" title="Edit">✎</button>' +
-          '<button class="qbtn" data-del="'+x.id+'" title="Delete">🗑</button>' +
+          '<button class="card-primary" data-view-detail="'+x.id+'">View Details</button>' +
+          '<div class="meatball-wrap">' +
+            '<button class="meatball-btn" data-meatball="'+x.id+'" aria-haspopup="true" aria-expanded="false" title="More actions">⋮</button>' +
+            '<div class="meatball-menu" data-menu="'+x.id+'" hidden>' +
+              '<button class="mb-item" data-status="'+x.id+'"><span class="mb-ic">🔄</span>Update Status</button>' +
+              '<button class="mb-item" data-edit="'+x.id+'"><span class="mb-ic">✏️</span>Edit Application</button>' +
+              '<button class="mb-item" data-mail="'+x.id+'"><span class="mb-ic">✉️</span>Email Recruiter / Contact</button>' +
+              '<button class="mb-item" data-export-card="'+x.id+'"><span class="mb-ic">📥</span>Export Application Card</button>' +
+              '<button class="mb-item" data-archive="'+x.id+'"><span class="mb-ic">📦</span>'+(x.archived?'Unarchive':'Archive')+'</button>' +
+              '<button class="mb-item danger" data-del="'+x.id+'"><span class="mb-ic">🗑️</span>Delete</button>' +
+            '</div>' +
+          '</div>' +
         '</div></div>';
     }).join("");
     $(into).innerHTML = '<div class="feed">'+html+'</div>';
@@ -1021,30 +1026,60 @@
     });
   }
 
+  // Close any open meatball dropdown menu.
+  function closeAllMeatballs() {
+    document.querySelectorAll(".meatball-menu").forEach(function (m){ m.hidden = true; });
+    document.querySelectorAll(".meatball-btn").forEach(function (b){ b.setAttribute("aria-expanded","false"); b.classList.remove("open"); });
+  }
+
   function wireCards() {
     document.querySelectorAll("[data-open]").forEach(function (el) {
       el.addEventListener("click", function (e) {
-        if (e.target.closest("[data-edit],[data-del],[data-mail],[data-status],[data-bm],[data-archive],[data-view-detail]")) return;
+        if (e.target.closest("[data-edit],[data-del],[data-mail],[data-status],[data-bm],[data-archive],[data-view-detail],[data-meatball],[data-export-card],.meatball-menu")) return;
         openDetail(el.getAttribute("data-open"));
       });
     });
-    // explicit "View details" button (feed card primary action)
+    // explicit "View Details" button (feed card primary action)
     document.querySelectorAll("[data-view-detail]").forEach(function (b){
-      b.addEventListener("click", function (e){ e.stopPropagation(); openDetail(b.getAttribute("data-view-detail")); });
+      b.addEventListener("click", function (e){ e.stopPropagation(); closeAllMeatballs(); openDetail(b.getAttribute("data-view-detail")); });
     });
-    document.querySelectorAll("[data-edit]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); openModal(b.getAttribute("data-edit")); }); });
-    document.querySelectorAll("[data-mail]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); copyFollowUp(b.getAttribute("data-mail")); }); });
-    document.querySelectorAll("[data-status]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); openStatusSheet(b.getAttribute("data-status")); }); });
+    // meatball (⋮) toggle — open this card's menu, close any others
+    document.querySelectorAll("[data-meatball]").forEach(function (b){
+      b.addEventListener("click", function (e){
+        e.stopPropagation();
+        var id = b.getAttribute("data-meatball");
+        var menu = document.querySelector('.meatball-menu[data-menu="'+id+'"]');
+        var willOpen = menu && menu.hidden;
+        closeAllMeatballs();
+        if (willOpen) { menu.hidden = false; b.setAttribute("aria-expanded","true"); b.classList.add("open"); }
+      });
+    });
+    // Secondary actions (inside the dropdown). Each closes the menu after acting.
+    document.querySelectorAll("[data-edit]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); closeAllMeatballs(); openModal(b.getAttribute("data-edit")); }); });
+    document.querySelectorAll("[data-mail]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); closeAllMeatballs(); copyFollowUp(b.getAttribute("data-mail")); }); });
+    document.querySelectorAll("[data-status]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); closeAllMeatballs(); openStatusSheet(b.getAttribute("data-status")); }); });
     document.querySelectorAll("[data-bm]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); toggleBookmark(b.getAttribute("data-bm")); }); });
-    document.querySelectorAll("[data-archive]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); toggleArchive(b.getAttribute("data-archive")); }); });
+    document.querySelectorAll("[data-archive]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); closeAllMeatballs(); toggleArchive(b.getAttribute("data-archive")); }); });
+    document.querySelectorAll("[data-export-card]").forEach(function (b){ b.addEventListener("click", function (e){ e.stopPropagation(); closeAllMeatballs(); exportCard(b.getAttribute("data-export-card")); }); });
     document.querySelectorAll("[data-del]").forEach(function (b){
-      b.addEventListener("click", function (e){ e.stopPropagation(); var id=b.getAttribute("data-del"); var item=data.find(function (x){ return x.id===id; });
+      b.addEventListener("click", function (e){ e.stopPropagation(); closeAllMeatballs(); var id=b.getAttribute("data-del"); var item=data.find(function (x){ return x.id===id; });
         if (confirm('Delete "'+(item?item.company+" — "+item.role:"this")+'"?')) { data=data.filter(function (x){ return x.id!==id; }); save(); render(); } });
     });
   }
 
   function toggleBookmark(id) { var x=data.find(function (v){ return v.id===id; }); if (!x) return; x.bookmarked=!x.bookmarked; x._updated=Date.now(); save(); render(); }
   function toggleArchive(id) { var x=data.find(function (v){ return v.id===id; }); if (!x) return; x.archived=!x.archived; x._updated=Date.now(); save(); render(); showToast(x.archived?"Archived":"Unarchived"); }
+  // Export a single application card as a JSON file.
+  function exportCard(id) {
+    var x = data.find(function (v){ return v.id===id; }); if (!x) { showToast("Nothing to export"); return; }
+    var safe = (((x.company||"card")+"-"+(x.role||"")).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")) || "application-card";
+    var blob = new Blob([JSON.stringify(x, null, 2)], { type:"application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "jobtrackr-" + safe + ".json";
+    a.click(); URL.revokeObjectURL(a.href);
+    showToast("📥 Application card exported");
+  }
 
   // ---------- quick status sheet ----------
   function openStatusSheet(id) {
@@ -1805,6 +1840,14 @@
       var fav=$("favToggle"); if (fav) fav.style.display = showFilters ? "" : "none";
       render();
     };
+  });
+
+  // Close any open meatball menu when clicking anywhere outside it, or on Esc.
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest(".meatball-wrap")) closeAllMeatballs();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeAllMeatballs();
   });
 
   // Greeting banner: tap name or avatar to set your display name
