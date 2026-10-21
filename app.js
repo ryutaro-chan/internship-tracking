@@ -182,12 +182,39 @@
     return n;
   }
 
+  // Strict archived test: only true when explicitly archived (flag or status),
+  // so active apps (Offer Received, Interview, etc.) never get dimmed.
+  function isArchived(x) {
+    return x.isArchived === true || x.archived === true || x.status === "Archived";
+  }
+  // Four canonical work-arrangement labels. Any legacy/custom location string
+  // (e.g. "Singapore / Hybrid", "singapore", "WFH") maps cleanly to one of these.
+  function normalizeLocation(loc) {
+    if (!loc) return "";
+    var s = String(loc).toLowerCase();
+    if (/hybrid/.test(s)) return "Hybrid";
+    if (/remote|wfh|work from home|work-from-home/.test(s)) return "Remote";
+    if (/overseas|relocat|abroad|international/.test(s)) return "Overseas / Relocation";
+    if (/on[\s\-]?site|onsite|in[\s\-]?office|in[\s\-]?person/.test(s)) return "On-site";
+    // Bare location names (e.g. "Singapore") with no work-model keyword default to On-site.
+    return "On-site";
+  }
+  // Always render salary with currency + period, e.g. "$2,000/month".
+  function formatSalary(comp) {
+    if (comp == null || comp === "") return "";
+    var raw = String(comp).trim();
+    // Already formatted (has $ and a period or 'k') -> leave as-is.
+    if (/[$€£]/.test(raw) && /(month|mo|year|yr|week|wk|hour|hr|annum|\/)/i.test(raw)) return raw;
+    var v = stipendValue(comp);                 // parse to a monthly number
+    if (v == null || v < 0) return raw;          // unparseable -> show as given
+    return "$" + Math.round(v).toLocaleString() + "/month";
+  }
   function countdownBadge(x) {
     var du = daysUntil(x.deadline); if (du===null) return "";
-    if (du < 0) return '<span class="countdown past">⏳ deadline passed</span>';
-    if (du === 0) return '<span class="countdown urgent">⏳ due today</span>';
-    if (du <= 3) return '<span class="countdown urgent">⏳ '+du+'d left</span>';
-    if (du <= 14) return '<span class="countdown">⏳ '+du+'d left</span>';
+    if (du < 0) return '<span class="countdown past">⏳ Deadline Passed</span>';
+    if (du === 0) return '<span class="countdown urgent">⏳ Due Today</span>';
+    if (du <= 3) return '<span class="countdown urgent">⏳ '+du+'d Left</span>';
+    if (du <= 14) return '<span class="countdown">⏳ '+du+'d Left</span>';
     return '<span class="chiptag">⏳ '+fmtDate(x.deadline)+'</span>';
   }
   // 4-stage progress stepper: Applied -> Test -> Interview -> Offer.
@@ -814,7 +841,7 @@
     function row(label, val) { if (val) rows.push('<div class="d-row"><span class="d-k">'+esc(label)+'</span><span class="d-v">'+val+'</span></div>'); }
     row("Status", pillHTML(x.status));
     row("Industry", esc(industryOf(x)));
-    row("Work Type", esc(x.location||""));
+    row("Work Type", esc(normalizeLocation(x.location)));
     var avail = availabilityLabel(x); row("Availability", esc(avail));
     row("Applied", esc(fmtDate(x.appliedDate)));
     row("Deadline", esc(fmtDate(x.deadline)));
@@ -832,7 +859,8 @@
     var dur = availabilityLabel(x);
     var meta = [];
     if (dur) meta.push('🗓 '+esc(dur));
-    if (x.location) meta.push('📍 '+esc(x.location));
+    var locN = normalizeLocation(x.location);
+    if (locN) meta.push('📍 '+esc(locN));
 
     // Benefits: salary + work type + hours as green-dot bullets
     var benefits = [];
@@ -955,15 +983,17 @@
       // Industry lives in the detail view; archived state is shown via card dimming,
       // not a badge. Deadline countdown takes priority over the follow-up alert.
       var tags = [];
-      if (x.comp) tags.push('<span class="chiptag pay">💰 '+esc(x.comp)+'</span>');
-      if (x.location) tags.push('<span class="chiptag loc">📍 '+esc(x.location)+'</span>');
+      var payStr = formatSalary(x.comp);
+      if (payStr) tags.push('<span class="chiptag pay">💰 '+esc(payStr)+'</span>');
+      var locStr = normalizeLocation(x.location);
+      if (locStr) tags.push('<span class="chiptag loc">📍 '+esc(locStr)+'</span>');
       var cd = countdownBadge(x);
       if (cd) tags.push(cd);                                       // deadline trigger wins
-      else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up due</span>');
-      return '<div class="fcard'+(x.archived?' archived':'')+'" data-open="'+x.id+'">' +
+      else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
+      return '<div class="fcard'+(isArchived(x)?' archived':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div>' +
-            '<div style="margin-top:8px">'+pillHTML(x.status)+'</div></div>' +
+            '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div></div>' +
           '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
         '</div>' +
         (tags.length?'<div class="tags">'+tags.join("")+'</div>':'') +
