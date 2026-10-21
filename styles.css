@@ -731,6 +731,10 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .d-edit { width: 100%; background: var(--surface); border: 1px solid var(--border-2); color: var(--text-2);
   border-radius: 14px; padding: 13px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: .15s; }
 .d-edit:hover { border-color: var(--accent); color: var(--accent-strong); background: rgba(0,119,237,.06); }
+/* Dismiss button — subtle secondary action below Edit */
+.d-done { width: 100%; background: transparent; border: none; color: var(--muted);
+  border-radius: 14px; padding: 11px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; transition: .15s; }
+.d-done:hover { background: var(--surface-2); color: var(--text); }
 
 /* don't let the page behind scroll while detail is open */
 body.detail-open { overflow: hidden; }

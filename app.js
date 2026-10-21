@@ -1041,6 +1041,7 @@
         (x.url ? '<a class="d-apply" href="'+esc(x.url)+'" target="_blank" rel="noopener">Open Application Portal</a>'
                : '<button class="d-apply" id="dApplyEdit">Open / Add Portal Link</button>') +
         '<button class="d-edit" id="dEditBtn">✎ Edit Application</button>' +
+        '<button class="d-done" id="dDoneBtn">Done</button>' +
       '</div>';
 
     $("detailBody").innerHTML = body;
@@ -1057,6 +1058,7 @@
     });
     var eb = $("dEditBtn"); if (eb) eb.onclick = function () { closeDetail(); openModal(id); };
     var ae = $("dApplyEdit"); if (ae) ae.onclick = function () { closeDetail(); openModal(id); };
+    var db = $("dDoneBtn"); if (db) db.onclick = function () { closeDetail(); };
   }
   function openDetail(id) {
     renderDetail(id);
