@@ -1039,3 +1039,52 @@ i.ev-note      { background: var(--accent-strong); }
 /* inactive (Rejected / Withdrawn) — everything muted */
 .stepper.inactive { opacity: .5; }
 
+
+/* ===================================================================
+   MOBILE / iOS HEADER DECLUTTER  (max-width: 767px only)
+   Scoped strictly to phone viewports — desktop (min-width:768px) is
+   untouched. Goals: shorter header so KPI metrics sit above the fold,
+   no dropdown overflow, and a cleaner greeting banner.
+   =================================================================== */
+@media (max-width: 767px) {
+  /* 1) Greeting banner: drop the notification bell, tighten padding,
+        keep avatar + text cleanly left-aligned. */
+  .greet-bell { display: none !important; }
+  .greet-card { padding: 10px 14px; margin-top: 10px; justify-content: flex-start; }
+  .greet-hello { font-size: 12px; }
+  .greet-name { font-size: 16px; }
+  .greet-avatar { width: 38px; height: 38px; font-size: 15px; }
+
+  /* Trim the floating header card's own padding to reclaim vertical space */
+  .appbar { padding: 12px 14px 10px; }
+  body.is-mobile-ios .appbar { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
+
+  /* 2) Status + sort dropdowns: side-by-side 50/50, never clipped/overflowing */
+  .filters { display: flex; flex-wrap: nowrap; gap: 8px; width: 100%; margin-top: 8px; overflow: visible; }
+  .filters .ctl {
+    flex: 1 1 50%; min-width: 0; box-sizing: border-box; width: auto;
+    font-size: 0.8rem; padding: 8px 26px 8px 10px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Search row: a touch tighter */
+  .search-row { margin-top: 10px; }
+  .search input { padding: 9px 0; font-size: 14px; }
+  .filter-btn { width: 44px; }
+
+  /* 3) Sub-bar: view toggle on its own row, quick-action pills become a
+        single horizontally-scrollable strip (no 3-row stack / wrapping). */
+  .subbar { margin-top: 8px; gap: 8px; }
+  .subbar .seg { flex: 1 1 100%; }
+  .subbar .seg button { padding: 6px 10px; font-size: 12px; }
+  .subbar-actions {
+    width: 100%; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; white-space: nowrap; padding-bottom: 4px; gap: 8px;
+  }
+  .subbar-actions::-webkit-scrollbar { display: none; }
+  .subbar-actions .quick-pill { flex: 0 0 auto; padding: 6px 12px; font-size: 12px; }
+
+  /* Pull the first content section up so KPI metrics reach above the fold */
+  .scroll { padding-top: 0; }
+  #tab-dashboard .summary { margin-top: 10px; }
+}
