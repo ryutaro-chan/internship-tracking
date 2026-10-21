@@ -224,6 +224,18 @@
     if (e) return "Until " + monthYear(e);
     return x.term || ""; // backward-compat: show legacy free-text term if present
   }
+  // Exact internship period for the detail hero: use precise DD MMM YYYY dates
+  // when start/end are set; otherwise fall back to the month-range / term text.
+  function periodLabel(x) {
+    var s = x.startDate, e = x.endDate;
+    var full = function (d){ return isFullDate(d) ? fmtDateFull(d) : monthYear(d); };
+    if (s && e) return full(s) + " – " + full(e);
+    if (s) return "From " + full(s);
+    if (e) return "Until " + full(e);
+    return x.term || "";
+  }
+  // True when the date has a day component (YYYY-MM-DD), not just a month (YYYY-MM).
+  function isFullDate(d) { return !!d && String(d).split("-").length === 3; }
   function daysUntil(d) { if (!d) return null; var t=new Date(); t.setHours(0,0,0,0); return Math.round((new Date(d+"T00:00:00")-t)/86400000); }
   function daysSince(d) { if (!d) return null; var t=new Date(); t.setHours(0,0,0,0); return Math.round((t-new Date(d+"T00:00:00"))/86400000); }
   // Parse a stipend/comp string into a comparable monthly number (e.g. "$2,500/month" -> 2500)
@@ -965,7 +977,7 @@
     var fav = $("detailFav");
     if (fav) { fav.textContent = x.bookmarked ? "♥" : "♡"; fav.classList.toggle("on", !!x.bookmarked); }
 
-    var dur = availabilityLabel(x);
+    var dur = periodLabel(x);
     var meta = [];
     if (dur) meta.push('🗓 '+esc(dur));
     var locN = normalizeLocation(x.location);
