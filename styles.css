@@ -278,13 +278,18 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .fcard .bookmark { flex: 0 0 auto; border: none; background: transparent; cursor: pointer; font-size: 18px; color: var(--faint); padding: 2px 4px; }
 .fcard .bookmark.on { color: var(--s-amber); }
 /* ---- Card badges: a single horizontal row of up to 3 concise pills ---- */
-/* min-height keeps cards structurally consistent even when a card has no
-   salary/location badges, so Offer Received cards never collapse. */
-.fcard .tags, .card-badges-container { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0; min-height: 32px; }
+/* Strictly one horizontal row of badges (no wrapping to a 2nd line) so all
+   cards keep a consistent height across the grid. min-height preserves spacing
+   when a card has no salary/location badges. */
+.fcard .tags, .card-badges-container {
+  display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: flex-start;
+  gap: 6px; margin: 8px 0 12px 0; width: 100%; overflow: hidden; min-height: 32px; }
 /* Shared pill sizing so Pay / Work Type / Urgency read as one consistent set */
 .fcard .tags .chiptag,
 .fcard .tags .countdown,
-.fcard .tags .fu-flag { font-size: 0.78rem; font-weight: 500; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
+.fcard .tags .fu-flag {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; font-weight: 500;
+  padding: 4px 8px; border-radius: 10px; white-space: nowrap; flex-shrink: 0; }
 .chiptag { display: inline-flex; align-items: center; gap: 5px;
   background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
 .chiptag.loc { }

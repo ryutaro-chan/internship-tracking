@@ -1013,14 +1013,14 @@
       // Pay: show salary if known; for offers with no salary, a friendly fallback.
       var payStr = formatSalary(x.comp);
       if (payStr) tags.push('<span class="chiptag pay">💰 '+esc(payStr)+'</span>');
-      else if (isOffer) tags.push('<span class="chiptag pay">💰 Offer Details Inside</span>');
+      else if (isOffer) tags.push('<span class="chiptag pay">💰 Offer Details</span>');
       var locStr = normalizeLocation(x.location);
       if (locStr) tags.push('<span class="chiptag loc">📍 '+esc(locStr)+'</span>');
       if (isOffer) {
-        // Dedicated high-priority offer badge: decision deadline if set, else celebratory.
+        // Dedicated high-priority offer badge: short decision countdown if set, else celebratory.
         var od = daysUntil(x.offerDeadline);
-        if (od !== null && od >= 0) tags.push('<span class="chiptag offer-due">⏰ Decision Due'+(od<=7?' · '+od+'d':'')+'</span>');
-        else tags.push('<span class="chiptag offer-win">🎉 Offer Accepted / Reviewing</span>');
+        if (od !== null && od >= 0) tags.push('<span class="chiptag offer-due">⏰ '+od+'d left</span>');
+        else tags.push('<span class="chiptag offer-win">🎉 Offer Accepted</span>');
       } else {
         var cd = countdownBadge(x);
         if (cd) tags.push(cd);                                       // deadline trigger wins
