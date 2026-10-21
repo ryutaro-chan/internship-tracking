@@ -295,9 +295,10 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 /* Stepper + footer travel together and pin to the bottom, so the pipeline
    always sits directly above View Details and footers line up across a row. */
 .fcard-bottom { margin-top: auto; }
-/* ---- Card action footer: one primary button + a meatball (⋮) menu ---- */
+/* ---- Card action footer: one primary button + a meatball (⋮) menu ----
+   Tight, consistent gap so the pipeline stepper sits right above the button. */
 .fcard .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  margin-top: 13px; padding-top: 14px; border-top: 1px solid #f1f5f9; }
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9; }
 /* Primary "View Details" button fills the row */
 .card-primary { flex-grow: 1; background: #0077ed; color: #ffffff; border-radius: 10px; padding: 8px 16px;
   font-family: inherit; font-weight: 600; font-size: 0.85rem; border: none; text-align: center; cursor: pointer;
@@ -945,8 +946,8 @@ i.ev-note      { background: var(--accent-strong); }
    PROGRESS STEPPER + KEYBOARD SHORTCUTS
    =================================================================== */
 
-/* 4-stage progress stepper inside feed cards */
-.stepper { display: flex; align-items: center; margin: 12px 0 2px; padding-top: 12px; border-top: 1px solid var(--border); }
+/* 4-stage progress stepper inside feed cards — sits snug above the footer */
+.stepper { display: flex; align-items: center; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--border); }
 .stepper .step { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 0 0 auto; }
 .stepper .step-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--surface-3);
   border: 2px solid var(--border-2); transition: background .2s, border-color .2s; }
