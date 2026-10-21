@@ -292,11 +292,12 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .countdown.past { background: var(--surface-2); color: var(--faint); }
 .countdown.urgent { background: var(--s-rose-bg); color: var(--s-rose); }
 
-/* ---- Card action footer: one primary button + a meatball (⋮) menu ----
-   margin-top:auto pins it to the bottom so footers line up across a grid row
-   no matter how many badges each card has. */
+/* Stepper + footer travel together and pin to the bottom, so the pipeline
+   always sits directly above View Details and footers line up across a row. */
+.fcard-bottom { margin-top: auto; }
+/* ---- Card action footer: one primary button + a meatball (⋮) menu ---- */
 .fcard .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  margin-top: auto; padding-top: 14px; border-top: 1px solid #f1f5f9; }
+  margin-top: 13px; padding-top: 14px; border-top: 1px solid #f1f5f9; }
 /* Primary "View Details" button fills the row */
 .card-primary { flex-grow: 1; background: #0077ed; color: #ffffff; border-radius: 10px; padding: 8px 16px;
   font-family: inherit; font-weight: 600; font-size: 0.85rem; border: none; text-align: center; cursor: pointer;

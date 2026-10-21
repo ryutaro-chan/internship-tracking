@@ -997,6 +997,7 @@
         '</div>' +
         '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div>' +
         (tags.length?'<div class="tags">'+tags.join("")+'</div>':'') +
+        '<div class="fcard-bottom">' +
         progressStepper(x) +
         '<div class="foot">' +
           '<button class="card-primary" data-view-detail="'+x.id+'">View Details</button>' +
@@ -1011,7 +1012,7 @@
               '<button class="mb-item danger" data-del="'+x.id+'"><span class="mb-ic">🗑️</span>Delete</button>' +
             '</div>' +
           '</div>' +
-        '</div></div>';
+        '</div></div></div>';
     }).join("");
     $(into).innerHTML = '<div class="feed">'+html+'</div>';
   }
