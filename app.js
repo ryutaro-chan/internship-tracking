@@ -860,6 +860,21 @@
     if (!items.length) return '<div class="d-none">Not added yet.</div>';
     return '<ul class="d-bullets">' + items.map(function (b){ return '<li>'+esc(b)+'</li>'; }).join("") + '</ul>';
   }
+  // Classify a note's tone for its bullet colour: green (offer/interview win),
+  // amber (follow-up / action needed), red (actual rejection), else neutral.
+  function noteTone(text) {
+    var s = String(text).toLowerCase();
+    if (REJECTION_RE.test(s)) return "con";                                  // red — real rejection
+    if (/offer|accepted|congrat|🎉|interview|advanced|passed|moving forward|shortlist/.test(s)) return "pro"; // green
+    if (/follow.?up|await|pending|respond|remind|chase|deadline|decide|action/.test(s)) return "warn";        // amber
+    return "";
+  }
+  function toneBulletList(items) {
+    if (!items.length) return '<div class="d-none">Not added yet.</div>';
+    return '<ul class="d-bullets">' + items.map(function (b){
+      var t = noteTone(b); return '<li'+(t?' class="note-'+t+'"':'')+'>'+esc(b)+'</li>';
+    }).join("") + '</ul>';
+  }
   function detailAboutHTML(x) {
     var rows = [];
     function row(label, val) { if (val) rows.push('<div class="d-row"><span class="d-k">'+esc(label)+'</span><span class="d-v">'+val+'</span></div>'); }
@@ -948,7 +963,7 @@
           '<div class="d-title">Benefits</div>' +
           bulletList(benefits) +
         '</div>' +
-        (notesItems.length ? '<div class="d-card"><div class="d-title">Notes</div>'+bulletList(notesItems)+'</div>' : '') +
+        (notesItems.length ? '<div class="d-card"><div class="d-title">Notes</div>'+toneBulletList(notesItems)+'</div>' : '') +
       '</div>' +
       '<div class="d-pane hidden" id="dPaneAbout">' +
         '<div class="d-card">' +
@@ -1124,7 +1139,7 @@
         e.preventDefault(); col.classList.remove("drag-over"); if (!dragId) return;
         var item = data.find(function (x){ return x.id===dragId; });
         var ns = col.getAttribute("data-status");
-        if (item && item.status !== ns) { item.status = ns; item._updated = Date.now(); save(); render(); showToast("Moved to "+ns); }
+        if (item && item.status !== ns) { item.status = ns; reconcileNotesWithStatus(item); item._updated = Date.now(); save(); render(); showToast("Moved to "+ns); }
       });
     });
   }
@@ -1192,6 +1207,30 @@
     showToast("📥 Application card exported");
   }
 
+  // Detect rejection-style sentences in free text (so we can drop stale ones).
+  var REJECTION_RE = /\b(rejected|not (?:moving|proceeding) forward|unsuccessful|declined by|did ?n.?t get|turned down|no longer (?:being )?considered)\b/i;
+  function stripRejectionSentences(text) {
+    if (!text) return "";
+    // Split into sentence-ish chunks and drop any that read as a rejection.
+    var kept = String(text).split(/(?<=[.!?])\s+|\r?\n/)
+      .filter(function (s){ return s.trim() && !REJECTION_RE.test(s); });
+    return kept.join(" ").trim();
+  }
+  // When an application moves OUT of a rejected/withdrawn state, clear any
+  // obsolete rejection text from the notes so the modal never shows a message
+  // that conflicts with the new status (e.g. an "Offer Received" card still
+  // saying "Rejected after final round").
+  function reconcileNotesWithStatus(x) {
+    if (x.status === "Rejected" || x.status === "Withdrawn") return; // rejection text is valid here
+    ["stageNotes", "prosCons"].forEach(function (f) {
+      if (x[f] && REJECTION_RE.test(x[f])) x[f] = stripRejectionSentences(x[f]);
+    });
+    // If an offer just came in and notes are now empty, add a positive prompt.
+    if (x.status === "Offer Received" && !String(x.stageNotes || "").trim()) {
+      x.stageNotes = "🎉 Offer received! Review compensation and respond by deadline.";
+    }
+  }
+
   // ---------- quick status sheet ----------
   function openStatusSheet(id) {
     statusTargetId = id; var x = data.find(function (v){ return v.id===id; }); if (!x) return;
@@ -1199,7 +1238,7 @@
       STATUSES.map(function (s){ return '<button class="btn" data-set="'+esc(s.name)+'" style="width:100%;margin-bottom:8px;display:flex;align-items:center;gap:10px;justify-content:flex-start">'+
         swDot(s.name)+' '+esc(s.name)+(x.status===s.name?' <span style="margin-left:auto;color:var(--accent-strong)">✓</span>':'')+'</button>'; }).join("");
     $("statusBody").querySelectorAll("[data-set]").forEach(function (b){
-      b.onclick = function () { var ns=b.getAttribute("data-set"); x.status=ns; x._updated=Date.now(); save(); closeStatus(); render(); showToast("Status → "+ns); };
+      b.onclick = function () { var ns=b.getAttribute("data-set"); x.status=ns; reconcileNotesWithStatus(x); x._updated=Date.now(); save(); closeStatus(); render(); showToast("Status → "+ns); };
     });
     $("statusBg").classList.add("show");
   }
@@ -1231,6 +1270,7 @@
     FIELDS.forEach(function (f){ var el=$("f_"+f); if (el) obj[f]=el.value.trim(); });
     obj.startDate = $("appStartDate").value;
     obj.endDate = $("appEndDate").value;
+    reconcileNotesWithStatus(obj);   // drop stale rejection notes if status isn't rejected/withdrawn
     obj._updated = Date.now();
     save(); closeModal(); render(); showToast(editingId?"Saved":"Application added");
   }
@@ -1244,7 +1284,7 @@
       { company:"Razer", role:"Data Analytics Intern", industry:"Gaming & Entertainment", location:"On-site", comp:"$1,500/month", status:"Applied", appliedDate:d(-16), deadline:d(4), followup:d(-16), nextAction:"Follow up with recruiter", docs:"Data_Analytics_v3.pdf", jobdesc:"SQL, dashboards, Tableau, reporting and business intelligence." },
       { company:"Endowus", role:"Fintech SWE Intern", industry:"Fintech & Financial Services", location:"Remote", comp:"$2,000/month", status:"Online Assessment / Test", appliedDate:d(-7), deadline:d(1), oaDate:d(2), nextAction:"Complete HackerRank test", referral:"Alex Lim (LinkedIn)" },
       { company:"Apple", role:"iOS Engineering Intern", industry:"Technology & Software", location:"Hybrid", comp:"$3,000/month", status:"Offer Received", appliedDate:d(-40), hours:"Full-time, 12 weeks", offerDeadline:d(9), priority:"High", equity:"Completion bonus", perks:"Relocation support; Device stipend; Mentorship", bookmarked:true, nextAction:"Decide by offer deadline" },
-      { company:"Grab", role:"Backend Intern", industry:"Logistics & Supply Chain", location:"On-site", comp:"$2,200/month", status:"Rejected", appliedDate:d(-30), stageNotes:"Rejected after final round." }
+      { company:"Grab", role:"Backend Intern", industry:"Logistics & Supply Chain", location:"On-site", comp:"$2,200/month", status:"Offer Received", appliedDate:d(-30), offerDeadline:d(10), hours:"Full-time, 12 weeks", priority:"Medium", stageNotes:"🎉 Offer received! Review compensation and respond by deadline." }
     ];
     sample.forEach(function (s){ s.id=uid(); s._updated=Date.now()-Math.floor(Math.random()*1e6); });
     data = data.concat(sample); save(); closeMore(); render(); showToast("Sample data loaded");

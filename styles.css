@@ -701,6 +701,10 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .d-bullets li:last-child { margin-bottom: 0; }
 .d-bullets li::before { content: ""; position: absolute; left: 2px; top: 7px; width: 8px; height: 8px;
   border-radius: 50%; background: var(--s-green); box-shadow: 0 0 0 3px var(--s-green-bg); }
+/* Context-coloured note bullets: green (offer/interview), amber (follow-up), red (rejection) */
+.d-bullets li.note-pro::before  { background: var(--s-green); box-shadow: 0 0 0 3px var(--s-green-bg); }
+.d-bullets li.note-warn::before { background: var(--s-amber); box-shadow: 0 0 0 3px var(--s-amber-bg); }
+.d-bullets li.note-con::before  { background: var(--s-rose);  box-shadow: 0 0 0 3px var(--s-rose-bg); }
 .d-none { color: var(--faint); font-size: 13px; }
 
 .d-rows { display: flex; flex-direction: column; }
