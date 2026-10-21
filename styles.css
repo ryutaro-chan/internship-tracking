@@ -284,6 +284,14 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .fcard .tags, .card-badges-container {
   display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: flex-start;
   gap: 6px; margin: 8px 0 12px 0; width: 100%; overflow: hidden; min-height: 32px; }
+/* Offer Received: centered celebratory banner (replaces left-aligned pills) */
+.offer-banner-wrap { display: flex; align-items: center; justify-content: center; width: 100%;
+  min-height: 38px; margin: 10px 0 14px 0; overflow: visible; }
+.offer-banner { width: 100%; text-align: center;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #15803d;
+  border: 1px solid #86efac; border-radius: 12px; padding: 8px 12px;
+  font-weight: 700; font-size: 0.82rem; letter-spacing: 0.2px;
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.12); }
 /* Shared pill sizing so Pay / Work Type / Urgency read as one consistent set */
 .fcard .tags .chiptag,
 .fcard .tags .countdown,

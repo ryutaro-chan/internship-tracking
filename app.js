@@ -1007,13 +1007,16 @@
   function renderFeed(rows, into) {
     var html = rows.map(function (x) {
       var isOffer = (x.status === "Offer Received");
-      var tags = [];
+      var badgeRow;
       if (isOffer) {
-        // Offer Received: exactly ONE standardized badge. All breakdown (salary,
-        // location, equity/perks, decision deadline) lives in the View Details modal.
-        tags.push('<span class="chiptag pay offer-win">💰 Offer Details Inside</span>');
+        // Offer Received: a centered celebratory banner (no left-aligned pills).
+        // All breakdown (salary, location, decision deadline, equity/perks) lives
+        // inside the View Details modal.
+        badgeRow = '<div class="offer-banner-wrap card-badges-container">' +
+          '<div class="offer-banner">🎉 Offer Received! View Details Inside</div></div>';
       } else {
-        // Other stages: up to 3 concise badges — Pay, Work Type, and ONE urgency alert.
+        // Other stages: up to 3 concise left-aligned badges — Pay, Work Type, Urgency.
+        var tags = [];
         var payStr = formatSalary(x.comp);
         if (payStr) tags.push('<span class="chiptag pay">💰 '+esc(payStr)+'</span>');
         var locStr = normalizeLocation(x.location);
@@ -1021,6 +1024,7 @@
         var cd = countdownBadge(x);
         if (cd) tags.push(cd);                                       // deadline trigger wins
         else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
+        badgeRow = '<div class="tags card-badges-container">'+tags.join("")+'</div>';
       }
       return '<div class="fcard'+(isArchived(x)?' archived':'')+(isOffer?' offer-card':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
@@ -1028,7 +1032,7 @@
           '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
         '</div>' +
         '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div>' +
-        '<div class="tags card-badges-container">'+tags.join("")+'</div>' +
+        badgeRow +
         '<div class="fcard-bottom">' +
         progressStepper(x) +
         '<div class="foot">' +
