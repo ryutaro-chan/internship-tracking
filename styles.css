@@ -1081,19 +1081,29 @@ i.ev-note      { background: var(--accent-strong); }
   .search input { padding: 9px 0; font-size: 14px; }
   .filter-btn { width: 44px; }
 
-  /* 3) Sub-bar: view toggle on its own row, quick-action pills become a
-        single horizontally-scrollable strip (no 3-row stack / wrapping). */
-  .subbar { margin-top: 8px; gap: 8px; }
-  .subbar .seg { flex: 1 1 100%; }
-  .subbar .seg button { padding: 6px 10px; font-size: 12px; }
-  .subbar-actions {
-    width: 100%; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; white-space: nowrap; padding-bottom: 4px; gap: 8px;
+  /* 3) Sub-bar: view switcher (Feed/Board/Calendar) + ★ Favorites all live in
+        ONE horizontal scrolling row. Export CSV + Hide Archived move into the
+        '⋯' More menu on mobile to free up screen space. */
+  .subbar {
+    margin-top: 8px; gap: 8px; flex-wrap: nowrap;
+    overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    white-space: nowrap; padding: 4px 0; align-items: center;
   }
-  .subbar-actions::-webkit-scrollbar { display: none; }
+  .subbar::-webkit-scrollbar { display: none; }
+  .subbar .seg { flex: 0 0 auto; }
+  .subbar .seg button { padding: 6px 10px; font-size: 12px; }
+  .subbar-actions { width: auto; flex: 0 0 auto; flex-wrap: nowrap; overflow: visible; gap: 8px; padding-bottom: 0; }
   .subbar-actions .quick-pill { flex: 0 0 auto; padding: 6px 12px; font-size: 12px; }
+  /* secondary actions live in the ⋯ More menu on mobile */
+  #archiveToggle, #exportCsvQuick { display: none; }
 
   /* Pull the first content section up so KPI metrics reach above the fold */
   .scroll { padding-top: 0; }
   #tab-dashboard .summary { margin-top: 10px; }
+
+  /* 4) Reclaim vertical space: hide the tagline, tighten the logo header. */
+  .appbar .tagline { display: none; }
+  .appbar .brand { gap: 0; }
+  .logo-emblem { padding: 0; }
+  .appbar .top { margin-bottom: 2px; }
 }

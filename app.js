@@ -2007,11 +2007,15 @@
     $("favToggle").classList.toggle("active", favOnly);
     render();
   };
-  $("archiveToggle").onclick = function () {
+  function toggleHideArchived() {
     hideArchived = !hideArchived;
-    $("archiveToggle").classList.toggle("active", hideArchived);
+    var qp = $("archiveToggle"); if (qp) qp.classList.toggle("active", hideArchived);
+    var mb = $("archiveToggleMore");
+    if (mb) { mb.classList.toggle("active", hideArchived); mb.textContent = (hideArchived ? "🗄 Show Archived" : "🗄 Hide Archived"); }
     render();
-  };
+  }
+  $("archiveToggle").onclick = toggleHideArchived;
+  var archMore = $("archiveToggleMore"); if (archMore) archMore.onclick = toggleHideArchived;
   $("importBtn").onclick = function (){ $("importFile").click(); };
   $("importFile").onchange = function (e){ if (e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
   $("sampleBtn").onclick = loadSample;
