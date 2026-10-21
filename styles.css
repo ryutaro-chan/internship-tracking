@@ -1059,27 +1059,33 @@ i.ev-note      { background: var(--accent-strong); }
   /* 1) Greeting banner: drop the notification bell, tighten padding,
         keep avatar + text cleanly left-aligned. */
   .greet-bell { display: none !important; }
-  .greet-card { padding: 10px 14px; margin-top: 10px; justify-content: flex-start; }
-  .greet-hello { font-size: 12px; }
-  .greet-name { font-size: 16px; }
-  .greet-avatar { width: 38px; height: 38px; font-size: 15px; }
+  /* Flatten the bulky light-blue greeting card into a compact, borderless
+     1-line bar (avatar + name) sitting just under the logo. */
+  .greet-card { background: transparent; border: none; box-shadow: none;
+    padding: 0; margin-top: 6px; justify-content: flex-start; }
+  .greet-hello { display: none; }                 /* drop the 'Good Morning,' line */
+  .greet-name { font-size: 15px; }
+  .greet-main { gap: 8px; }
+  .greet-avatar { width: 30px; height: 30px; font-size: 13px; }
 
   /* Trim the floating header card's own padding to reclaim vertical space */
   .appbar { padding: 12px 14px 10px; }
   body.is-mobile-ios .appbar { padding-top: calc(12px + env(safe-area-inset-top, 0px)); }
 
-  /* 2) Status + sort dropdowns: side-by-side 50/50, never clipped/overflowing */
+  /* 2) Status + sort dropdowns: side-by-side 50/50, light-gray text, tight padding */
   .filters { display: flex; flex-wrap: nowrap; gap: 8px; width: 100%; margin-top: 8px; overflow: visible; }
   .filters .ctl {
     flex: 1 1 50%; min-width: 0; box-sizing: border-box; width: auto;
-    font-size: 0.8rem; padding: 8px 26px 8px 10px;
+    font-size: 0.8rem; padding: 7px 26px 7px 10px; color: #94a3b8;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  .filters .ctl option { color: #64748b; }
 
-  /* Search row: a touch tighter */
+  /* Search row: full-width input, NO blue gear button */
   .search-row { margin-top: 10px; }
+  .search { width: 100%; }
   .search input { padding: 9px 0; font-size: 14px; }
-  .filter-btn { width: 44px; }
+  .filter-btn { display: none; }                  /* nuke the blue settings gear */
 
   /* 3) Sub-bar: view switcher (Feed/Board/Calendar) + ★ Favorites all live in
         ONE horizontal scrolling row. Export CSV + Hide Archived move into the
