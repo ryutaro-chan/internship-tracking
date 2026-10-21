@@ -982,21 +982,31 @@
       // At-a-glance: show at most 3 badges — Pay, Work Type, and ONE urgency alert.
       // Industry lives in the detail view; archived state is shown via card dimming,
       // not a badge. Deadline countdown takes priority over the follow-up alert.
+      var isOffer = (x.status === "Offer Received");
       var tags = [];
+      // Pay: show salary if known; for offers with no salary, a friendly fallback.
       var payStr = formatSalary(x.comp);
       if (payStr) tags.push('<span class="chiptag pay">💰 '+esc(payStr)+'</span>');
+      else if (isOffer) tags.push('<span class="chiptag pay">💰 Offer Details Inside</span>');
       var locStr = normalizeLocation(x.location);
       if (locStr) tags.push('<span class="chiptag loc">📍 '+esc(locStr)+'</span>');
-      var cd = countdownBadge(x);
-      if (cd) tags.push(cd);                                       // deadline trigger wins
-      else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
+      if (isOffer) {
+        // Dedicated high-priority offer badge: decision deadline if set, else celebratory.
+        var od = daysUntil(x.offerDeadline);
+        if (od !== null && od >= 0) tags.push('<span class="chiptag offer-due">⏰ Decision Due'+(od<=7?' · '+od+'d':'')+'</span>');
+        else tags.push('<span class="chiptag offer-win">🎉 Offer Accepted / Reviewing</span>');
+      } else {
+        var cd = countdownBadge(x);
+        if (cd) tags.push(cd);                                       // deadline trigger wins
+        else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
+      }
       return '<div class="fcard'+(isArchived(x)?' archived':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
           '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
         '</div>' +
         '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div>' +
-        (tags.length?'<div class="tags">'+tags.join("")+'</div>':'') +
+        '<div class="tags card-badges-container">'+tags.join("")+'</div>' +
         '<div class="fcard-bottom">' +
         progressStepper(x) +
         '<div class="foot">' +
