@@ -1129,10 +1129,13 @@
         // Single centered status badge; all salary/perk detail lives in the modal.
         tags.push('<span class="offer-badge">🎉 Offer Received!</span>');
       } else {
+        // Fixed 3-badge order for active cards: 1) Pay  2) Work Arrangement  3) Urgency.
+        // Badge 1 — Salary (always shown; standardized fallback when unstated).
         var payStr = formatSalary(x.comp);
-        if (payStr) tags.push('<span class="chiptag pay">💰 '+esc(payStr)+'</span>');
-        var locStr = normalizeLocation(x.location);
-        if (locStr) tags.push('<span class="chiptag loc">📍 '+esc(locStr)+'</span>');
+        tags.push('<span class="chiptag pay">💰 '+(payStr ? esc(payStr) : 'Unstated')+'</span>');
+        // Badge 2 — Work Arrangement (always one of On-site / Hybrid / Remote / Relocation).
+        tags.push('<span class="chiptag loc">📍 '+esc(normalizeLocation(x.location) || "On-site")+'</span>');
+        // Badge 3 — Urgency alert (only when a trigger applies; otherwise hidden).
         var cd = countdownBadge(x);
         if (cd) tags.push(cd);                                       // deadline trigger wins
         else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
