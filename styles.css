@@ -383,15 +383,29 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .pill.slate  { background: var(--s-slate-bg);  color: var(--s-slate); }
 
 /* ============ Board (Kanban) ============ */
-.board { display: flex; gap: 12px; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: thin; }
-.col { flex: 0 0 300px; background: rgba(255,255,255,.5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+.board { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: thin; }
+.col { flex: 0 0 auto; min-width: 280px; max-width: 320px; background: rgba(255,255,255,.5);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 10px; display: flex; flex-direction: column; min-height: 140px; }
 .col.drag-over { border-color: var(--accent); background: rgba(0,119,237,.08); }
-/* Board reuses the feed card (.fcard) — make it fit the column cleanly */
-.col .fcard { width: 100%; box-sizing: border-box; min-height: 100%; margin-bottom: 10px; cursor: grab; }
+/* Board reuses the feed card (.fcard) but with compact proportions and NO
+   vertical stretching — cards take only their natural content height. */
+.col .fcard { width: 100%; box-sizing: border-box; min-height: 0;
+  padding: 0.85rem 1rem; border-radius: 12px; margin-bottom: 0.75rem; cursor: grab; }
 .col .fcard:last-child { margin-bottom: 0; }
 .col .fcard:active { cursor: grabbing; }
 .col .fcard.dragging { opacity: .5; }
+/* Don't let the footer get pushed to the bottom (feed uses margin-top:auto) */
+.col .fcard .fcard-bottom { margin-top: 0.65rem; }
+/* Badges wrap within the narrow column; smaller pills so they never clip */
+.col .fcard .card-badges-container { flex-wrap: wrap; gap: 4px; margin: 6px 0; min-height: 0; overflow: visible; }
+.col .fcard .card-badges-container .chiptag,
+.col .fcard .card-badges-container .countdown,
+.col .fcard .card-badges-container .fu-flag { font-size: 0.72rem; padding: 3px 6px; }
+/* Compact job title (no 3–4 line wrapping) */
+.col .fcard .title { font-size: 0.9rem; line-height: 1.25; }
+/* Centered, compact offer banner inside board cards */
+.col .fcard .offer-badge { padding: 6px 10px; font-size: 0.78rem; }
 .col-head { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); font-weight: 700; padding: 2px 4px 10px; }
 .col-head .count { margin-left: auto; background: var(--surface-3); border-radius: 20px; padding: 1px 8px; font-size: 11px; color: var(--muted); }
 .col-head .sw { width: 9px; height: 9px; border-radius: 3px; }
@@ -882,9 +896,9 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
      pinned footers line up. */
   body.is-desktop .feed { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; align-items: stretch; }
 
-  /* Board columns can breathe */
-  body.is-desktop .board { gap: 18px; }
-  body.is-desktop .col { flex: 1 1 0; min-width: 220px; }
+  /* Board columns: compact fixed-width lanes with horizontal scroll */
+  body.is-desktop .board { gap: 1rem; }
+  body.is-desktop .col { flex: 0 0 auto; min-width: 280px; max-width: 320px; }
 
   /* Analytics wider bars */
   body.is-desktop .analytics .nm { width: 180px; }
