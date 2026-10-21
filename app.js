@@ -862,8 +862,8 @@
     if (x.startDate || x.endDate) row("Start Date", esc(monthYear(x.startDate) || availabilityLabel(x)));
     if (x.offerDeadline) row("Decide By", esc(fmtDate(x.offerDeadline)));
     if (x.priority) row("Priority", esc(x.priority));
-    // Perks / highlights: dedicated field, else the pros/cons notes.
-    var perks = toBullets(x.perks || x.prosCons);
+    // Perks / highlights: only the dedicated perks field (no pros/cons notes).
+    var perks = toBullets(x.perks);
     var perksHTML = perks.length
       ? '<div class="d-offer-perks">'+perks.map(function (p){ return '<span class="d-perk">✨ '+esc(p)+'</span>'; }).join("")+'</div>'
       : '';
@@ -893,7 +893,7 @@
     if (x.priority) benefits.push(esc(x.priority) + " priority role");
 
     var reqItems = toBullets(x.jobdesc);
-    var notesItems = toBullets(x.stageNotes).concat(toBullets(x.prosCons));
+    var notesItems = toBullets(x.stageNotes);
 
     var body =
       '<div class="d-hero">' +
@@ -908,7 +908,7 @@
       '</div>' +
       '<div class="d-pane" id="dPaneDesc">' +
         (x.status === "Offer Received"
-          ? '<div class="d-card d-offer-card"><div class="d-title">🎉 Offer Details &amp; Perks</div>'+offerDetailsHTML(x)+'</div>'
+          ? '<div class="d-card d-offer-card"><div class="d-title">🎉 Offer Details</div>'+offerDetailsHTML(x)+'</div>'
           : '') +
         '<div class="d-card">' +
           '<div class="d-title">Requirements</div>' +
@@ -1199,7 +1199,7 @@
       { company:"Stripe", role:"Software Engineering Intern", industry:"Fintech & Financial Services", location:"Hybrid", comp:"$2,400/month", status:"Interview", appliedDate:d(-21), deadline:d(-10), interviewDates:d(3), stageNotes:"Passed OA; tech round scheduled.", nextAction:"Prep system design", url:"https://stripe.com/jobs", jobdesc:"Build backend APIs in Python and Go, work with cloud, databases and distributed systems.", startDate:"2027-05-10", endDate:"2027-08-06" },
       { company:"Razer", role:"Data Analytics Intern", industry:"Gaming & Entertainment", location:"On-site", comp:"$1,500/month", status:"Applied", appliedDate:d(-16), deadline:d(4), followup:d(-16), nextAction:"Follow up with recruiter", docs:"Data_Analytics_v3.pdf", jobdesc:"SQL, dashboards, Tableau, reporting and business intelligence." },
       { company:"Endowus", role:"Fintech SWE Intern", industry:"Fintech & Financial Services", location:"Remote", comp:"$2,000/month", status:"Online Assessment / Test", appliedDate:d(-7), deadline:d(1), oaDate:d(2), nextAction:"Complete HackerRank test", referral:"Alex Lim (LinkedIn)" },
-      { company:"Apple", role:"iOS Engineering Intern", industry:"Technology & Software", location:"Hybrid", comp:"$3,000/month", status:"Offer Received", appliedDate:d(-40), hours:"Full-time, 12 weeks", offerDeadline:d(9), priority:"High", prosCons:"Pros: brand, pay. Cons: relocation.", bookmarked:true, nextAction:"Decide by offer deadline" },
+      { company:"Apple", role:"iOS Engineering Intern", industry:"Technology & Software", location:"Hybrid", comp:"$3,000/month", status:"Offer Received", appliedDate:d(-40), hours:"Full-time, 12 weeks", offerDeadline:d(9), priority:"High", equity:"Completion bonus", perks:"Relocation support; Device stipend; Mentorship", bookmarked:true, nextAction:"Decide by offer deadline" },
       { company:"Grab", role:"Backend Intern", industry:"Logistics & Supply Chain", location:"On-site", comp:"$2,200/month", status:"Rejected", appliedDate:d(-30), stageNotes:"Rejected after final round." }
     ];
     sample.forEach(function (s){ s.id=uid(); s._updated=Date.now()-Math.floor(Math.random()*1e6); });
