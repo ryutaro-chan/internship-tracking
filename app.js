@@ -857,10 +857,11 @@
     var pay = formatSalary(x.comp);
     row("Salary", pay);
     row("Monthly Compensation", pay);
+    row("Work Location", esc(normalizeLocation(x.location)));
     if (x.equity) row("Equity / Bonus", esc(x.equity));         // optional dedicated field
     row("Commitment / Hours", esc(x.hours));
     if (x.startDate || x.endDate) row("Start Date", esc(monthYear(x.startDate) || availabilityLabel(x)));
-    if (x.offerDeadline) row("Decide By", esc(fmtDate(x.offerDeadline)));
+    if (x.offerDeadline) row("Decision Deadline", esc(fmtDate(x.offerDeadline)));
     if (x.priority) row("Priority", esc(x.priority));
     // Perks / highlights: only the dedicated perks field (no pros/cons notes).
     var perks = toBullets(x.perks);
@@ -1005,23 +1006,18 @@
 
   function renderFeed(rows, into) {
     var html = rows.map(function (x) {
-      // At-a-glance: show at most 3 badges — Pay, Work Type, and ONE urgency alert.
-      // Industry lives in the detail view; archived state is shown via card dimming,
-      // not a badge. Deadline countdown takes priority over the follow-up alert.
       var isOffer = (x.status === "Offer Received");
       var tags = [];
-      // Pay: show salary if known; for offers with no salary, a friendly fallback.
-      var payStr = formatSalary(x.comp);
-      if (payStr) tags.push('<span class="chiptag pay">💰 '+esc(payStr)+'</span>');
-      else if (isOffer) tags.push('<span class="chiptag pay">💰 Offer Details</span>');
-      var locStr = normalizeLocation(x.location);
-      if (locStr) tags.push('<span class="chiptag loc">📍 '+esc(locStr)+'</span>');
       if (isOffer) {
-        // Dedicated high-priority offer badge: short decision countdown if set, else celebratory.
-        var od = daysUntil(x.offerDeadline);
-        if (od !== null && od >= 0) tags.push('<span class="chiptag offer-due">⏰ '+od+'d left</span>');
-        else tags.push('<span class="chiptag offer-win">🎉 Offer Accepted</span>');
+        // Offer Received: exactly ONE standardized badge. All breakdown (salary,
+        // location, equity/perks, decision deadline) lives in the View Details modal.
+        tags.push('<span class="chiptag pay offer-win">💰 Offer Details Inside</span>');
       } else {
+        // Other stages: up to 3 concise badges — Pay, Work Type, and ONE urgency alert.
+        var payStr = formatSalary(x.comp);
+        if (payStr) tags.push('<span class="chiptag pay">💰 '+esc(payStr)+'</span>');
+        var locStr = normalizeLocation(x.location);
+        if (locStr) tags.push('<span class="chiptag loc">📍 '+esc(locStr)+'</span>');
         var cd = countdownBadge(x);
         if (cd) tags.push(cd);                                       // deadline trigger wins
         else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
