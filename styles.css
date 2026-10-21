@@ -285,8 +285,11 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: flex-start;
   gap: 6px; margin: 8px 0 12px 0; width: 100%; overflow: hidden; min-height: 32px; }
 /* Offer Received: centered celebratory banner (replaces left-aligned pills) */
+/* Banner grows to fill the open middle area and centres itself vertically,
+   so it sits in the middle of the card body rather than hugging the header.
+   Symmetric margins keep the space above/below the banner balanced. */
 .offer-banner-wrap { display: flex; align-items: center; justify-content: center; width: 100%;
-  min-height: 38px; margin: 10px 0 14px 0; overflow: visible; }
+  flex: 1 1 auto; min-height: 38px; margin: 12px 0; overflow: visible; }
 .offer-banner { flex: 1 1 100%; width: 100%; text-align: center;
   display: flex; align-items: center; justify-content: center; gap: 4px;
   background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #15803d;
@@ -323,6 +326,9 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 /* Stepper + footer travel together and pin to the bottom, so the pipeline
    always sits directly above View Details and footers line up across a row. */
 .fcard-bottom { margin-top: auto; }
+/* Offer cards: the banner-wrap (flex:1) already fills the middle space and
+   centres the banner, so the bottom section should not also claim the slack. */
+.offer-card .fcard-bottom { margin-top: 0; }
 /* ---- Card action footer: one primary button + a meatball (⋮) menu ----
    Tight, consistent gap so the pipeline stepper sits right above the button. */
 .fcard .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px;
