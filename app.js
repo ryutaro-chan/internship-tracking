@@ -1012,7 +1012,8 @@
       // primary button, so content flows cleanly into the progress tracker.
       var tags = [];
       if (isOffer) {
-        tags.push('<span class="chiptag pay offer-win">💰 Offer Details Inside</span>');
+        // Single centered status badge; all salary/perk detail lives in the modal.
+        tags.push('<span class="offer-badge">🎉 Offer Received!</span>');
       } else {
         var payStr = formatSalary(x.comp);
         if (payStr) tags.push('<span class="chiptag pay">💰 '+esc(payStr)+'</span>');
@@ -1022,7 +1023,7 @@
         if (cd) tags.push(cd);                                       // deadline trigger wins
         else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
       }
-      var badgeRow = '<div class="tags card-badges-container">'+tags.join("")+'</div>';
+      var badgeRow = '<div class="tags card-badges-container'+(isOffer?' offer-badge-row':'')+'">'+tags.join("")+'</div>';
       return '<div class="fcard'+(isArchived(x)?' archived':'')+(isOffer?' offer-card':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
@@ -1036,7 +1037,7 @@
         progressStepper(x) +
         '<div class="foot">' +
           (isOffer
-            ? '<button class="card-primary card-primary-offer" data-view-detail="'+x.id+'">🎉 Offer Received! View Offer Details</button>'
+            ? '<button class="card-primary card-primary-offer" data-view-detail="'+x.id+'">View Offer Details</button>'
             : '<button class="card-primary" data-view-detail="'+x.id+'">View Details</button>') +
           '<div class="meatball-wrap">' +
             '<button class="meatball-btn" data-meatball="'+x.id+'" aria-haspopup="true" aria-expanded="false" title="More actions">⋮</button>' +
