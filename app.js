@@ -1031,7 +1031,9 @@
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
           '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
         '</div>' +
-        '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div>' +
+        // Offer Received: the celebratory banner conveys status, so skip the
+        // duplicate top-left pill. All other statuses keep their pill.
+        (isOffer ? '' : '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div>') +
         badgeRow +
         '<div class="fcard-bottom">' +
         progressStepper(x) +
