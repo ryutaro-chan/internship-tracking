@@ -260,13 +260,11 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .fcard { position: relative; border-radius: var(--radius-lg); padding: 15px 15px 13px;
   background: var(--glass-bg); -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border); box-shadow: var(--shadow-sm);
-  transition: transform .16s, box-shadow .2s, border-color .2s; cursor: pointer; }
+  transition: transform .16s, box-shadow .2s, border-color .2s; cursor: pointer;
+  display: flex; flex-direction: column; }   /* column layout lets the footer pin to the bottom */
 .fcard:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: rgba(56,189,248,.35); }
-/* Manually archived cards: still fully legible (no whole-card fade — that made
-   the grid look inconsistent). No "Archived" badge — archived cards are simply
-   dimmed (and only shown at all when "Hide Archived" is off). */
-.fcard.archived { opacity: .6; }
-.fcard.archived:hover { opacity: 1; }
+/* Archived cards render identically to the rest — uniform, standardised grid.
+   Archived visibility is controlled by the "Hide Archived" toggle, not dimming. */
 .fcard .head { display: flex; align-items: flex-start; gap: 12px; }
 .avatar { position: relative; flex: 0 0 auto; width: 48px; height: 48px; border-radius: 14px; overflow: hidden;
   display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #fff; box-shadow: var(--shadow-sm); }
@@ -294,9 +292,11 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .countdown.past { background: var(--surface-2); color: var(--faint); }
 .countdown.urgent { background: var(--s-rose-bg); color: var(--s-rose); }
 
-/* ---- Card action footer: one primary button + a meatball (⋮) menu ---- */
+/* ---- Card action footer: one primary button + a meatball (⋮) menu ----
+   margin-top:auto pins it to the bottom so footers line up across a grid row
+   no matter how many badges each card has. */
 .fcard .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  margin-top: 1rem; border-top: 1px solid #f1f5f9; padding-top: 12px; }
+  margin-top: auto; padding-top: 14px; border-top: 1px solid #f1f5f9; }
 /* Primary "View Details" button fills the row */
 .card-primary { flex-grow: 1; background: #0077ed; color: #ffffff; border-radius: 10px; padding: 8px 16px;
   font-family: inherit; font-weight: 600; font-size: 0.85rem; border: none; text-align: center; cursor: pointer;
@@ -762,8 +762,10 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
   body.is-desktop #tab-dashboard > .section-label,
   body.is-desktop #tab-applications > .section-label { display: flex; align-items: center; }
 
-  /* Feed becomes a responsive multi-column card grid on desktop */
-  body.is-desktop .feed { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; }
+  /* Feed becomes a responsive multi-column card grid on desktop.
+     align-items:stretch makes every card in a row the same height so their
+     pinned footers line up. */
+  body.is-desktop .feed { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; align-items: stretch; }
 
   /* Board columns can breathe */
   body.is-desktop .board { gap: 18px; }
