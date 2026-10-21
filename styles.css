@@ -287,7 +287,8 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 /* Offer Received: centered celebratory banner (replaces left-aligned pills) */
 .offer-banner-wrap { display: flex; align-items: center; justify-content: center; width: 100%;
   min-height: 38px; margin: 10px 0 14px 0; overflow: visible; }
-.offer-banner { width: 100%; text-align: center;
+.offer-banner { flex: 1 1 100%; width: 100%; text-align: center;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
   background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #15803d;
   border: 1px solid #86efac; border-radius: 12px; padding: 8px 12px;
   font-weight: 700; font-size: 0.82rem; letter-spacing: 0.2px;
