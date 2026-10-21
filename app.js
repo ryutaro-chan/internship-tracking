@@ -125,7 +125,29 @@
     } catch (e) {}
   })();
 
+  // Detect rejection-style sentences in free text (so we can drop stale ones).
+  // Defined before load() runs so the on-load migration can use it.
+  var REJECTION_RE = /\b(rejected|not (?:moving|proceeding) forward|unsuccessful|declined by|did ?n.?t get|turned down|no longer (?:being )?considered)\b/i;
+  function stripRejectionSentences(text) {
+    if (!text) return "";
+    var kept = String(text).split(/(?<=[.!?])\s+|\r?\n/)
+      .filter(function (s){ return s.trim() && !REJECTION_RE.test(s); });
+    return kept.join(" ").trim();
+  }
+  // When an application is NOT in a rejected/withdrawn state, clear any obsolete
+  // rejection text from its notes so the modal never shows a conflicting message.
+  function reconcileNotesWithStatus(x) {
+    if (x.status === "Rejected" || x.status === "Withdrawn") return; // rejection text is valid here
+    ["stageNotes", "prosCons"].forEach(function (f) {
+      if (x[f] && REJECTION_RE.test(x[f])) x[f] = stripRejectionSentences(x[f]);
+    });
+    if (x.status === "Offer Received" && !String(x.stageNotes || "").trim()) {
+      x.stageNotes = "🎉 Offer received! Review compensation and respond by deadline.";
+    }
+  }
+
   var data = load();
+  try { if (data.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} // persist load-time migrations
   var editingId = null;
   var view = "feed";
   var tab = "dashboard";
@@ -145,6 +167,16 @@
     arr.forEach(function (x) {
       if (x.status && LEGACY_MAP[x.status]) x.status = LEGACY_MAP[x.status];
       if (!statusValid(x.status)) x.status = "Applied";
+      // One-time migration of the old demo seed: Grab "Backend Intern" shipped as
+      // Rejected with "Rejected after final round." — align it to the Offer state.
+      if (x.company === "Grab" && /backend intern/i.test(x.role||"") &&
+          x.status === "Rejected" && /rejected after final round/i.test(x.stageNotes||"")) {
+        x.status = "Offer Received";
+        x.stageNotes = "🎉 Offer received! Review compensation and respond by deadline.";
+      }
+      // General cleanup: if an app is NOT rejected/withdrawn but its notes still
+      // contain rejection text, strip the stale sentences so nothing conflicts.
+      reconcileNotesWithStatus(x);
     });
     return arr;
   }
@@ -1205,30 +1237,6 @@
     a.download = "jobtrackr-" + safe + ".json";
     a.click(); URL.revokeObjectURL(a.href);
     showToast("📥 Application card exported");
-  }
-
-  // Detect rejection-style sentences in free text (so we can drop stale ones).
-  var REJECTION_RE = /\b(rejected|not (?:moving|proceeding) forward|unsuccessful|declined by|did ?n.?t get|turned down|no longer (?:being )?considered)\b/i;
-  function stripRejectionSentences(text) {
-    if (!text) return "";
-    // Split into sentence-ish chunks and drop any that read as a rejection.
-    var kept = String(text).split(/(?<=[.!?])\s+|\r?\n/)
-      .filter(function (s){ return s.trim() && !REJECTION_RE.test(s); });
-    return kept.join(" ").trim();
-  }
-  // When an application moves OUT of a rejected/withdrawn state, clear any
-  // obsolete rejection text from the notes so the modal never shows a message
-  // that conflicts with the new status (e.g. an "Offer Received" card still
-  // saying "Rejected after final round").
-  function reconcileNotesWithStatus(x) {
-    if (x.status === "Rejected" || x.status === "Withdrawn") return; // rejection text is valid here
-    ["stageNotes", "prosCons"].forEach(function (f) {
-      if (x[f] && REJECTION_RE.test(x[f])) x[f] = stripRejectionSentences(x[f]);
-    });
-    // If an offer just came in and notes are now empty, add a positive prompt.
-    if (x.status === "Offer Received" && !String(x.stageNotes || "").trim()) {
-      x.stageNotes = "🎉 Offer received! Review compensation and respond by deadline.";
-    }
   }
 
   // ---------- quick status sheet ----------
