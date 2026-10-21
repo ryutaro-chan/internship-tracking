@@ -326,8 +326,8 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   color: var(--s-amber); background: var(--s-amber-bg); border: 1px solid rgba(217,119,6,.3); border-radius: 20px; padding: 2px 9px; }
 
 /* ============ Status pills (soft glowing) ============ */
-/* Flush-left status pill in the card header (no centering / stray offsets) */
-.status-pill-wrap { display: flex; justify-content: flex-start; margin-top: 4px; }
+/* Status pill is its own row under the header, flush with the card's left edge */
+.status-pill-wrap { display: flex; justify-content: flex-start; margin: 10px 0 0; }
 .status-pill-wrap .pill { align-self: flex-start; margin-left: 0; text-align: left; }
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent); }

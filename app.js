@@ -992,10 +992,10 @@
       else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
       return '<div class="fcard'+(isArchived(x)?' archived':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
-          '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div>' +
-            '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div></div>' +
+          '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
           '<button class="bookmark'+(x.bookmarked?' on':'')+'" data-bm="'+x.id+'" title="Bookmark">'+(x.bookmarked?"★":"☆")+'</button>' +
         '</div>' +
+        '<div class="status-pill-wrap">'+pillHTML(x.status)+'</div>' +
         (tags.length?'<div class="tags">'+tags.join("")+'</div>':'') +
         progressStepper(x) +
         '<div class="foot">' +
