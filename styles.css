@@ -285,17 +285,7 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: flex-start;
   gap: 6px; margin: 8px 0 12px 0; width: 100%; overflow: hidden; min-height: 32px; }
 /* Offer Received: centered celebratory banner (replaces left-aligned pills) */
-/* Banner grows to fill the open middle area and centres itself vertically,
-   so it sits in the middle of the card body rather than hugging the header.
-   Symmetric margins keep the space above/below the banner balanced. */
-.offer-banner-wrap { display: flex; align-items: center; justify-content: center; width: 100%;
-  flex: 1 1 auto; min-height: 38px; margin: 12px 0; overflow: visible; }
-.offer-banner { flex: 1 1 100%; width: 100%; text-align: center;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); color: #15803d;
-  border: 1px solid #86efac; border-radius: 12px; padding: 8px 12px;
-  font-weight: 700; font-size: 0.82rem; letter-spacing: 0.2px;
-  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.12); }
+
 /* Shared pill sizing so Pay / Work Type / Urgency read as one consistent set */
 .fcard .tags .chiptag,
 .fcard .tags .countdown,
@@ -326,9 +316,6 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 /* Stepper + footer travel together and pin to the bottom, so the pipeline
    always sits directly above View Details and footers line up across a row. */
 .fcard-bottom { margin-top: auto; }
-/* Offer cards: the banner-wrap (flex:1) already fills the middle space and
-   centres the banner, so the bottom section should not also claim the slack. */
-.offer-card .fcard-bottom { margin-top: 0; }
 /* ---- Card action footer: one primary button + a meatball (⋮) menu ----
    Tight, consistent gap so the pipeline stepper sits right above the button. */
 .fcard .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -339,6 +326,12 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   transition: background .15s ease; }
 .card-primary:hover { background: #0a6fd6; }
 .card-primary:active { background: #0960bb; }
+/* Offer Received: emerald gradient primary action button */
+.card-primary-offer { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: #ffffff;
+  border-radius: 10px; padding: 10px 16px; font-weight: 700; font-size: 0.85rem; border: none; text-align: center;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); transition: transform 0.15s ease, background 0.15s ease; }
+.card-primary-offer:hover { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); transform: translateY(-1px); }
+.card-primary-offer:active { transform: translateY(0); }
 /* Meatball (⋮) button */
 .meatball-wrap { position: relative; flex: 0 0 auto; }
 .meatball-btn { width: 38px; height: 38px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0;

@@ -1007,16 +1007,13 @@
   function renderFeed(rows, into) {
     var html = rows.map(function (x) {
       var isOffer = (x.status === "Offer Received");
-      var badgeRow;
+      // Badges: up to 3 concise left-aligned pills (Pay, Work Type, Urgency).
+      // Offer cards show no mid-card banner — the celebration lives on the green
+      // primary button, so content flows cleanly into the progress tracker.
+      var tags = [];
       if (isOffer) {
-        // Offer Received: a centered celebratory banner (no left-aligned pills).
-        // All breakdown (salary, location, decision deadline, equity/perks) lives
-        // inside the View Details modal.
-        badgeRow = '<div class="offer-banner-wrap card-badges-container">' +
-          '<div class="offer-banner">🎉 Offer Received! View Details Inside</div></div>';
+        tags.push('<span class="chiptag pay offer-win">💰 Offer Details Inside</span>');
       } else {
-        // Other stages: up to 3 concise left-aligned badges — Pay, Work Type, Urgency.
-        var tags = [];
         var payStr = formatSalary(x.comp);
         if (payStr) tags.push('<span class="chiptag pay">💰 '+esc(payStr)+'</span>');
         var locStr = normalizeLocation(x.location);
@@ -1024,8 +1021,8 @@
         var cd = countdownBadge(x);
         if (cd) tags.push(cd);                                       // deadline trigger wins
         else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up Due</span>');
-        badgeRow = '<div class="tags card-badges-container">'+tags.join("")+'</div>';
       }
+      var badgeRow = '<div class="tags card-badges-container">'+tags.join("")+'</div>';
       return '<div class="fcard'+(isArchived(x)?' archived':'')+(isOffer?' offer-card':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div></div>' +
@@ -1038,7 +1035,9 @@
         '<div class="fcard-bottom">' +
         progressStepper(x) +
         '<div class="foot">' +
-          '<button class="card-primary" data-view-detail="'+x.id+'">View Details</button>' +
+          (isOffer
+            ? '<button class="card-primary card-primary-offer" data-view-detail="'+x.id+'">🎉 Offer Received! View Offer Details</button>'
+            : '<button class="card-primary" data-view-detail="'+x.id+'">View Details</button>') +
           '<div class="meatball-wrap">' +
             '<button class="meatball-btn" data-meatball="'+x.id+'" aria-haspopup="true" aria-expanded="false" title="More actions">⋮</button>' +
             '<div class="meatball-menu" data-menu="'+x.id+'" hidden>' +
