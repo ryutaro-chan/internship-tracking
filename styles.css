@@ -263,12 +263,10 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   transition: transform .16s, box-shadow .2s, border-color .2s; cursor: pointer; }
 .fcard:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: rgba(56,189,248,.35); }
 /* Manually archived cards: still fully legible (no whole-card fade — that made
-   the grid look inconsistent). Archived state is signalled by a muted surface
-   tint + the "Archived" tag, so every card reads at the same clarity. */
-.fcard.archived { background: var(--surface-2); border-color: var(--border-2); box-shadow: none; }
-.fcard.archived:hover { box-shadow: var(--shadow); }
-.arch-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: var(--muted);
-  background: var(--surface-3); border: 1px solid var(--border-2); border-radius: 20px; padding: 3px 9px; }
+   the grid look inconsistent). No "Archived" badge — archived cards are simply
+   dimmed (and only shown at all when "Hide Archived" is off). */
+.fcard.archived { opacity: .6; }
+.fcard.archived:hover { opacity: 1; }
 .fcard .head { display: flex; align-items: flex-start; gap: 12px; }
 .avatar { position: relative; flex: 0 0 auto; width: 48px; height: 48px; border-radius: 14px; overflow: hidden;
   display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #fff; box-shadow: var(--shadow-sm); }
@@ -281,14 +279,19 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .fcard .company { color: var(--muted); font-size: 13px; margin-top: 2px; }
 .fcard .bookmark { flex: 0 0 auto; border: none; background: transparent; cursor: pointer; font-size: 18px; color: var(--faint); padding: 2px 4px; }
 .fcard .bookmark.on { color: var(--s-amber); }
-.fcard .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
-.chiptag { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+/* ---- Card badges: a single horizontal row of up to 3 concise pills ---- */
+.fcard .tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0; }
+/* Shared pill sizing so Pay / Work Type / Urgency read as one consistent set */
+.fcard .tags .chiptag,
+.fcard .tags .countdown,
+.fcard .tags .fu-flag { font-size: 0.78rem; font-weight: 500; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
+.chiptag { display: inline-flex; align-items: center; gap: 5px;
   background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
 .chiptag.loc { }
 .chiptag.pay { background: var(--s-green-bg); color: var(--s-green); border-color: transparent; }
-.countdown { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+.countdown { display: inline-flex; align-items: center; gap: 5px;
   background: var(--s-amber-bg); color: var(--s-amber); border: 1px solid transparent; }
-.countdown.past { background: var(--surface-2); color: var(--faint); font-weight: 500; }
+.countdown.past { background: var(--surface-2); color: var(--faint); }
 .countdown.urgent { background: var(--s-rose-bg); color: var(--s-rose); }
 
 /* ---- Card action footer: one primary button + a meatball (⋮) menu ---- */

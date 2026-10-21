@@ -951,15 +951,15 @@
 
   function renderFeed(rows, into) {
     var html = rows.map(function (x) {
+      // At-a-glance: show at most 3 badges — Pay, Work Type, and ONE urgency alert.
+      // Industry lives in the detail view; archived state is shown via card dimming,
+      // not a badge. Deadline countdown takes priority over the follow-up alert.
       var tags = [];
-      var ind = industryOf(x);
-      if (ind) tags.push('<span class="cat-badge">🏢 '+esc(ind)+'</span>');
-      if (x.location) tags.push('<span class="chiptag loc">📍 '+esc(x.location)+'</span>');
       if (x.comp) tags.push('<span class="chiptag pay">💰 '+esc(x.comp)+'</span>');
-      var avail = availabilityLabel(x); if (avail) tags.push('<span class="chiptag">🗓 '+esc(avail)+'</span>');
-      var cd = countdownBadge(x); if (cd) tags.push(cd);
-      if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up due</span>');
-      if (x.archived) tags.push('<span class="arch-tag">🗄 Archived</span>');
+      if (x.location) tags.push('<span class="chiptag loc">📍 '+esc(x.location)+'</span>');
+      var cd = countdownBadge(x);
+      if (cd) tags.push(cd);                                       // deadline trigger wins
+      else if (followUpDue(x)) tags.push('<span class="fu-flag">⚠️ Follow-up due</span>');
       return '<div class="fcard'+(x.archived?' archived':'')+'" data-open="'+x.id+'">' +
         '<div class="head">' + avatar(x.company, companyDomain(x.company, x.url)) +
           '<div class="ht"><div class="title">'+esc(x.role||"—")+'</div><div class="company">'+esc(x.company||"")+'</div>' +
