@@ -1096,10 +1096,35 @@
 
     var rows = filtered();
     targets.forEach(function (t) {
-      if (!rows.length) { $(t).innerHTML = '<div class="empty-note">No applications in <b>'+esc(statusTabLabel(STATUS_TAB_CURRENT))+'</b> matching your filters.</div>'; return; }
+      if (!rows.length) { $(t).innerHTML = emptyStateCard(); return; }
       if (view === "board") renderBoard(rows, t); else renderFeed(rows, t);
     });
     wireCards();
+    // Wire the empty-state reset button (if an empty-state card was rendered).
+    document.querySelectorAll("[data-reset-filters]").forEach(function (b) {
+      b.onclick = function () { resetFilters(); };
+    });
+  }
+
+  // Clean empty-state card shown when a filter/search returns no matching cards.
+  function emptyStateCard() {
+    return '<div class="empty-state"><div class="empty-state-card">' +
+      '<div class="empty-state-icon">🔍</div>' +
+      '<h3 class="empty-state-title">No Applications Found</h3>' +
+      '<p class="empty-state-sub">There are no applications matching your current filter.</p>' +
+      '<button class="empty-state-btn" data-reset-filters="1">Reset Filters</button>' +
+      '</div></div>';
+  }
+  // Clear search query + revert tab to "All Applications" and quick filters.
+  function resetFilters() {
+    var s = $("search"); if (s) s.value = "";
+    STATUS_TAB_CURRENT = "all";
+    favOnly = false; hideArchived = false;
+    var fav = $("favToggle"); if (fav) fav.classList.remove("active");
+    var arch = $("archiveToggle"); if (arch) arch.classList.remove("active");
+    var archM = $("archiveToggleMore"); if (archM) { archM.classList.remove("active"); archM.textContent = "🗄 Hide Archived"; }
+    render();
+    showToast("Filters reset");
   }
 
   function renderEmpty(into) {
@@ -1847,7 +1872,9 @@
             tagHTML + '</div>';
         // salary row — green-highlight the higher pay
         var payHigh = payVals[i]>=0 && payVals[i]===maxPay && cols.length>1 && payVals.filter(function(p){return p===maxPay;}).length===1;
-        var payCell = x.comp ? ('<span class="'+(payHigh?"cmp-win":"")+'">'+esc(x.comp)+(payHigh?' 🏆':'')+'</span>') : '—';
+        var payCell = x.comp
+          ? ('<span class="'+(payHigh?"cmp-win":"")+'">'+esc(x.comp)+'</span>'+(payHigh?' <span class="cmp-pay-badge">💰 Highest Pay</span>':''))
+          : '—';
         // work arrangement flag
         var loc=(x.location||"").toLowerCase(); var workFlag="";
         if (loc.indexOf("remote")>=0) workFlag=' <span class="cmp-flag good">remote</span>';

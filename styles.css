@@ -335,25 +335,27 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 /* Primary "View Details" button fills the row */
 .card-primary { flex-grow: 1; background: #0077ed; color: #ffffff; border-radius: 10px; padding: 8px 16px;
   font-family: inherit; font-weight: 600; font-size: 0.85rem; border: none; text-align: center; cursor: pointer;
-  transition: background .15s ease; }
+  transition: background 0.15s cubic-bezier(0.16,1,0.3,1), transform 0.15s cubic-bezier(0.16,1,0.3,1); }
 .card-primary:hover { background: #0a6fd6; }
 .card-primary:active { background: #0960bb; }
 /* Offer Received: emerald gradient primary action button */
 .card-primary-offer { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: #ffffff;
   border-radius: 10px; padding: 10px 16px; font-weight: 700; font-size: 0.85rem; border: none; text-align: center;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); transition: transform 0.15s ease, background 0.15s ease; }
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25); transition: transform 0.15s cubic-bezier(0.16,1,0.3,1), background 0.15s cubic-bezier(0.16,1,0.3,1); }
 .card-primary-offer:hover { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); transform: translateY(-1px); }
 .card-primary-offer:active { transform: translateY(0); }
 /* Meatball (⋮) button */
 .meatball-wrap { position: relative; flex: 0 0 auto; }
 .meatball-btn { width: 38px; height: 38px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0;
   color: #475569; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold;
-  line-height: 1; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+  line-height: 1; cursor: pointer; transition: background 0.15s cubic-bezier(0.16,1,0.3,1), border-color 0.15s cubic-bezier(0.16,1,0.3,1), transform 0.15s cubic-bezier(0.16,1,0.3,1); }
 .meatball-btn:hover, .meatball-btn.open { background: #f1f5f9; border-color: #cbd5e1; }
-/* Floating dropdown menu */
+/* Floating dropdown menu — fades + scales in from the bottom-right */
 .meatball-menu { position: absolute; right: 0; bottom: 45px; background: #ffffff; border: 1px solid #e2e8f0;
-  border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 200px; z-index: 50; overflow: hidden; padding: 6px 0; }
+  border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 200px; z-index: 50; overflow: hidden; padding: 6px 0;
+  transform-origin: bottom right; animation: menuFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1); }
 .meatball-menu[hidden] { display: none; }
+@keyframes menuFadeIn { from { opacity: 0; transform: scale(0.96) translateY(4px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 .mb-item { width: 100%; background: none; border: none; text-align: left; padding: 10px 14px; font-family: inherit;
   font-size: 0.85rem; font-weight: 500; color: #1e293b; display: flex; align-items: center; gap: 10px; cursor: pointer;
   transition: background 0.15s ease; }
@@ -422,6 +424,19 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 .empty-card .sample { display: block; margin: 16px auto 0; background: none; border: none; color: var(--accent-strong); font-size: 14px; font-weight: 600; cursor: pointer; }
 .empty-card .sample:hover { text-decoration: underline; }
 .empty-note { text-align: center; color: var(--muted); padding: 50px 20px; }
+
+/* ---- Empty-state card (no results for the current filter / search) ---- */
+.empty-state { display: flex; justify-content: center; padding: 28px 10px; animation: menuFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+.empty-state-card { width: 100%; max-width: 420px; text-align: center; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 18px; padding: 32px 24px; box-shadow: var(--shadow-sm); }
+.empty-state-icon { font-size: 34px; margin-bottom: 10px; opacity: .85; }
+.empty-state-title { margin: 0 0 6px; font-size: 17px; font-weight: 800; color: var(--text); }
+.empty-state-sub { margin: 0 0 18px; font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+.empty-state-btn { background: var(--accent-strong); color: #fff; border: none; border-radius: 12px;
+  padding: 11px 20px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,119,237,.25); transition: transform 0.15s cubic-bezier(0.16,1,0.3,1), background 0.15s cubic-bezier(0.16,1,0.3,1); }
+.empty-state-btn:hover { background: var(--accent); transform: translateY(-1px); }
+.empty-state-btn:active { transform: translateY(0); }
 
 /* ============ Bottom navigation ============ */
 .bottom-nav { position: sticky; bottom: 0; z-index: 40; display: flex; align-items: stretch; justify-content: space-around;
@@ -611,6 +626,11 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
 /* --- Compare: salary win + work-arrangement flags --- */
 .cmp-win { color: var(--s-green); font-weight: 800; background: var(--s-green-bg);
   border-radius: 6px; padding: 1px 7px; }
+/* 'Highest Pay' green accent badge on the top-paying compared role */
+.cmp-pay-badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;
+  font-size: 10.5px; font-weight: 800; color: var(--s-green); background: var(--s-green-bg);
+  border: 1px solid rgba(16,185,129,.35); border-radius: 20px; padding: 2px 8px; white-space: nowrap;
+  transition: background .15s cubic-bezier(.16,1,.3,1); }
 .cmp-flag { display: inline-block; margin-left: 6px; font-size: 10.5px; font-weight: 700;
   text-transform: uppercase; letter-spacing: .04em; border-radius: 20px; padding: 2px 8px; vertical-align: middle; }
 .cmp-flag.good { color: var(--s-green); background: var(--s-green-bg); }
@@ -655,6 +675,8 @@ select.ctl { -webkit-appearance: none; appearance: none; padding-right: 26px;
   }
   body.is-desktop .detail-view .detail-top {
     border-radius: 20px 20px 0 0; padding: 18px 2rem 0; }
+  body.is-desktop .detail-view.show .detail-top,
+  body.is-desktop .detail-view.show .detail-scroll { animation: menuFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1); }
   body.is-desktop .detail-view .detail-scroll {
     border-radius: 0 0 20px 20px; padding: 6px 2rem 2rem; max-height: 82vh;
     box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.4); flex: 0 1 auto;
