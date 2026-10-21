@@ -214,6 +214,19 @@
     var dd = (day < 10 ? "0" : "") + day;        // zero-pad the day -> "28" / "05"
     return dd + " " + m[mon-1] + " " + year;
   }
+  // Professional long form "D Month YYYY" (e.g. "19 September 2026").
+  // Defaults the year to the current one when the source date omits it.
+  function fmtDateLong(d) {
+    if (!d) return "";
+    var m = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    var p = String(d).split("-");
+    var year, mon, day;
+    if (p.length === 3) { year = p[0]; mon = parseInt(p[1],10); day = parseInt(p[2],10); }
+    else if (p.length === 2) { year = new Date().getFullYear(); mon = parseInt(p[0],10); day = parseInt(p[1],10); }
+    else return d;
+    if (!mon || !day) return d;
+    return day + " " + m[mon-1] + " " + year;
+  }
   // "May 2027 – Aug 2027" style from start/end ISO dates (falls back to legacy term text).
   function monthYear(d) { if (!d) return ""; var p=d.split("-"); if (p.length<2) return d;
     var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]; return m[parseInt(p[1],10)-1]+" "+p[0]; }
@@ -934,9 +947,9 @@
     row("Status", pillHTML(x.status));
     row("Industry", esc(industryOf(x)));
     row("Work Type", esc(normalizeLocation(x.location)));
-    var avail = availabilityLabel(x); row("Availability", esc(avail));
-    row("Applied", esc(fmtDate(x.appliedDate)));
-    row("Deadline", esc(fmtDate(x.deadline)));
+    row("Availability", esc(periodLabel(x)));
+    row("Applied", esc(fmtDateLong(x.appliedDate)));
+    row("Deadline", esc(fmtDateLong(x.deadline)));
     if (x.url) row("Portal", '<a class="d-link" href="'+esc(x.url)+'" target="_blank" rel="noopener">Open ↗</a>');
     if (!rows.length) return '<div class="d-none">No company details added yet.</div>';
     return '<div class="d-rows">' + rows.join("") + '</div>';
