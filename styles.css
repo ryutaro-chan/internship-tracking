@@ -828,14 +828,23 @@ body.is-mobile-ios .appbar { padding-top: calc(16px + env(safe-area-inset-top, 0
     -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
-    display: grid; grid-template-columns: auto minmax(0, 1fr) max-content; grid-template-rows: auto auto;
-    grid-template-areas: "brand nav actions" "search search search";
+    /* Locked 3-section primary nav bar: equal 1fr side columns keep the center
+       nav truly centered; min-height pins the bar's height so it never shifts
+       when the secondary filter row is hidden on Analytics / Compare. */
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    grid-template-areas: "brand nav actions" "search search search" "filters filters filters" "sub sub sub";
     gap: 12px 24px; align-items: center;
   }
-  body.is-desktop .appbar .top {
-    display: contents;
-  }
-  body.is-desktop .appbar .brand { grid-area: brand; }
+  /* Secondary filter controls live in their own rows BELOW the primary nav,
+     so collapsing them (Analytics / Compare) never shifts the nav. */
+  body.is-desktop .filters { grid-area: filters; }
+  body.is-desktop .subbar { grid-area: sub; }
+  /* The primary nav row holds a fixed height regardless of page/tab */
+  body.is-desktop .appbar .top { display: contents; }
+  body.is-desktop .appbar .brand,
+  body.is-desktop .appbar .header-nav,
+  body.is-desktop .appbar-actions { min-height: 64px; display: flex; align-items: center; }
+  body.is-desktop .appbar .brand { grid-area: brand; flex-direction: column; align-items: flex-start; justify-content: center; }
   body.is-desktop .appbar-actions { grid-area: actions; justify-self: end; }
   body.is-desktop .search {
     grid-area: search; margin-top: 0; max-width: 520px;
